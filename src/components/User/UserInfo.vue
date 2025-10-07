@@ -87,9 +87,9 @@
                   </div>
 
                   <!-- Nếu đang chỉnh sửa -->
-                  <template v-if="isEditingIntegrationId">
+                  <template v-if="is_editing_integration_id">
                     <input
-                      v-model="integrationRef"
+                      v-model="integration_ref"
                       class="border border-slate-300 rounded px-2 py-1 text-sm focus:ring focus:ring-blue-200"
                       placeholder="Nhập mã liên kết..."
                     />
@@ -237,77 +237,74 @@
   </Teleport>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useChatbotUserStore } from '@/stores'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import StaffAvatar from '@/components/Avatar/StaffAvatar.vue'
-import Item from '@/components/User/UserInfo/Item.vue'
 import Toggle from '@/components/Toggle.vue'
+import Item from '@/components/User/UserInfo/Item.vue'
 import Lang from '@/components/User/UserInfo/Lang.vue'
-import Theme from '@/components/User/UserInfo/Theme.vue'
-import Translate from '@/components/User/UserInfo/Translate.vue'
 
-import CloseIcon from '@/components/Icons/Close.vue'
 import BellIcon from '@/components/Icons/Bell.vue'
-import GlobalBoldIcon from '@/components/Icons/GlobalBold.vue'
-import MoonIcon from '@/components/Icons/Moon.vue'
-import TranslateIcon from '@/components/Icons/Translate.vue'
-import UserIcon from '@/components/Icons/User.vue'
+import CloseIcon from '@/components/Icons/Close.vue'
 import CogBoldIcon from '@/components/Icons/CogBold.vue'
-import UserCircleIcon from '@/components/Icons/UserCircle.vue'
+import GlobalBoldIcon from '@/components/Icons/GlobalBold.vue'
 import TagIcon from '@/components/Icons/Tag.vue'
+import UserCircleIcon from '@/components/Icons/UserCircle.vue'
 import { update_chatbot_user_info } from '@/service/api/chatbox/n4-service'
-
+/** hàm dịch */
 const { t: $t } = useI18n()
-
+/** Hàm emit close modal */
 const $emit = defineEmits(['close_modal'])
-
+/** user trong store */
 const chatbotUserStore = useChatbotUserStore()
 
 /**các lựa chọn chế độ hiển thị nhãn */
 const SELECT_LABEL_TYPE = {
-  // hiển thị văn bản
+  /** hiển thị văn bản */
   FULL: $t('v1.view.main.dashboard.user.text'),
-  // hiển thị chấm màu
+  /** hiển thị chấm màu */
   ICON: $t('v1.view.main.dashboard.user.dot'),
-  // hiển thị icon và chú thích
+  /** hiển thị icon và chú thích */
   ICON_TOOLTIP: $t('v1.view.main.dashboard.user.dot_tooltip'),
 }
-
-const isEditingIntegrationId = ref(false)
-// const integrationRef = ref(
-//   chatbotUserStore.chatbot_user?.user_info?.custom_id || ''
-// )
-const integrationRef = ref<string>(
+/** trạng thái editing */
+const is_editing_integration_id = ref(false)
+/** giá trị custom id */
+const integration_ref = ref<string>(
   chatbotUserStore.chatbot_user?.user_info?.custom_id || ''
 )
 
-console.log(chatbotUserStore, ' hahahhah')
-
-// Bắt đầu chỉnh sửa
+/** Bắt đầu chỉnh sửa */
 function startEdit() {
-  integrationRef.value =
+  /** Lấy thông tin trong store */
+  integration_ref.value =
     chatbotUserStore.chatbot_user?.user_info?.custom_id || ''
-  isEditingIntegrationId.value = true
+  /** bật cờ edit */
+  is_editing_integration_id.value = true
 }
 
-// Hủy chỉnh sửa
+/** Hủy chỉnh sửa */
 function cancelEdit() {
-  isEditingIntegrationId.value = false
+  is_editing_integration_id.value = false
 }
 
-// Lưu giá trị
+/** Lưu giá trị */
 async function saveIntegrationRef() {
   try {
-    await update_chatbot_user_info({ custom_id: integrationRef.value })
-
-    const user = chatbotUserStore.chatbot_user
-    if (!user) return
-    if (!user.user_info) user.user_info = {}
-    user.user_info.custom_id = integrationRef.value
-
-    isEditingIntegrationId.value = false
+    /** call api cập nhật */
+    await update_chatbot_user_info({ custom_id: integration_ref.value })
+    /** Thông tin user */
+    const USER = chatbotUserStore.chatbot_user
+    /** Nếu không có thì return */
+    if (!USER) return
+    /** nếu không có thì gán bằng {} */
+    if (!USER.user_info) USER.user_info = {}
+    /** Lưu thông tin trong store */
+    USER.user_info.custom_id = integration_ref.value
+    /** Tắt cờ trigger */
+    is_editing_integration_id.value = false
   } catch (err) {
     console.error('Lỗi khi lưu mã liên kết:', err)
     alert('Không thể lưu, vui lòng thử lại!')
@@ -319,14 +316,14 @@ const is_open = ref(false)
 
 /**ẩn hiện modal */
 function toggleModal() {
-  // toggle modal
+  /** toggle modal */
   is_open.value = !is_open.value
 
-  // bắn sự kiện ra ngoài khi modal đã tắt
+  /** bắn sự kiện ra ngoài khi modal đã tắt */
   if (!is_open.value) $emit('close_modal')
 }
 
-// public chức năng ẩn hiện modal để có thể được gọi từ bên ngoài component
+/** public chức năng ẩn hiện modal để có thể được gọi từ bên ngoài component */
 defineExpose({ toggleModal })
 </script>
 <style lang="scss" scoped>
