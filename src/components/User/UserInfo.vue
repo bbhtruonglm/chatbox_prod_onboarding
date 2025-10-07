@@ -32,7 +32,7 @@
             </div>
           </div>
           <div class="overflow-y-auto flex-grow min-h-0">
-            <div class="section border-b">
+            <!-- <div class="section border-b">
               <div class="title">
                 {{ $t('v1.view.main.dashboard.org.pay.account') }}
               </div>
@@ -54,7 +54,78 @@
                   </div>
                 </div>
               </div>
+            </div> -->
+            <div class="section border-b">
+              <div class="title">
+                {{ $t('v1.view.main.dashboard.org.pay.account') }}
+              </div>
+
+              <div class="flex items-center gap-3">
+                <StaffAvatar
+                  :id="chatbotUserStore.chatbot_user?.user_id"
+                  class="rounded-oval w-11 h-11"
+                />
+                <div>
+                  <div class="text-sm font-semibold">
+                    {{ chatbotUserStore.chatbot_user?.full_name }}
+                  </div>
+                  <div class="text-sm font-medium text-slate-500">
+                    {{
+                      chatbotUserStore.chatbot_user?.email ||
+                      chatbotUserStore.chatbot_user?.user_id ||
+                      chatbotUserStore.chatbot_user?.fb_staff_id
+                    }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Field mới: Mã liên kết hệ thống khác -->
+              <div class="mt-3">
+                <div class="flex items-center gap-2">
+                  <div class="text-sm font-medium text-slate-600">
+                    Mã liên kết hệ thống khác:
+                  </div>
+
+                  <!-- Nếu đang chỉnh sửa -->
+                  <template v-if="isEditingIntegrationId">
+                    <input
+                      v-model="integrationRef"
+                      class="border border-slate-300 rounded px-2 py-1 text-sm focus:ring focus:ring-blue-200"
+                      placeholder="Nhập mã liên kết..."
+                    />
+                    <button
+                      @click="saveIntegrationRef"
+                      class="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Lưu
+                    </button>
+                    <button
+                      @click="cancelEdit"
+                      class="px-2 py-1 text-sm border border-slate-300 rounded hover:bg-slate-50"
+                    >
+                      Hủy
+                    </button>
+                  </template>
+
+                  <!-- Nếu đang hiển thị -->
+                  <template v-else>
+                    <div class="text-sm text-slate-800">
+                      {{
+                        chatbotUserStore.chatbot_user?.user_info?.custom_id ||
+                        '—'
+                      }}
+                    </div>
+                    <button
+                      @click="startEdit"
+                      class="text-xs text-blue-600 hover:underline"
+                    >
+                      Chỉnh sửa
+                    </button>
+                  </template>
+                </div>
+              </div>
             </div>
+
             <div class="section">
               <div class="title">
                 {{ $t('v1.view.main.dashboard.user.general') }}
@@ -186,6 +257,7 @@ import UserIcon from '@/components/Icons/User.vue'
 import CogBoldIcon from '@/components/Icons/CogBold.vue'
 import UserCircleIcon from '@/components/Icons/UserCircle.vue'
 import TagIcon from '@/components/Icons/Tag.vue'
+import { update_chatbot_user_info } from '@/service/api/chatbox/n4-service'
 
 const { t: $t } = useI18n()
 
@@ -201,6 +273,45 @@ const SELECT_LABEL_TYPE = {
   ICON: $t('v1.view.main.dashboard.user.dot'),
   // hiển thị icon và chú thích
   ICON_TOOLTIP: $t('v1.view.main.dashboard.user.dot_tooltip'),
+}
+
+const isEditingIntegrationId = ref(false)
+// const integrationRef = ref(
+//   chatbotUserStore.chatbot_user?.user_info?.custom_id || ''
+// )
+const integrationRef = ref<string>(
+  chatbotUserStore.chatbot_user?.user_info?.custom_id || ''
+)
+
+console.log(chatbotUserStore, ' hahahhah')
+
+// Bắt đầu chỉnh sửa
+function startEdit() {
+  integrationRef.value =
+    chatbotUserStore.chatbot_user?.user_info?.custom_id || ''
+  isEditingIntegrationId.value = true
+}
+
+// Hủy chỉnh sửa
+function cancelEdit() {
+  isEditingIntegrationId.value = false
+}
+
+// Lưu giá trị
+async function saveIntegrationRef() {
+  try {
+    await update_chatbot_user_info({ custom_id: integrationRef.value })
+
+    const user = chatbotUserStore.chatbot_user
+    if (!user) return
+    if (!user.user_info) user.user_info = {}
+    user.user_info.custom_id = integrationRef.value
+
+    isEditingIntegrationId.value = false
+  } catch (err) {
+    console.error('Lỗi khi lưu mã liên kết:', err)
+    alert('Không thể lưu, vui lòng thử lại!')
+  }
 }
 
 /**ẩn hiện modal */
