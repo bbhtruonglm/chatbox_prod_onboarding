@@ -27,7 +27,7 @@
           ref="connect_page_ref"
         />
         <div>
-          {{ getPageName(page_info)}}
+          {{ getPageName(page_info) }}
         </div>
       </div>
     </template>
@@ -98,6 +98,7 @@ class Main {
   reloadPageData() {
     reloadPageData?.()
   }
+
   /**ẩn hiện modal kết nối nền tảng */
   toggleModalConnectPage() {
     // ẩn bỏ các chi tiết thừa

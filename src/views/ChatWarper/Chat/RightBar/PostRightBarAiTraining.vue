@@ -18,9 +18,10 @@
       <div>
         <textarea
           v-if="is_expanded"
+          ref="textareaRef"
           v-model="description"
           rows="6"
-          class="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+          class="w-full border rounded-md px-3 py-2 text-sm resize-none focus:outline-none"
           placeholder="Nhập nội dung để huấn luyện AI tư vấn khách hàng"
         ></textarea>
 
@@ -28,11 +29,12 @@
           v-else
           type="text"
           v-model="description"
-          @focus="is_expanded = true"
-          class="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          @focus="expandAndFocus"
+          class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none"
           placeholder="Nhập nội dung để huấn luyện AI tư vấn khách hàng"
         />
       </div>
+
       <div>
         <!-- Nút Lưu -->
         <div
@@ -40,18 +42,25 @@
           class="mt-2 flex justify-end gap-2"
         >
           <button
-            class="px-3 py-1.5 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
+            class="px-3 py-1.5 text-sm bg-gray-200 rounded-lg hover:bg-gray-300"
             @click="cancel"
           >
             {{ $t('Hủy') }}
           </button>
           <button
-            class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            class="flex gap-1 items-center px-3 py-2 text-sm bg-slate-800 text-yellow-200 rounded-lg hover:bg-slate-700"
             @click="save"
           >
-            {{ $t('Lưu') }}
+            {{ $t('Lưu lại') }}
+            <img
+              class="mx-auto"
+              src="@/assets/icons/save.svg"
+              width="16"
+              height="16"
+            />
           </button>
         </div>
+
         <div
           v-else
           class="text-xs text-slate-700"
@@ -68,12 +77,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { SparklesIcon } from '@heroicons/vue/24/solid'
+import { ref, nextTick } from 'vue'
+
 /** Trạng thái mở rộng */
 const is_expanded = ref(false)
 /** Mô tả */
 const description = ref('')
+/** ref tới textarea */
+const textareaRef = ref<HTMLTextAreaElement>()
+
+/** Khi input được focus */
+const expandAndFocus = async () => {
+  is_expanded.value = true
+  await nextTick()
+  textareaRef.value?.focus()
+}
 
 /** Hủy bỏ chỉnh sửa */
 const cancel = () => {
@@ -83,7 +102,6 @@ const cancel = () => {
 /** Gọi API lưu dữ liệu */
 const save = async () => {
   try {
-    /** Ví dụ call API */
     await fakeApiSave(description.value)
     is_expanded.value = false
     console.log('Đã lưu:', description.value)
@@ -92,7 +110,7 @@ const save = async () => {
   }
 }
 
-/** Hàm giả lập API (thay bằng call thực tế, ví dụ axios.post('/api/save', {description: description.value})) */
+/** Hàm giả lập API */
 const fakeApiSave = (data: string) => {
   return new Promise(resolve => setTimeout(() => resolve(data), 500))
 }

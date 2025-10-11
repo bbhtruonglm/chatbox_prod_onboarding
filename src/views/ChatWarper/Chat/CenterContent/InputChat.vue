@@ -6,8 +6,10 @@
   >
     <ScrollToBottomBtn />
     <!-- Trả lời bình luận bài viết fb -->
-    <ReplyComment v-if="messageStore.reply_comment?.root_comment_id" />
-    <ListLabel v-else />
+    <!-- <ReplyComment v-if="messageStore.reply_comment?.root_comment_id" /> -->
+    <ListLabel
+      v-if="conversationStore.select_conversation?.conversation_type !== 'POST'"
+    />
     <PreviewAttachment />
     <MainInput
       v-if="conversationStore.select_conversation?.conversation_type !== 'POST'"
@@ -24,10 +26,10 @@ import MainInput from '@/views/ChatWarper/Chat/CenterContent/InputChat/MainInput
 import ReplyComment from '@/views/ChatWarper/Chat/CenterContent/InputChat/ReplyComment.vue'
 
 const $props = defineProps({
-  client_id:{
+  client_id: {
     type: String,
     default: '',
-  }
+  },
 })
 
 const messageStore = useMessageStore()
