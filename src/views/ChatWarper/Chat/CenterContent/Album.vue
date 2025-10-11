@@ -39,7 +39,7 @@
             }}
 
             <button
-              v-tooltip="$t('Lấy danh sách trả lời nhanh từ trang khác')"
+              v-tooltip="$t('Lấy danh sách album từ trang khác')"
               @click="modal_change_album_ref?.toggleModal"
             >
               <ChangeIcon
