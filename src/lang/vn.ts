@@ -881,6 +881,7 @@ const source: Language = {
               create_folder: 'Tạo thư mục',
               edit_name: 'Đổi tên',
               folder_new_name: 'Thư mục mới',
+              select_album_from_other_page: 'Chọn album từ trang khác',
             },
           },
           user: {
