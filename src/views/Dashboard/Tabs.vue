@@ -18,25 +18,32 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue'
-
+/** Khai báo tabs item */
 interface TabItem {
+  /** Tiêu đề tab */
   title: string
+  /** path của tab */
   path: string
 }
-
+/** Khai báo props */
 const props = defineProps<{
+  /** List các tab */
   tabs: TabItem[]
+  /** Tab hiện tại */
   currentTab: string
 }>()
-
+/** Hàm emit update tab, reset skip, page (chưa dùng) */
 const emit = defineEmits<{
   (e: 'update:tab', value: string): void
   (e: 'resetSkip'): void
   (e: 'resetPage', page: number): void
 }>()
 
-/** Khi click tab */
+/** Khi click tab
+ * @param path
+ */
 const handleClick = (path: string) => {
+  /** Nếu click tab khác tab hiện tại */
   if (props.currentTab !== path) {
     emit('update:tab', path)
     emit('resetSkip')

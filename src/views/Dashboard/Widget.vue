@@ -30,9 +30,11 @@ import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Tabs from './Tabs.vue'
-
+/** Thông tin store */
 const widgetStore = useWidgetStore()
+/** Khai báo router */
 const router = useRouter()
+/** Hàm dịch i18n */
 const { t: $t } = useI18n()
 
 /** Danh sách tabs */
@@ -54,9 +56,13 @@ const LIST_TABS = [
 /** Tab đang chọn */
 const select_tab = ref('market')
 
-/** Chọn tab */
+/** Chọn tab
+ * @param value tab hiện tại
+ */
 const selectTab = (value: string) => {
+  /** Gán tab hiện tại */
   select_tab.value = value
+  /** Xử lý update router */
   router.push(genOrgPath(value))
 }
 

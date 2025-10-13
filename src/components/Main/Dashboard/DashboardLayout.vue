@@ -15,6 +15,7 @@
   </div>
 </template>
 <script setup lang="ts">
+/** Khai báo props */
 const $props = withDefaults(
   defineProps<{
     /**class của nội dung */
