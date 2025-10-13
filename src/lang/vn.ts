@@ -882,6 +882,10 @@ const source: Language = {
               edit_name: 'Đổi tên',
               folder_new_name: 'Thư mục mới',
               select_album_from_other_page: 'Chọn album từ trang khác',
+              album_desc:
+                'Mỗi thư mục chỉ hiển thị tối đa 80 ảnh, dù thực tế có thể có nhiều hơn.',
+              album_desc_2: 'Sử dụng Tìm kiếm để tìm các ảnh thứ 81 trở đi',
+              search: 'Tìm kiếm',
             },
           },
           user: {

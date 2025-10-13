@@ -3,7 +3,7 @@ import type { FileTypeInfo } from '@/service/interface/app/message'
 /**dữ liệu đánh đấu file thuộc về trang nào và thư mục nào */
 export interface FromFile {
   /**id trang */
-  page_id: string
+  page_id: string | string[]
   /**lấy từ thư mục */
   folder_id?: string
 }

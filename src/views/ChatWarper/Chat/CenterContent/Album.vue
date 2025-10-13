@@ -31,6 +31,14 @@
               {{ $t('v1.view.main.dashboard.chat.album.category.folder') }}
             </button>
           </div>
+
+          <input
+            v-model="search_text"
+            @input="handleInput"
+            class="border rounded-lg px-3 py-1 text-sm"
+            :placeholder="$t('v1.view.main.dashboard.chat.album.search')"
+          />
+
           <div class="flex gap-2 items-center text-sm">
             {{
               $t(
@@ -130,8 +138,8 @@
             </button>
           </div>
         </div>
+        <!-- @scroll="loadMore" -->
         <div
-          @scroll="loadMore"
           class="flex-grow overflow-y-auto grid content-start gap-3"
           :class="{
             'grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7':
@@ -225,13 +233,29 @@
             </div>
           </div>
         </div>
-        <p
-          v-if="countSelectFile()"
-          class="m-auto text-sm text-blue-700 font-medium"
-        >
-          {{ $t('Đã chọn') }} {{ countSelectFile() }} / {{ size(file_list) }}
-          {{ $t('v1.view.main.dashboard.chat.album.file') }}
-        </p>
+        <div class="mx-auto text-xs text-slate-800">
+          <p
+            v-if="countSelectFile()"
+            class="text-sm text-blue-700 font-medium text-center"
+          >
+            {{ $t('Đã chọn') }} {{ countSelectFile() }} / {{ size(file_list) }}
+            {{ $t('v1.view.main.dashboard.chat.album.file') }}
+          </p>
+          <p>
+            {{
+              size(file_list) >= 80
+                ? $t('v1.view.main.dashboard.chat.album.album_desc')
+                : ''
+            }}
+          </p>
+          <p>
+            {{
+              size(file_list) >= 80
+                ? $t('v1.view.main.dashboard.chat.album.album_desc_2')
+                : ''
+            }}
+          </p>
+        </div>
       </div>
     </template>
     <template v-slot:footer>
@@ -301,7 +325,7 @@ import {
 import { useConversationStore, useOrgStore } from '@/stores'
 import { confirm, toast, toastError } from '@/service/helper/alert'
 import { useI18n } from 'vue-i18n'
-import { remove, size } from 'lodash'
+import { debounce, isEmpty, remove, size } from 'lodash'
 
 import Modal from '@/components/Modal.vue'
 import Loading from '@/components/Loading.vue'
@@ -343,7 +367,7 @@ const orgStore = useOrgStore()
 const CACHE_LIST_ALBUM = new Map<string, any[]>()
 
 /**số bản ghi một thời điểm */
-const LIMIT = 40
+const LIMIT = 80
 
 /**ref của menu thiết lập folder */
 const folder_menu_ref = ref<InstanceType<typeof Dropdown>>()
@@ -357,6 +381,8 @@ const selected_category = ref<CategoryType>('NEW')
 const selected_folder_id = ref<string>()
 /**danh sách tập tin */
 const file_list = ref<FileInfo[]>([])
+/**danh sách tập tin */
+const file_list_root = ref<FileInfo[]>([])
 /**danh sách thư mục */
 const folder_list = ref<FolderInfo[]>([])
 /**đánh dấu đã đọc hết dữ liệu */
@@ -368,13 +394,34 @@ const selected_folder = ref<FolderInfo>()
 
 /**id trang đang được chọn */
 const page_id = ref<string>('')
-
-const page_ids = ref<string[]>([])
+/** Danh sách page_id */
+const page_ids = ref<string[] | undefined>([])
 
 /** modal thay đổi danh sách câu trả lời nhanh */
 const modal_change_album_ref = ref<InstanceType<
   typeof ModalChangeAlbumSource
 > | null>(null)
+
+/** --- state search */
+const search_text = ref('')
+/** Gọi api ảnh, sẽ ghép api sau
+ * @param query
+ */
+const fetchAlbums = async (query: string) => {
+  if (query) {
+    const DATA = file_list_root.value?.filter(item =>
+      item.original_name.toLowerCase().includes(query.toLowerCase())
+    )
+    file_list.value = DATA
+  } else {
+    file_list.value = file_list_root.value
+  }
+}
+/** handle debounce input */
+const handleInput = debounce(e => {
+  /** Gọi album */
+  fetchAlbums(e.target.value)
+}, 500)
 
 /**đánh dấu có đang chọn tất cả file không */
 const is_select_all = computed({
@@ -387,6 +434,7 @@ const is_select_all = computed({
   set(val) {
     // gắn cờ cho các file
     file_list.value?.forEach(file => (file.is_select = val))
+    file_list_root.value?.forEach(file => (file.is_select = val))
   },
 })
 
@@ -437,7 +485,15 @@ function onChangePageIds(ids: string[]) {
 }
 
 function getFiles(is_change_page = false, ids: string[] = []) {
-  if (!ids.length) return
+  /** lấy page_id từ local */
+  const PAGE_ID_MAP = getItem('album_page_id') || {}
+  /** Lấy giá trị của page_id */
+  page_ids.value =
+    PAGE_ID_MAP?.[conversationStore.select_conversation?.fb_page_id || ''] ||
+    conversationStore.select_conversation?.fb_page_id
+
+  /** nếu không có id trang thì thôi */
+  if (!page_ids.value) return
 
   is_loading.value = true
   is_done.value = false
@@ -447,7 +503,7 @@ function getFiles(is_change_page = false, ids: string[] = []) {
       (cb: CbError) =>
         read_file_album(
           {
-            page_id: ids, // ✅ truyền mảng trực tiếp
+            page_id: !isEmpty(ids) ? ids : page_ids.value || [], // ✅ truyền mảng trực tiếp
             folder_id: selected_folder_id.value,
             limit: LIMIT,
             skip: skip.value,
@@ -461,6 +517,10 @@ function getFiles(is_change_page = false, ids: string[] = []) {
                 ...file,
                 is_select: is_select_all.value,
               }))
+              file_list_root.value = (r as FileInfo[]).map(file => ({
+                ...file,
+                is_select: is_select_all.value,
+              }))
             } else {
               addDataToFileList(r)
             }
@@ -468,7 +528,7 @@ function getFiles(is_change_page = false, ids: string[] = []) {
             cb()
           }
         ),
-      cb => {
+      (cb: CbError) => {
         skip.value += LIMIT
         cb()
       },
@@ -481,7 +541,15 @@ function getFiles(is_change_page = false, ids: string[] = []) {
 }
 
 function getFolders(is_change_page = false, ids: string[] = []) {
-  if (!ids.length) return
+  /** lấy page_id từ local */
+  const PAGE_ID_MAP = getItem('album_page_id') || {}
+  /** Lấy giá trị của page_id */
+  page_ids.value =
+    PAGE_ID_MAP?.[conversationStore.select_conversation?.fb_page_id || ''] ||
+    conversationStore.select_conversation?.fb_page_id
+
+  /** nếu không có id trang thì thôi */
+  if (!page_ids.value) return
 
   is_loading.value = true
   is_done.value = false
@@ -491,7 +559,7 @@ function getFolders(is_change_page = false, ids: string[] = []) {
       (cb: any) =>
         read_folder_album(
           {
-            page_id: ids, // ✅ mảng
+            page_id: !isEmpty(ids) ? ids : page_ids.value || [], // ✅ truyền mảng trực tiếp
             limit: LIMIT,
             skip: skip.value,
           },
@@ -562,52 +630,9 @@ function selectFolder(folder: FolderInfo) {
 
   resetFileData()
 
-  getFile()
+  getFiles()
 }
-/**đọc danh sách thư mục */
-function getFolder(is_change_page = false) {
-  is_loading.value = true
 
-  waterfall(
-    [
-      // * đọc thư mục từ server
-      (cb: CbError) =>
-        read_folder_album(
-          {
-            // page_id: conversationStore.select_conversation
-            //   ?.fb_page_id as string,
-            page_id: page_id.value,
-            limit: LIMIT,
-            skip: skip.value,
-          },
-          (e, r) => {
-            if (e) return cb(e)
-            if (!r?.length || r?.length < LIMIT) is_done.value = true
-
-            if (r) {
-              if (is_change_page) {
-                folder_list.value = r
-              } else {
-                folder_list.value?.push(...r)
-              }
-            }
-            cb()
-          }
-        ),
-      // * next
-      (cb: CbError) => {
-        skip.value += LIMIT
-
-        cb()
-      },
-    ],
-    e => {
-      is_loading.value = false
-
-      if (e) return toastError(e)
-    }
-  )
-}
 /**chọn danh mục */
 function selectCategory(type: CategoryType) {
   /** chọn danh mục */
@@ -618,29 +643,11 @@ function selectCategory(type: CategoryType) {
   /** clar file dữ liệu */
   resetFileData()
   /** type File thì lấy file */
-  if (type === 'NEW') getFile()
+  if (type === 'NEW') getFiles()
   /** Type folder thì lấy data folder */
-  if (type === 'FOLDER') getFolder()
+  if (type === 'FOLDER') getFolders()
 }
-/**lấy thêm dữ liệu file khi scroll xuống */
-function loadMore($event: Event) {
-  /** nếu đang chạy hoặc đã hết dữ liệu thì thôi */
-  if (is_loading.value || is_done.value) return
-  /** Lấyd data div */
-  const DIV = $event.target as HTMLElement
-  /** Khai báo các event stroll của div */
-  const SCROLL_TOP = DIV?.scrollTop
-  const DIV_HEIGHT = DIV?.offsetHeight
-  const SCROLL_HEIGHT = DIV?.scrollHeight
 
-  /** kiểm tra xem đã scroll xuống cuối cùng chưa */
-  if (SCROLL_TOP + DIV_HEIGHT < SCROLL_HEIGHT - 100) return
-
-  /** nếu ở danh mục hiện toàn bộ file */
-  if (selected_category.value === 'NEW') getFile()
-  /** nếu ở danh sách thư mục */ else if (!selected_folder_id) getFolder()
-  /** nếu là danh sách các file của một thư mục */ else getFile()
-}
 /**xoá tập tin */
 function deleteFile(select_file: FileInfo) {
   /** nếu đang chạy thì thôi */
@@ -661,6 +668,7 @@ function deleteFile(select_file: FileInfo) {
 
       /** xoá khỏi danh sách tập tin */
       remove(file_list.value, file => file._id === select_file?._id)
+      remove(file_list_root.value, file => file._id === select_file?._id)
     }
   )
 }
@@ -697,6 +705,7 @@ async function deleteSelectFile() {
                 resolve(r)
                 /** xóa khoa khoi danh sach */
                 file_list.value?.splice(i, 1)
+                file_list_root.value?.splice(i, 1)
               }
             }
           )
@@ -748,7 +757,7 @@ function createFolder() {
       is_done.value = false
 
       /** lấy lại danh sách thư mục */
-      getFolder()
+      getFolders()
     }
   )
 }
@@ -830,6 +839,7 @@ function resetFileData() {
   is_done.value = false
   skip.value = 0
   file_list.value = []
+  file_list_root.value = []
   folder_list.value = []
 }
 /**mở album */
@@ -844,7 +854,7 @@ function toggleAlbum() {
 
   resetFileData()
 
-  getFile()
+  getFiles()
 }
 /**thêm dữ liệu vào danh sách tập tin hiện tại */
 // function addDataToFileList(data?: FileInfo[]) {
@@ -879,78 +889,14 @@ function addDataToFileList(
   if (source === 'fetch') {
     /** fetch từ server → thêm cuối danh sách */
     file_list.value = [...file_list.value, ...NEW_FILES]
+    file_list_root.value = [...file_list_root.value, ...NEW_FILES]
   } else {
     /** upload mới → thêm đầu danh sách */
     file_list.value = [...NEW_FILES, ...file_list.value]
+    file_list_root.value = [...NEW_FILES, ...file_list_root.value]
   }
 }
 
-/**lấy danh sách tập tin */
-function getFile(is_change_page = false) {
-  /** lấy page_id từ local */
-  const PAGE_ID_MAP = getItem('album_page_id') || {}
-  /** Lấy giá trị của page_id */
-  page_id.value =
-    PAGE_ID_MAP?.[conversationStore.select_conversation?.fb_page_id || ''] ||
-    conversationStore.select_conversation?.fb_page_id
-
-  /** nếu không có id trang thì thôi */
-  if (!page_id.value) return
-
-  /** nếu đã cache dữ liệu rồi thì thôi không gọi api nữa */
-  if (CACHE_LIST_ALBUM.has(page_id.value)) {
-    /** lấy dữ liệu trong cache */
-    file_list.value = CACHE_LIST_ALBUM.get(page_id.value) || []
-
-    return
-  }
-  is_loading.value = true
-  waterfall(
-    [
-      /** đọc file từ server */
-      (cb: CbError) =>
-        read_file_album(
-          {
-            // page_id: conversationStore.select_conversation
-            //   ?.fb_page_id as string,
-            page_id: page_id.value,
-            folder_id: selected_folder_id.value,
-            limit: LIMIT,
-            skip: skip.value,
-          },
-          (e, r) => {
-            if (e) return cb(e)
-            if (!r?.length || r?.length < LIMIT) is_done.value = true
-            if (is_change_page) {
-              file_list.value = (r as FileInfo[])?.map(file => {
-                /** thêm gắn cờ */
-                file.is_select = is_select_all.value
-
-                return file
-              })
-
-              /** cache lại dữ liệu */
-              CACHE_LIST_ALBUM.set(page_id.value, file_list.value)
-            } else {
-              addDataToFileList(r)
-            }
-            cb()
-          }
-        ),
-      // * next
-      (cb: CbError) => {
-        skip.value += LIMIT
-
-        cb()
-      },
-    ],
-    e => {
-      is_loading.value = false
-
-      if (e) return toastError(e)
-    }
-  )
-}
 /**
  * chọn file từ thiết bị để thêm vào album
  * @deprecated dùng qua UploadFile ở utils
@@ -977,13 +923,35 @@ function uploadFileFromDevice() {
         const FORM = new FormData()
         FORM.append('file', file)
 
+        /** Lấy dữ liệu từ localStorage */
+        const PAGE_ID_MAP = getItem('album_page_id') || {}
+        /** ID mặc định */
+        const DEFAULT_ID =
+          conversationStore.select_conversation?.fb_page_id || ''
+
+        /** ✅ Xác định NEW_PAGE_ID */
+        let new_page_id = DEFAULT_ID
+
+        if (Object.keys(PAGE_ID_MAP).length > 0) {
+          if (PAGE_ID_MAP[DEFAULT_ID] && PAGE_ID_MAP[DEFAULT_ID].length > 0) {
+            // 🟢 Nếu map có chứa DEFAULT_ID → lấy phần tử đầu tiên của mảng đó
+            new_page_id = PAGE_ID_MAP[DEFAULT_ID][0]
+          } else {
+            // 🟡 Nếu không chứa DEFAULT_ID → lấy phần tử đầu tiên của map
+            const FIRST_KEY = Object.keys(PAGE_ID_MAP)[0]
+            const FIRST_ARRAY = PAGE_ID_MAP[FIRST_KEY]
+            if (Array.isArray(FIRST_ARRAY) && FIRST_ARRAY.length > 0) {
+              new_page_id = FIRST_ARRAY[0]
+            }
+          }
+        }
+
         /** upload lên server */
         upload_file_album(
           {
             // page_id: conversationStore.select_conversation
             //   ?.fb_page_id as string,
-            page_id: page_id.value,
-            folder_id: selected_folder_id.value,
+            page_id: new_page_id,
           },
           FORM,
           (e, r) => {

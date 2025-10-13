@@ -1088,6 +1088,11 @@ const source: Language = {
               create_folder: 'Create Folder',
               edit_name: 'Rename',
               folder_new_name: 'New Folder',
+              select_album_from_other_page: 'Select album from another page',
+              album_desc:
+                'Each folder displays up to 80 photos, even if there may actually be more.',
+              album_desc_2: 'Use Search to find photos beyond the 81st one.',
+              search: 'Search',
             },
           },
           user: {
