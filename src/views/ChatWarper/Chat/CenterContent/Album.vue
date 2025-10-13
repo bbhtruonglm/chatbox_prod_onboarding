@@ -282,8 +282,8 @@
   </Dropdown>
   <ModalChangeAlbumSource
     ref="modal_change_album_ref"
-    v-model:page_id="page_id"
-    v-on:update:page_id="onChangePageId"
+    v-model:page_ids="page_ids"
+    v-on:update:page_ids="onChangePageIds"
   />
 </template>
 <script setup lang="ts">
@@ -369,6 +369,8 @@ const selected_folder = ref<FolderInfo>()
 /**id trang đang được chọn */
 const page_id = ref<string>('')
 
+const page_ids = ref<string[]>([])
+
 /** modal thay đổi danh sách câu trả lời nhanh */
 const modal_change_album_ref = ref<InstanceType<
   typeof ModalChangeAlbumSource
@@ -388,29 +390,134 @@ const is_select_all = computed({
   },
 })
 
-/** hàm xử lý thay đổi id page */
-function onChangePageId(id: string) {
-  /** Nếu k có id thì bỏ quá */
-  if (!id || !conversationStore.select_conversation?.fb_page_id) return
+// /** hàm xử lý thay đổi id page */
+// function onChangePageIds(id: string) {
+//   /** Nếu k có id thì bỏ quá */
+//   if (!id || !conversationStore.select_conversation?.fb_page_id) return
 
-  /** cập nhật id page */
-  page_id.value = id
-  /** Map data id từ local storage */
+//   /** cập nhật id page */
+//   page_id.value = id
+//   /** Map data id từ local storage */
+//   const PAGE_ID_MAP = getItem('album_page_id') || {}
+//   /** Lưu vào local, */
+//   setItem('album_page_id', {
+//     ...PAGE_ID_MAP,
+//     [conversationStore.select_conversation.fb_page_id]: id,
+//   })
+//   /** set lại skip = 0 */
+//   skip.value = 0
+//   /** check tab hiện tại */
+//   if (selected_category.value === 'NEW') {
+//     /** lấy dữ liệu album */
+//     getFile(true)
+//   } else {
+//     getFolder(true)
+//   }
+// }
+
+function onChangePageIds(ids: string[]) {
+  if (!ids?.length || !conversationStore.select_conversation?.fb_page_id) return
+
+  page_ids.value = ids
+
+  // Lưu vào local storage (nếu bạn muốn)
   const PAGE_ID_MAP = getItem('album_page_id') || {}
-  /** Lưu vào local, */
   setItem('album_page_id', {
     ...PAGE_ID_MAP,
-    [conversationStore.select_conversation.fb_page_id]: id,
+    [conversationStore.select_conversation.fb_page_id]: ids,
   })
-  /** set lại skip = 0 */
+
   skip.value = 0
-  /** check tab hiện tại */
+
   if (selected_category.value === 'NEW') {
-    /** lấy dữ liệu album */
-    getFile(true)
+    getFiles(true, ids)
   } else {
-    getFolder(true)
+    getFolders(true, ids)
   }
+}
+
+function getFiles(is_change_page = false, ids: string[] = []) {
+  if (!ids.length) return
+
+  is_loading.value = true
+  is_done.value = false
+
+  waterfall(
+    [
+      (cb: CbError) =>
+        read_file_album(
+          {
+            page_id: ids, // ✅ truyền mảng trực tiếp
+            folder_id: selected_folder_id.value,
+            limit: LIMIT,
+            skip: skip.value,
+          },
+          (e, r) => {
+            if (e) return cb(e)
+            if (!r?.length || r.length < LIMIT) is_done.value = true
+
+            if (is_change_page) {
+              file_list.value = (r as FileInfo[]).map(file => ({
+                ...file,
+                is_select: is_select_all.value,
+              }))
+            } else {
+              addDataToFileList(r)
+            }
+
+            cb()
+          }
+        ),
+      cb => {
+        skip.value += LIMIT
+        cb()
+      },
+    ],
+    e => {
+      is_loading.value = false
+      if (e) toastError(e)
+    }
+  )
+}
+
+function getFolders(is_change_page = false, ids: string[] = []) {
+  if (!ids.length) return
+
+  is_loading.value = true
+  is_done.value = false
+
+  waterfall(
+    [
+      (cb: any) =>
+        read_folder_album(
+          {
+            page_id: ids, // ✅ mảng
+            limit: LIMIT,
+            skip: skip.value,
+          },
+          (e, r) => {
+            if (e) return cb(e)
+            if (!r?.length || r.length < LIMIT) is_done.value = true
+
+            if (is_change_page) {
+              folder_list.value = r as FolderInfo[]
+            } else {
+              folder_list.value.push(...(r as FolderInfo[]))
+            }
+
+            cb()
+          }
+        ),
+      (cb: any) => {
+        skip.value += LIMIT
+        cb()
+      },
+    ],
+    e => {
+      is_loading.value = false
+      if (e) toastError(e)
+    }
+  )
 }
 
 /**đổi chế độ sửa tên thư mục */
