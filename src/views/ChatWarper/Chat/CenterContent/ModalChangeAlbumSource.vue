@@ -9,27 +9,15 @@
     </template>
 
     <template #body>
-      <!-- 🟦 Hiển thị các trang đã chọn (local) -->
+      <!-- 🟦 Hiển thị tổng số trang đã chọn -->
       <div
         v-if="selectedPages.length"
-        class="border p-2 rounded-md"
+        class="flex items-center justify-between text-sm border p-2 rounded-md bg-gray-50"
       >
-        <p class="text-sm font-medium mb-1">
-          {{ $t('Các trang đã chọn') }} ({{ selectedPages.length }})
-        </p>
-        <div class="flex flex-wrap gap-2">
-          <div
-            v-for="(page, i) in selectedPages"
-            :key="page?.fb_page_id || i"
-            class="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs border border-blue-300"
-          >
-            <PageAvatar
-              :page_info="page"
-              class="w-4 h-4"
-            />
-            <span>{{ page?.name }}</span>
-          </div>
-        </div>
+        <span class="font-medium"> {{ $t('Số trang đã chọn') }}: </span>
+        <span class="text-blue-600 font-semibold">
+          {{ selectedPages.length }}
+        </span>
       </div>
 
       <!-- Ô tìm kiếm -->
