@@ -1,6 +1,8 @@
 <template>
   <div class="flex flex-col gap-4 min-h-0 flex-grow overflow-hidden">
-    <div class="flex-shrink-0 flex items-center gap-3">
+    <div
+      class="flex-shrink-0 flex flex-col md:flex-row w-full md:items-center gap-3"
+    >
       <SelectOrg class="rounded-lg" />
       <SelectPageOrg class="rounded-lg" />
     </div>
@@ -128,7 +130,9 @@ function getSelectedPageName() {
   if (!widgetStore.selected_page_id) return
 
   // trả về tên trang được chọn
-  return getPageName(pageStore.all_page_list?.[widgetStore.selected_page_id]?.page)
+  return getPageName(
+    pageStore.all_page_list?.[widgetStore.selected_page_id]?.page
+  )
 }
 /**gỡ cài đặt ứng dụng */
 function deleteApp(id: string) {

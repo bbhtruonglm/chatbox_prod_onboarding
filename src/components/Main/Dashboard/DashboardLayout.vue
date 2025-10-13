@@ -9,6 +9,7 @@
       :class="class_content"
       class="w-full h-full min-w-0"
     >
+      <slot name="menu_mobile" />
       <slot name="content" />
     </div>
   </div>

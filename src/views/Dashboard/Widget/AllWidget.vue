@@ -55,6 +55,7 @@ import type {
 import type { Cb, CbError } from '@/service/interface/function'
 import type { ComponentRef } from '@/service/interface/vue'
 import { nonAccentVn } from '@/service/helper/format'
+import { useI18n } from 'vue-i18n'
 
 const $emit = defineEmits(['is_loading'])
 
@@ -72,6 +73,9 @@ const widget_info_ref = ref<ComponentRef>()
 const categories = ref<WidgetCategoryInfo[]>()
 /**giá trị tìm kiếm */
 const search = ref('')
+
+/** hàm dịch */
+const { t: $t } = useI18n()
 
 onMounted(() => getWidget())
 
