@@ -132,38 +132,38 @@ class Main {
 
   /**xử lý sự kiện tab */
   async handleTab($event: KeyboardEvent) {
-    // nếu không có câu trả lời của ai thì thôi
+    /** nếu không có câu trả lời của ai thì thôi */
     if (!conversationStore.select_conversation?.ai_answer) return
     if (!page_id.value || !client_id.value) return
 
-    // chặn sự kiện mặc định của tab
+    /** chặn sự kiện mặc định của tab */
     $event.preventDefault()
 
-    // ghi đè nội dung vào ô chat
+    /** ghi đè nội dung vào ô chat */
     this.SERVICE_INPUT.setInputText(
       conversationStore.select_conversation?.ai_answer
     )
 
-    // xóa câu trả lời của ai
+    /** xóa câu trả lời của ai */
     await this.clearAiAnswer()
   }
   /**loại bỏ dữ liệu câu trả lời của AI */
   async clearAiAnswer() {
-    // nếu không có câu trả lời của ai thì thôi
+    /** nếu không có câu trả lời của ai thì thôi */
     if (!conversationStore.select_conversation?.ai_answer) return
     if (!page_id.value || !client_id.value) return
 
-    // xóa câu trả lời của ai hiện tại
+    /** xóa câu trả lời của ai hiện tại */
     conversationStore.select_conversation.ai_answer = ''
-    console.log('333333333333333333333333333333333333')
-    // xóa câu trả lời ai trong danh sách hội thoại
+
+    /** xóa câu trả lời ai trong danh sách hội thoại */
     set(
       conversationStore.conversation_list,
       [conversationStore.select_conversation?.data_key || '', 'ai_answer'],
       ''
     )
 
-    // xóa câu trả lời ai trên server
+    /** xóa câu trả lời ai trên server */
     await this.API_CONVERSATION.clearAiAnswer(page_id.value, client_id.value)
   }
   /**tính toán xem ô input có dữ liệu không */
@@ -174,27 +174,27 @@ class Main {
     /**nội dung */
     const INPUT_VALUE = INPUT_DIV?.innerText?.trim()
 
-    // gắn cờ input có dữ liệu
+    /** gắn cờ input có dữ liệu */
     commonStore.is_typing = !!INPUT_VALUE
   }
   /**lấy ảnh khi được ctrl + v vào input */
   onPasteImage() {
-    // nếu không thể gửi tin nhắn thì không cho paste file
+    /** nếu không thể gửi tin nhắn thì không cho paste file */
     if (!messageStore.is_can_send_message) return
 
     setTimeout(() => {
       /**ô input */
       const PARENT = input_chat_ref.value
 
-      // loop dữ liệu input để tìm các img được paste vào
+      /** loop dữ liệu input để tìm các img được paste vào */
       map(PARENT?.children, (element: HTMLElement) => {
-        // chỉ xử lý img
+        /** chỉ xử lý img */
         if (element?.tagName !== 'IMG') return
 
-        // lấy source của hình ảnh
+        /** lấy source của hình ảnh */
         const SRC = (element as HTMLImageElement).src
 
-        // loại bỏ hình ảnh khỏi input
+        /** loại bỏ hình ảnh khỏi input */
         PARENT?.removeChild(element)
 
         srcImageToFile(SRC, (e, r) => {
@@ -211,22 +211,21 @@ class Main {
   }
   /**xử lý sự kiện nhấn enter ở ô chat */
   async submitInput($event: KeyboardEvent) {
-    // nếu bấm shift + enter thì chỉ xuống dòng, không submit
+    /** nếu bấm shift + enter thì chỉ xuống dòng, không submit */
     if ($event.shiftKey) return
 
-    // nếu chỉ bấm enter thì chặn không cho xuống dòng, để xử lý logic gửi tin nhắn
+    /** nếu chỉ bấm enter thì chặn không cho xuống dòng, để xử lý logic gửi tin nhắn */
     $event.preventDefault()
 
-    // nếu không thể gửi tin nhắn thì không cho paste file
+    /** nếu không thể gửi tin nhắn thì không cho paste file */
     if (!messageStore.is_can_send_message) return
 
-    // delay 1 chút, tránh lỗi bộ gõ TV mac x2 event với keydown
+    /** delay 1 chút, tránh lỗi bộ gõ TV mac x2 event với keydown */
     await $delay.exec(10)
 
-    // nếu đang mở trả lời nhanh thì không submit, mà chạy vào logic chọn câu trả lời
+    /** nếu đang mở trả lời nhanh thì không submit, mà chạy vào logic chọn câu trả lời */
     if (commonStore.is_show_quick_answer) return
-    // nếu không thì gửi tin nhắn bình thường
-    else this.sendMessage()
+    /** nếu không thì gửi tin nhắn bình thường */ else this.sendMessage()
   }
   /**gửi tin nhắn */
   async sendMessage() {
