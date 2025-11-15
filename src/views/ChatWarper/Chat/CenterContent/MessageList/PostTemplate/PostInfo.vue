@@ -149,7 +149,7 @@ watch(
 )
 
 /** Chiều cao tối đa khi chưa mở rộng nội dung */
-const MAX_HEIGHT_CONTENT = 160
+const MAX_HEIGHT_CONTENT = 20
 
 /** Service markdown dùng để render nội dung */
 const $markdown = container.resolve(MarkedService)

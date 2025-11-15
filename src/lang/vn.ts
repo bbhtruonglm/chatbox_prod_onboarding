@@ -21,6 +21,8 @@ const source: Language = {
   'Bước _': 'Bước {name}',
   "Gửi tin nhắn đến _. Sử dụng '/' để trả lời nhanh.":
     "Gửi tin nhắn đến {name}. Sử dụng '/' để trả lời nhanh.",
+  "Trả lời từ _. Sử dụng '/' để trả lời nhanh.":
+    "Trả lời từ {name}. Sử dụng '/' để trả lời nhanh.",
   'Bình luận dưới tên _': 'Bình luận dưới tên {name}',
   'Bình luận với vai trò _': 'Bình luận với vai trò {name}',
   'Đối với tài khoản _': 'Đối với tài khoản {name}',

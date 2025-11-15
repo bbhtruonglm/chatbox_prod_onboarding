@@ -85,6 +85,8 @@ const source: Language = {
   'Cài đặt Extension': 'Install Extension',
   "Gửi tin nhắn đến _. Sử dụng '/' để trả lời nhanh.":
     'Send a message to {name}. Use "/" to reply quickly.',
+  "Trả lời từ _. Sử dụng '/' để trả lời nhanh.":
+    'Send a from {name}. Use "/" to reply quickly.',
   'Hiện chấm màu có chú giải': 'Show color dot with tooltip',
   'Chỉ hiện chấm màu': 'Show color dot only',
   'Hiện văn bản': 'Show text',
