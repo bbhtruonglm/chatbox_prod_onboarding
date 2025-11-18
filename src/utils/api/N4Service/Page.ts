@@ -1,12 +1,12 @@
-import { N4Serivce } from '@/utils/api/N4Serivce'
-
 import type {
   IPage,
   PageList,
   PageWebsiteCreate,
 } from '@/service/interface/app/page'
+
 import type { AllStaffList } from '@/service/interface/app/staff'
 import type { LocationQueryValue } from 'vue-router'
+import { N4Serivce } from '@/utils/api/N4Serivce'
 import { singleton } from 'tsyringe'
 
 /**dữ liệu của trang hiện tại kích hoạt */
@@ -32,8 +32,14 @@ export class N4SerivceAppPage extends N4Serivce {
     // gọi api
     return this.post('get_current_page', body)
   }
+  public async getListActivePage(
+    body?: Record<string, any>
+  ): Promise<CurrentPageData> {
+    // gọi api
+    return this.post('get_available_pages', body)
+  }
   /**
-   * đọc danh sách trang đang kích hoạt của tổ chức 
+   * đọc danh sách trang đang kích hoạt của tổ chức
    * @param org_id id tổ chức
    * @param group_id lọc theo id nhóm
    */

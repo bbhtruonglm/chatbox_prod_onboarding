@@ -80,6 +80,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import Dropdown from '@/components/Dropdown.vue'
 
 import { ChevronDownIcon } from '@heroicons/vue/24/solid'
+import { isEmpty } from 'lodash'
 
 const $props = withDefaults(
   defineProps<{
@@ -131,39 +132,45 @@ class Main {
   }
   /**đọc danh sách nhóm */
   async readGroup(): Promise<void> {
+    /** danh sách các tổ chức */
+    // const LIST_ORG = orgStore.list_org || []
+    /** Lấy list org id */
+    // const ORG_IDS = LIST_ORG.map(item => item.org_id || '')
+
+    // if (isEmpty(ORG_IDS)) return
     /** toàn bộ nhóm từ server */
     const RES = await new BillingAppGroup().readGroup($props.org_id)
+    // const RES = await new BillingAppGroup().readAllGroup(ORG_IDS)
 
     // lưu lại vào reactive để hiển thị
     groups.value = RES
 
-    nextTick(()=>{
+    nextTick(() => {
       // nếu là group duy nhất và là tk nhân viên thì chọn group đó luôn
       if (is_single_group.value) {
         selected_group_id.value = access_groups.value?.[0]?.group_id || ''
       }
-  
+
       // tính toán lại độ rộng các nhóm
       group_widths.value = measureAllGroupWidths()
-  
+
       // cập nhật lại các nhóm hiển thị
       updateGroups()
-  
-      // lặp qua các nhóm lưu lại ánh xạ id của từng page với id nhóm của page đó
-      RES?.forEach(group => {
-        group?.group_pages?.forEach(page_id => {
-          // nếu không có id page hoặc id nhóm thì thôi
-          if (!page_id || !group?.group_id || !group?.org_id) return
-  
-          // lưu ánh xạ từ id page tới id nhóm
-          pageManagerStore.pape_to_group_map[page_id] = [
-            ...(pageManagerStore.pape_to_group_map[page_id] || []),
-            group?.group_id,
-          ]
-        })
-      })
-    })
 
+      // lặp qua các nhóm lưu lại ánh xạ id của từng page với id nhóm của page đó
+      // RES?.forEach(group => {
+      //   group?.group_pages?.forEach(page_id => {
+      //     // nếu không có id page hoặc id nhóm thì thôi
+      //     if (!page_id || !group?.group_id || !group?.org_id) return
+
+      //     // lưu ánh xạ từ id page tới id nhóm
+      //     pageManagerStore.pape_to_group_map[page_id] = [
+      //       ...(pageManagerStore.pape_to_group_map[page_id] || []),
+      //       group?.group_id,
+      //     ]
+      //   })
+      // })
+    })
   }
   /**chọn nhóm */
   selectGroup(group_id?: string): void {
@@ -191,10 +198,10 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateGroups)
 })
 
-watch(
-  () => $props.org_id,
-  () => $main.readGroup()
-)
+// watch(
+//   () => $props.org_id,
+//   () => $main.readGroup()
+// )
 
 /**id của nhóm đang được chọn */
 const selected_group_id = computed({
@@ -268,13 +275,13 @@ function measureAllGroupWidths() {
     visibility: 'hidden',
     display: 'flex',
     fontFamily: `'Inter', 'Arial', 'Helvetica Neue', sans-serif`,
-    fontSize: '12px',       // tương đương text-xs của Tailwind
-    fontWeight: '500',      // tương đương font-medium
-    lineHeight: '1.5',      // tương đương khoảng dòng mặc định
+    fontSize: '12px', // tương đương text-xs của Tailwind
+    fontWeight: '500', // tương đương font-medium
+    lineHeight: '1.5', // tương đương khoảng dòng mặc định
     letterSpacing: 'normal',
     padding: '0',
     margin: '0',
-    boxSizing: 'content-box'
+    boxSizing: 'content-box',
   })
 
   // lặp qua danh sách các nhóm để tạo các thẻ nhóm ảo
