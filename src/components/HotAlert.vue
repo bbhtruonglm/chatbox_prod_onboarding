@@ -163,7 +163,7 @@ watch(
 
 /**lấy dữ liệu thiết lập */
 function getConfig(code?: string): ISetting {
-  // nếu không có code thì trả về mặc định
+  /** nếu không có code thì trả về mặc định */
   if (!code) return DEFAULT_SETTING
 
   // trả về thiết lập theo code
