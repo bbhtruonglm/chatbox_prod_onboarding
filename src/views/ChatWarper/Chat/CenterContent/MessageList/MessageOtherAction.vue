@@ -11,10 +11,17 @@
       <span
         v-tooltip="t('Trả lời')"
         class="hover:bg-slate-300 rounded-lg p-0.5"
+        @click="replyComment('REPLY_MESSAGE')"
         ><ArrowUturnLeftIcon class="size-4"
       /></span>
       <span
         v-tooltip="t('Chuyển tiếp')"
+        @click="
+          () => {
+            modal_zalo_share_message_ref?.toggleModal()
+            message_data = undefined
+          }
+        "
         class="hover:bg-slate-300 rounded-lg p-0.5"
         ><ArrowUturnRightIcon class="size-4"
       /></span>
@@ -25,6 +32,11 @@
   </div>
 </template>
 <script setup lang="ts">
+import type {
+  IReplyCommentType,
+  MessageInfo,
+} from '@/service/interface/app/message'
+import { useMessageStore } from '@/stores'
 import { DateHandle } from '@/utils/helper/DateHandle'
 import {
   ArrowUturnLeftIcon,
@@ -32,6 +44,7 @@ import {
   EllipsisHorizontalIcon,
 } from '@heroicons/vue/24/outline'
 import { Ellipsis } from 'lucide-vue-next'
+import { storeToRefs } from 'pinia'
 
 import { container } from 'tsyringe'
 import { useI18n } from 'vue-i18n'
@@ -39,6 +52,7 @@ import { useI18n } from 'vue-i18n'
 /** i18n */
 const { t } = useI18n()
 
+const messageStore = useMessageStore()
 const $props = withDefaults(
   defineProps<{
     /**thời gian của tin nhắn */
@@ -65,10 +79,34 @@ const $props = withDefaults(
     fb_page_id?: string
     /** message_type */
     message_type?: string
+    /** dữ liệu tin nhắn */
+    message?: MessageInfo
   }>(),
   {}
 )
 console.log('$props.sender_id', $props.sender_id)
+
+const { modal_zalo_share_message_ref, message_data } = storeToRefs(
+  useMessageStore()
+)
+
+/**kích hoạt trả lời bình luận này */
+function replyComment(type: IReplyCommentType) {
+  // nếu đang loading thì không cho phép trả lời
+  // if (messageStore.reply_comment?.is_loading) return
+
+  // // lưu thông tin bình luận
+  messageStore.reply_message = {
+    type,
+    root_message_id: $props.message?.message_mid,
+    root_message_content: $props.message?.message_text,
+    message_index: undefined,
+    message_id: $props.message?.message_mid,
+  }
+
+  /** focus vào input chat */
+  document.getElementById('chat-text-input-message')?.focus()
+}
 
 const $date_handle = container.resolve(DateHandle)
 </script>

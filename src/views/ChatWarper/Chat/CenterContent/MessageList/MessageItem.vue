@@ -99,11 +99,17 @@
       :sender_id="message.sender_id"
     />
     <MessageOtherAction
+      v-if="
+        message_type === 'client' ||
+        message_type === 'page' ||
+        message_type === 'group'
+      "
       :class="{
         'right-0': message_type !== 'client',
       }"
       :fb_page_id="message.fb_page_id"
       :sender_id="message.sender_id"
+      :message="message"
     />
     <!-- :sender_id="message.sender_id" -->
   </div>

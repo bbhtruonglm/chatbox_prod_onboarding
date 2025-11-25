@@ -568,6 +568,7 @@ const source: Language = {
           chat: {
             has_send: '{name} đã nhắn tin: {message}',
             new_message_alert: 'Có tin nhắn mới',
+            reply_message: 'Trả lời tin nhắn',
             filter: {
               title: 'Lọc tin nhắn',
               interact: {

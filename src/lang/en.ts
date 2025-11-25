@@ -773,6 +773,8 @@ const source: Language = {
           chat: {
             has_send: '{name} sent a message: {message}',
             new_message_alert: 'New message alert',
+
+            reply_message: 'Reply to message',
             filter: {
               title: 'Filter messages',
               interact: {
