@@ -34,6 +34,11 @@ export interface OrgInfo {
     /**đại diện tổ chức */
     org_representative?: string
   }
+  /**thông tin riêng tư của tổ chức */
+  org_private?: {
+    /**mã bí mật của tổ chức */
+    org_secret_key?: string
+  }
   /**các thiết lập của tổ chức */
   org_config?: {
     /**

@@ -173,6 +173,14 @@ const source: Language = {
       copy: 'Sao chép',
       continue: 'Tiếp tục',
       warning: 'Cảnh báo',
+      copy_success: 'Đã sao chép',
+      hide: 'Ẩn',
+      show: 'Hiển thị',
+      reset: 'Tạo lại Mã bí mật',
+      token_org: 'Mã bí mật',
+      reset_token_confirm:
+        'Bạn có chắc chắn muốn thay đổi mã truy cập không. Điều này sẽ làm các api đang hoạt động bị dừng lại?',
+      create_new_token: 'Tạo mã bí mật mới',
     },
     view: {
       network: {
