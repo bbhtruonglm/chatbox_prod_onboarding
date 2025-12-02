@@ -352,30 +352,86 @@
       v-else-if="flow_step === 6"
       @complete="completeCreatingAccount"
     />
+
+    <!-- flow 7: verify email -->
+    <OnboardingVerifyEmail
+      v-else-if="flow_step === 7"
+      :email="email"
+      @verify="verifyEmail"
+      @resend="resendEmailVerification"
+      @back="backToOnboarding"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useCommonStore } from '@/stores'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { container } from 'tsyringe'
+import {
+  RegistrationDataService,
+  type IRegistrationDataService,
+} from '@/utils/helper/RegistrationData'
+import {
+  N4SerivcePublicOauthBasic,
+  N4SerivcePublicOauthFacebok,
+} from '@/utils/api/N4Service/Oauth'
+import { Toast } from '@/utils/helper/Alert/Toast'
+import type { IAlert } from '@/utils/helper/Alert/type'
+
 import OnboardingLoading from './OnboardingLoading.vue'
 import OnboardingVerify from './OnboardingVerify.vue'
-
+import OnboardingVerifyEmail from './OnboardingVerifyEmail.vue'
 import UpgradeModalV2 from '@/views/OAuth/Onboarding/UpgradeModalV2.vue'
 import OnboardingCreatingAccount from './OnboardingCreatingAccount.vue'
 import OnboardingQuickStarter from './OnboardingQuickStarter.vue'
+
 /** Hàm dịch ngôn ngữ */
 const { t: $t } = useI18n()
 /** Common store */
 const commonStore = useCommonStore()
-/** 1: 5 bước cơ bản, 2: loading, 3: verify */
-const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6>(1)
+/** Service quản lý dữ liệu đăng ký */
+const REGISTRATION_SERVICE: IRegistrationDataService = container.resolve(
+  RegistrationDataService
+)
+/** Service thông báo */
+const SERVICE_TOAST: IAlert = container.resolve(Toast)
 
-/** email để verify ở flow 3 */
-const email = ref('user@example.com')
+/** API OAuth Basic */
+const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
+/** API OAuth Facebook */
+const API_OAUTH_FB = new N4SerivcePublicOauthFacebok()
+
+/** 1: 5 bước cơ bản, 2: loading, 3: verify phone, 4: upgrade, 5: quick start, 6: creating, 7: verify email */
+const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
+
+/** email để verify */
+const email = ref('')
 /** Số điện thoại */
 const phone = ref('')
+
+/** Khởi tạo: Load dữ liệu registration */
+onMounted(() => {
+  /** Lấy dữ liệu đăng ký */
+  const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+
+  /** Nếu không có dữ liệu thì redirect về trang đăng ký */
+  if (!REGISTRATION_DATA) {
+    SERVICE_TOAST.error($t('Không tìm thấy dữ liệu đăng ký'))
+    /** Redirect về trang đăng ký */
+    window.location.href = '/oauth/register-new'
+    return
+  }
+
+  /** Lấy email từ registration data */
+  if (REGISTRATION_DATA.email) {
+    email.value = REGISTRATION_DATA.email
+  }
+
+  /** Log thông tin để debug */
+  console.log('Dữ liệu đăng ký:', REGISTRATION_DATA)
+})
 
 /** Hàm verify phone */
 const verifyPhone = () => {
@@ -435,7 +491,44 @@ const completeLoading = () => {
 }
 /** Hàm hoàn thành loading */
 const completeCreatingAccount = () => {
-  /** Chuyển sang màn đăng nhập */
+  /** Xóa dữ liệu đăng ký */
+  REGISTRATION_SERVICE.clearRegistrationData()
+  /** Chuyển sang màn dashboard hoặc trang chủ */
+  window.location.href = '/'
+}
+
+/** Hàm xác thực email */
+const verifyEmail = async (otp: string) => {
+  try {
+    /** Gọi API xác thực email */
+    await API_OAUTH_BASIC.verifyEmail(email.value, otp)
+
+    SERVICE_TOAST.success($t('Xác thực email thành công'))
+
+    /** Xác thực thành công, chuyển sang màn verify phone */
+    flow_step.value = 3
+  } catch (error: any) {
+    console.error('Lỗi khi xác thực email:', error)
+    SERVICE_TOAST.error(error.message || $t('Mã xác thực không đúng'))
+  }
+}
+
+/** Hàm gửi lại mã xác thực email */
+const resendEmailVerification = async () => {
+  try {
+    /** Gọi API gửi lại mã */
+    await API_OAUTH_BASIC.resendVerifyEmail(email.value)
+    SERVICE_TOAST.success($t('Đã gửi lại mã xác thực'))
+  } catch (error: any) {
+    console.error('Lỗi khi gửi lại mã:', error)
+    SERVICE_TOAST.error(error.message || $t('Không thể gửi lại mã'))
+  }
+}
+
+/** Hàm quay lại onboarding */
+const backToOnboarding = () => {
+  /** Quay lại flow_step 1 */
+  flow_step.value = 1
 }
 /**Bước hiện tại */
 const current_step = ref(0)
@@ -560,12 +653,74 @@ const handlePreference = (option: string) => {
   SELECTED_PREFERENCES.value = option
   nextStep()
 }
+
 /** Hàm submit form tạo tài khoản */
-const submitForm = () => {
+const submitForm = async () => {
   /** Nếu k valid thì return luôn */
   if (!IS_STEP_VALID) return
-  /** Chuyển sang step 2 */
-  flow_step.value = 2
+
+  try {
+    /** Lưu dữ liệu onboarding vào storage */
+    REGISTRATION_SERVICE.updateOnboardingData({
+      industry: SELECTED_INDUSTRY.value ?? undefined,
+      role: SELECTED_ROLE.value ?? undefined,
+      company_name: COMPANY_DETAILS.value.name,
+      preferences: SELECTED_PREFERENCES.value ?? undefined,
+      company_details: {
+        website: COMPANY_DETAILS.value.website,
+        facebook: COMPANY_DETAILS.value.facebook,
+        instagram: COMPANY_DETAILS.value.instagram,
+        tiktok: COMPANY_DETAILS.value.tiktok,
+        zalo: COMPANY_DETAILS.value.zalo,
+      },
+    })
+
+    /** Lấy dữ liệu đăng ký đã lưu */
+    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+
+    /** Kiểm tra có dữ liệu không */
+    if (!REGISTRATION_DATA) {
+      console.error('Không có dữ liệu đăng ký')
+      return
+    }
+
+    /** Xử lý theo loại đăng ký */
+    if (REGISTRATION_DATA.registration_type === 'email') {
+      /** Đăng ký với email */
+      await API_OAUTH_BASIC.register(
+        REGISTRATION_DATA.email!,
+        REGISTRATION_DATA.password!,
+        `${REGISTRATION_DATA.first_name} ${REGISTRATION_DATA.last_name}`,
+        REGISTRATION_DATA.first_name!,
+        REGISTRATION_DATA.last_name!
+      )
+
+      /** Chuyển sang màn xác thực email */
+      flow_step.value = 7
+    } else if (REGISTRATION_DATA.registration_type === 'facebook') {
+      /** Đăng ký với Facebook */
+      await API_OAUTH_FB.login(REGISTRATION_DATA.access_token!)
+
+      /** Cập nhật thông tin onboarding qua API */
+      await API_OAUTH_BASIC.updateOnboardingInfo({
+        industry: REGISTRATION_DATA.industry,
+        role: REGISTRATION_DATA.role,
+        company_name: REGISTRATION_DATA.company_name,
+        preferences: REGISTRATION_DATA.preferences,
+        website: REGISTRATION_DATA.company_details?.website,
+        facebook: REGISTRATION_DATA.company_details?.facebook,
+        instagram: REGISTRATION_DATA.company_details?.instagram,
+        tiktok: REGISTRATION_DATA.company_details?.tiktok,
+        zalo: REGISTRATION_DATA.company_details?.zalo,
+      })
+
+      /** Chuyển sang màn xác thực SĐT */
+      flow_step.value = 3
+    }
+  } catch (error: any) {
+    console.error('Lỗi khi tạo tài khoản:', error)
+    SERVICE_TOAST.error(error.message || $t('Có lỗi xảy ra khi tạo tài khoản'))
+  }
 }
 
 /** Step 1 */

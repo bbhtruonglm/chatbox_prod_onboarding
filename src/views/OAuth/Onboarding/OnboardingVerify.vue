@@ -157,6 +157,7 @@
                     v-model="OTP[i]"
                     @input="onInputOTP(i, $event)"
                     @keydown="onKeydownOTP(i, $event)"
+                    @paste="onPasteOTP($event)"
                     class="size-9 text-center border"
                     :ref="el => setInputRef(el as HTMLInputElement | null, i)"
                     :class="[
@@ -179,6 +180,7 @@
                     v-model="OTP[i + 3]"
                     @input="onInputOTP(i + 3, $event)"
                     @keydown="onKeydownOTP(i + 3, $event)"
+                    @paste="onPasteOTP($event)"
                     class="size-9 text-center border"
                     :ref="el => setInputRef(el as HTMLInputElement | null, i + 3)"
                     :class="[
@@ -309,6 +311,47 @@ const onKeydownOTP = (index: number, event: KeyboardEvent) => {
   if (event.key === 'Backspace' && !OTP.value[index] && index > 0) {
     inputs.value[index - 1]?.focus()
   }
+}
+
+/**
+ * Hàm xử lý paste OTP
+ * @param event - Clipboard event
+ */
+const onPasteOTP = (event: ClipboardEvent) => {
+  /** Ngăn hành vi mặc định của paste */
+  event.preventDefault()
+
+  /** Lấy dữ liệu từ clipboard */
+  const PASTE_DATA = event.clipboardData?.getData('text')
+
+  /** Nếu không có dữ liệu thì return */
+  if (!PASTE_DATA) return
+
+  /** Chỉ lấy các chữ số từ paste data */
+  const DIGITS = PASTE_DATA.replace(/\D/g, '')
+
+  /** Nếu không có chữ số nào thì return */
+  if (!DIGITS) return
+
+  /** Lấy tối đa 6 chữ số đầu tiên */
+  const OTP_DIGITS = DIGITS.slice(0, 6)
+
+  /** Fill vào các ô OTP */
+  for (let i = 0; i < OTP_DIGITS.length; i++) {
+    /** Gán giá trị vào ô OTP */
+    OTP.value[i] = OTP_DIGITS[i]
+  }
+
+  /** Focus vào ô cuối cùng đã fill hoặc ô cuối cùng nếu đủ 6 số */
+  const LAST_FILLED_INDEX = Math.min(OTP_DIGITS.length - 1, 5)
+  /** Focus vào ô tiếp theo nếu chưa đủ 6 số, hoặc ô cuối nếu đã đủ */
+  const FOCUS_INDEX = OTP_DIGITS.length < 6 ? LAST_FILLED_INDEX + 1 : 5
+  /** Focus vào ô */
+  nextTick(() => {
+    if (inputs.value[FOCUS_INDEX]) {
+      inputs.value[FOCUS_INDEX].focus()
+    }
+  })
 }
 
 // const setInputRef = (

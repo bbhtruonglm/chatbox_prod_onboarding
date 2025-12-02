@@ -43,15 +43,7 @@
   <Or />
   <div class="flex flex-col gap-3">
     <Facebook
-      @access_token="
-        access_token => {
-          /** Lưu token fb vào local storage */
-          $service_oauth.saveAccessToken(access_token)
-          /** Chuyển hướng vào onboarding */
-          $service_oauth.redirect('/onboarding')
-        }
-        // $service_oauth.loginFbRegister(access_token)
-      "
+      @access_token="access_token => $main.registerWithFacebook(access_token)"
       :text="
         $t('Đăng ký bằng _', {
           name: $t('Facebook'),
@@ -74,6 +66,10 @@ import Swal from 'sweetalert2'
 import { BillingPrivate } from '@/utils/api/Billing'
 import { Toast } from '@/utils/helper/Alert/Toast'
 import { N4SerivcePublicOauthBasic } from '@/utils/api/N4Service/Oauth'
+import {
+  RegistrationDataService,
+  type IRegistrationDataService,
+} from '@/utils/helper/RegistrationData'
 
 import Facebook from '@/components/OAuth/Facebook.vue'
 import GoLogin from '@/views/OAuth/OAuthNew/GoLogin.vue'
@@ -103,13 +99,32 @@ class Main {
    * @param API_OAUTH_BASIC API oauth basic
    * @param SERVICE_TOAST service toast
    * @param SERVICE_OAUTH service oauth
+   * @param SERVICE_REGISTRATION_DATA service quản lý dữ liệu đăng ký
    */
   constructor(
     private readonly API_BILLING = new BillingPrivate(),
     private readonly API_OAUTH_BASIC = new N4SerivcePublicOauthBasic(),
     private readonly SERVICE_TOAST: IAlert = container.resolve(Toast),
-    private readonly SERVICE_OAUTH = $service_oauth
+    private readonly SERVICE_OAUTH = $service_oauth,
+    private readonly SERVICE_REGISTRATION_DATA: IRegistrationDataService = container.resolve(
+      RegistrationDataService
+    )
   ) {}
+
+  /**
+   * Đăng ký bằng Facebook
+   * @param access_token - Access token từ Facebook
+   */
+  registerWithFacebook(access_token: string) {
+    /** Lưu dữ liệu đăng ký Facebook vào storage tập trung */
+    this.SERVICE_REGISTRATION_DATA.saveFacebookRegistration(access_token)
+
+    /** Lưu token fb vào local storage (giữ nguyên logic cũ nếu cần) */
+    this.SERVICE_OAUTH.saveAccessToken(access_token)
+
+    /** Chuyển hướng vào onboarding */
+    this.SERVICE_OAUTH.redirect('/onboarding')
+  }
 
   /**đăng nhập bằng email*/
   @handleLoadingOauth

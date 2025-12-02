@@ -100,4 +100,32 @@ export class N4SerivcePublicOauthBasic extends N4SerivcePublicOauth {
     // gọi api
     return this.post('reset_password', { email, password, verify_code }, true)
   }
+
+  /**
+   * Cập nhật thông tin onboarding
+   * @param onboarding_info - Thông tin onboarding
+   */
+  public async updateOnboardingInfo(onboarding_info: {
+    /** Ngành nghề */
+    industry?: string
+    /** Vai trò */
+    role?: string
+    /** Tên công ty */
+    company_name?: string
+    /** Sở thích/Quy mô */
+    preferences?: string
+    /** Website */
+    website?: string
+    /** Facebook */
+    facebook?: string
+    /** Instagram */
+    instagram?: string
+    /** TikTok */
+    tiktok?: string
+    /** Zalo */
+    zalo?: string
+  }): Promise<void> {
+    /** Gọi API cập nhật onboarding */
+    return this.post('update_onboarding', onboarding_info, true)
+  }
 }

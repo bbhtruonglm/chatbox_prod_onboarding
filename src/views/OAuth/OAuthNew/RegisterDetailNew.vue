@@ -94,6 +94,10 @@ import { N4SerivcePublicOauthBasic } from '@/utils/api/N4Service/Oauth'
 import { Toast } from '@/utils/helper/Alert/Toast'
 import { composableValidate } from '../validate'
 import { TriggerEventRef } from '@/utils/helper/TriggerEventRef'
+import {
+  RegistrationDataService,
+  type IRegistrationDataService,
+} from '@/utils/helper/RegistrationData'
 
 import AlertError from '@/views/OAuth/AlertError.vue'
 import GoLogin from '@/views/OAuth/GoLogin.vue'
@@ -138,6 +142,9 @@ class Main {
    * @param API_OAUTH_BASIC API đăng nhập
    * @param SERVICE_LOCAL_STORAGE service lưu trữ
    * @param SERVICE_TOAST service thông báo
+   * @param SERVICE_OAUTH service oauth
+   * @param TRIGGER_EVENT_REF trigger event ref
+   * @param SERVICE_REGISTRATION_DATA service quản lý dữ liệu đăng ký
    */
   constructor(
     private readonly API_OAUTH_BASIC = new N4SerivcePublicOauthBasic(),
@@ -146,28 +153,39 @@ class Main {
     ),
     private readonly SERVICE_TOAST: IAlert = container.resolve(Toast),
     private readonly SERVICE_OAUTH = container.resolve(ServiceOAuth),
-    private readonly TRIGGER_EVENT_REF = container.resolve(TriggerEventRef)
+    private readonly TRIGGER_EVENT_REF = container.resolve(TriggerEventRef),
+    private readonly SERVICE_REGISTRATION_DATA: IRegistrationDataService = container.resolve(
+      RegistrationDataService
+    )
   ) {}
 
   /**đăng ký */
   @handleLoadingOauth
   @handleErrorOauth()
   async register() {
-    // xóa khoảng trắng
+    /** xóa khoảng trắng */
     form.value.email = form.value.email.trim()
     form.value.first_name = form.value.first_name?.trim()
     form.value.last_name = form.value.last_name?.trim()
     form.value.password = form.value.password.trim()
     form.value.confirm_password = form.value.confirm_password.trim()
 
-    // xác thực form
+    /** xác thực form */
     await VLD_EMAIL_REGISTER.validate(form.value)
 
-    // xác thực mật khẩu
+    /** xác thực mật khẩu */
     if (form.value.password !== form.value.confirm_password)
       throw $t('Mật khẩu không khớp')
 
-    // đăng ký
+    /** Lưu dữ liệu đăng ký email vào storage tập trung */
+    this.SERVICE_REGISTRATION_DATA.saveEmailRegistration(
+      form.value.email,
+      form.value.first_name,
+      form.value.last_name,
+      form.value.password
+    )
+
+    /** đăng ký */
     // await this.API_OAUTH_BASIC.register(
     //   form.value.email,
     //   form.value.password,
@@ -177,11 +195,12 @@ class Main {
     //   this.SERVICE_LOCAL_STORAGE.getItem('ref')
     // )
 
+    /** Chuyển hướng vào onboarding */
     this.SERVICE_OAUTH.redirect({
       path: '/onboarding',
     })
 
-    // thông báo thành công
+    /** thông báo thành công */
     this.SERVICE_TOAST.success($t('Đăng ký tài khoản thành công'))
     return
     // đăng ký thành công thì chuyển về đăng nhập email
