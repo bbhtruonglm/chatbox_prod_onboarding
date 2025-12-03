@@ -66,15 +66,15 @@
           <!-- OTP Input -->
           <div class="flex flex-col gap-3">
             <h4 class="text-sm font-semibold">
-              {{ $t('Mã xác thực (6 chữ số)') }}
+              {{ $t('Mã xác thực (4 chữ số)') }}
             </h4>
 
             <div class="flex flex-col gap-2">
               <div class="flex gap-2 items-center">
-                <!-- 3 ô trái -->
+                <!-- 2 ô trái -->
                 <div class="flex">
                   <input
-                    v-for="(__, i) in 3"
+                    v-for="(__, i) in 2"
                     :key="'left-' + i"
                     type="text"
                     maxlength="1"
@@ -87,30 +87,30 @@
                     :class="[
                       i === 0
                         ? 'rounded-l-md'
-                        : i === 2
+                        : i === 1
                         ? 'rounded-r-md'
                         : 'border-x-0',
                     ]"
                   />
                 </div>
                 <span class="text-gray-400">-</span>
-                <!-- 3 ô phải -->
+                <!-- 2 ô phải -->
                 <div class="flex">
                   <input
-                    v-for="(__, i) in 3"
+                    v-for="(__, i) in 2"
                     :key="'right-' + i"
                     type="text"
                     maxlength="1"
-                    v-model="OTP[i + 3]"
-                    @input="onInputOTP(i + 3, $event)"
-                    @keydown="onKeydownOTP(i + 3, $event)"
+                    v-model="OTP[i + 2]"
+                    @input="onInputOTP(i + 2, $event)"
+                    @keydown="onKeydownOTP(i + 2, $event)"
                     @paste="onPasteOTP($event)"
                     class="size-12 text-center border text-lg font-semibold"
-                    :ref="el => setInputRef(el as HTMLInputElement | null, i + 3)"
+                    :ref="el => setInputRef(el as HTMLInputElement | null, i + 2)"
                     :class="[
                       i === 0
                         ? 'rounded-l-md'
-                        : i === 2
+                        : i === 1
                         ? 'rounded-r-md'
                         : 'border-x-0',
                     ]"
@@ -207,7 +207,7 @@ const $emit = defineEmits<{
 const inputs = ref<(HTMLInputElement | null)[]>([])
 
 /** Khai báo OTP */
-const OTP = ref<string[]>(Array(6).fill(''))
+const OTP = ref<string[]>(Array(4).fill(''))
 
 /** Trạng thái verifying */
 const is_verifying = ref(false)
@@ -221,12 +221,12 @@ let countdown_interval: number | undefined
 /** Verify timeout */
 let verify_timeout: number | undefined
 
-/** Check OTP đã đủ 6 số chưa */
+/** Check OTP đã đủ 4 số chưa */
 const IS_OTP_COMPLETE = computed(() => {
   /** Lấy OTP string */
   const OTP_STRING = OTP.value.join('')
-  /** Trả về check length === 6 và không phải string rỗng */
-  return OTP_STRING.length === 6 && OTP_STRING.trim() !== ''
+  /** Trả về check length === 4 và không phải string rỗng */
+  return OTP_STRING.length === 4 && OTP_STRING.trim() !== ''
 })
 
 /** Hàm để gán ref */
@@ -244,7 +244,7 @@ const onInputOTP = (index: number, event: Event) => {
   /** Cập nhật OTP */
   OTP.value[index] = INPUT.value
   /** Nếu đã nhập thì focus ô input kế tiếp */
-  if (INPUT.value && index < 5) {
+  if (INPUT.value && index < 3) {
     inputs.value[index + 1]?.focus()
   }
 }
@@ -277,8 +277,8 @@ const onPasteOTP = (event: ClipboardEvent) => {
   /** Nếu không có chữ số nào thì return */
   if (!DIGITS) return
 
-  /** Lấy tối đa 6 chữ số đầu tiên */
-  const OTP_DIGITS = DIGITS.slice(0, 6)
+  /** Lấy tối đa 4 chữ số đầu tiên */
+  const OTP_DIGITS = DIGITS.slice(0, 4)
 
   /** Fill vào các ô OTP */
   for (let i = 0; i < OTP_DIGITS.length; i++) {
@@ -286,10 +286,10 @@ const onPasteOTP = (event: ClipboardEvent) => {
     OTP.value[i] = OTP_DIGITS[i]
   }
 
-  /** Focus vào ô cuối cùng đã fill hoặc ô cuối cùng nếu đủ 6 số */
-  const LAST_FILLED_INDEX = Math.min(OTP_DIGITS.length - 1, 5)
-  /** Focus vào ô tiếp theo nếu chưa đủ 6 số, hoặc ô cuối nếu đã đủ */
-  const FOCUS_INDEX = OTP_DIGITS.length < 6 ? LAST_FILLED_INDEX + 1 : 5
+  /** Focus vào ô cuối cùng đã fill hoặc ô cuối cùng nếu đủ 4 số */
+  const LAST_FILLED_INDEX = Math.min(OTP_DIGITS.length - 1, 3)
+  /** Focus vào ô tiếp theo nếu chưa đủ 4 số, hoặc ô cuối nếu đã đủ */
+  const FOCUS_INDEX = OTP_DIGITS.length < 4 ? LAST_FILLED_INDEX + 1 : 3
   /** Focus vào ô */
   nextTick(() => {
     if (inputs.value[FOCUS_INDEX]) {
@@ -324,7 +324,7 @@ const handleVerifyManual = () => {
 /** Hàm gửi lại mã */
 const handleResend = () => {
   /** Reset OTP */
-  OTP.value = Array(6).fill('')
+  OTP.value = Array(4).fill('')
   /** Reset countdown */
   time_remaining.value = 60
   /** Focus vào ô đầu tiên */
@@ -345,8 +345,8 @@ watch(
     if (verify_timeout) clearTimeout(verify_timeout)
     /** Lấy OTP string */
     const OTP_STRING = newOTP.join('')
-    /** Nếu OTP đủ 6 số thì tự động verify sau 1s */
-    if (OTP_STRING.length === 6 && OTP_STRING.trim() !== '') {
+    /** Nếu OTP đủ 4 số thì tự động verify sau 1s */
+    if (OTP_STRING.length === 4 && OTP_STRING.trim() !== '') {
       verify_timeout = window.setTimeout(() => {
         verifyOTP()
       }, 1000)

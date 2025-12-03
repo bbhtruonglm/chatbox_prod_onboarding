@@ -486,8 +486,16 @@ const backToLogin = () => {
 }
 /** Hàm hoàn thành loading */
 const completeLoading = () => {
-  /** Chuyển sang màn verify */
-  flow_step.value = 3
+  /** Lấy dữ liệu đăng ký */
+  const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+
+  /** Nếu đăng ký bằng email thì chuyển sang màn verify email */
+  if (REGISTRATION_DATA?.registration_type === 'email') {
+    flow_step.value = 7
+  } else {
+    /** Ngược lại chuyển sang màn verify phone (Facebook) */
+    flow_step.value = 3
+  }
 }
 /** Hàm hoàn thành loading */
 const completeCreatingAccount = () => {
@@ -695,8 +703,8 @@ const submitForm = async () => {
         REGISTRATION_DATA.last_name!
       )
 
-      /** Chuyển sang màn xác thực email */
-      flow_step.value = 7
+      /** Chuyển sang màn loading trước */
+      flow_step.value = 2
     } else if (REGISTRATION_DATA.registration_type === 'facebook') {
       /** Đăng ký với Facebook */
       await API_OAUTH_FB.login(REGISTRATION_DATA.access_token!)

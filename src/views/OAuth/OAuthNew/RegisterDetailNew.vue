@@ -29,9 +29,9 @@
       :class="{
         'flex-row-reverse': locale !== 'vn',
       }"
-      class="flex gap-2.5"
+      class="flex gap-2.5 w-full justify-between"
     >
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 w-full">
         <small class="font-medium text-sm">
           {{ $t('Họ') }}
         </small>
@@ -41,7 +41,7 @@
           class="custom-input"
         />
       </div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 w-full">
         <small class="font-medium text-sm">
           {{ $t('Tên') }}
         </small>

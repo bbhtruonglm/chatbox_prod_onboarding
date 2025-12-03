@@ -44,6 +44,16 @@ export interface IRegistrationData {
     /** Zalo */
     zalo?: string
   }
+
+  /** === Package Selection Data === */
+  /** Gói đã chọn */
+  package_selected?: string
+  /** Số lượng nhân viên (cho Enterprise) */
+  employee_count?: number
+  /** Số tháng đăng ký (cho Enterprise) */
+  subscription_months?: number
+  /** Ghi chú cho Enterprise */
+  enterprise_notes?: string
 }
 
 /** Interface quản lý dữ liệu đăng ký */

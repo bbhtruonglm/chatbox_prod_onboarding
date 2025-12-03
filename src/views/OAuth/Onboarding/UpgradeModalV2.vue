@@ -47,30 +47,11 @@
               <div
                 class="overflow-hidden flex flex-col flex-grow min-h-0 h-full overflow-y-auto gap-5 p-5 pt-12 border-b"
               >
-                <!-- <div class="bg-red-500 w-full">
-                  <div class="w-full relative h-full py-10">
-                    <PricingCard
-                      v-for="(pkg, index) in PACKAGES"
-                      :key="pkg.title"
-                      v-bind="pkg"
-                      :selected="SELECTED_INDEX === pkg.title"
-                      :onSelect="() => handleSelect(pkg.title)"
-                      :active_tab="ACTIVE_INDEX"
-                      class="absolute py-10"
-                      ref="el => boxRefs[index] = el"
-                    />
-                  </div>
-                </div> -->
-                <!-- <TransitionGroup
+                <TransitionGroup
                   name="expand"
                   tag="div"
-                  :class="[
-                    'gap-6',
-                    ACTIVE_INDEX === 0
-                      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
-                      : 'grid grid-cols-4'
-                  ]"
-                  >
+                  class="flex gap-6 relative w-full"
+                >
                   <PricingCard
                     v-for="(pkg, index) in FILTERED_PACKAGES"
                     :key="pkg.title"
@@ -79,112 +60,17 @@
                     :onSelect="() => handleSelect(pkg.title)"
                     :active_tab="ACTIVE_INDEX"
                     :class="[
-                      // 'transition-all duration-500 ease-in-out',
-                      '',
-                      ACTIVE_INDEX === 0
-                        ? '' // All plans
-                        : index === 0
-                        ? 'col-span-1'
-                        : pkg.title === 'Enterprise'
-                        ? 'col-span-3'
-                        : ''
+                      'transition-all duration-500',
+                      pkg.title === 'Enterprise'
+                        ? ACTIVE_INDEX === 0
+                          ? 'order-last ml-auto flex-none w-1/4'
+                          : 'order-last ml-auto flex-none w-3/4'
+                        : 'flex-1 min-w-0',
                     ]"
                   />
-              </TransitionGroup> -->
-             <!-- <TransitionGroup
-  name="expand"
-  tag="div"
-  class="flex gap-6 transition-all duration-500"
->
-  <PricingCard
-    v-for="(pkg, index) in FILTERED_PACKAGES"
-    :key="pkg.title"
-    v-bind="pkg"
-    :selected="SELECTED_INDEX === pkg.title"
-    :onSelect="() => handleSelect(pkg.title)"
-    :active_tab="ACTIVE_INDEX"
-    :class="[
-      'transition-all duration-500',
-      ACTIVE_INDEX === 0
-        ? 'flex-1 basis-1/4' // 4 đều nhau
-        : pkg.title === 'Enterprise'
-        ? 'flex-[3] basis-3/4' // D mở rộng
-        : 'flex-1 basis-1/4'
-    ]"
-  />
-</TransitionGroup> -->
+                </TransitionGroup>
 
-<!-- <TransitionGroup
-  name="expand"
-  tag="div"
-  class="flex gap-6 relative"
->
-  <PricingCard
-    v-for="(pkg, index) in FILTERED_PACKAGES"
-    :key="pkg.title"
-    v-bind="pkg"
-    :selected="SELECTED_INDEX === pkg.title"
-    :onSelect="() => handleSelect(pkg.title)"
-    :active_tab="ACTIVE_INDEX"
-    :class="[
-      'transition-all duration-500',
-      ACTIVE_INDEX === 0
-        ? 'flex-1 basis-1/4'
-        : pkg.title === 'Enterprise'
-        ? 'flex-[3] basis-3/4'
-        : 'flex-1 basis-1/4'
-    ]"
-  />
-</TransitionGroup> -->
-<!-- <TransitionGroup
-  name="expand"
-  tag="div"
-  class="flex gap-6 relative"
->
-  <PricingCard
-    v-for="(pkg, index) in FILTERED_PACKAGES"
-    :key="pkg.title"
-    v-bind="pkg"
-    :selected="SELECTED_INDEX === pkg.title"
-    :onSelect="() => handleSelect(pkg.title)"
-    :active_tab="ACTIVE_INDEX"
-    :class="[
-      'transition-all duration-500',
-      pkg.title === 'Enterprise'
-        ? ACTIVE_INDEX === 0
-          ? 'flex-1 basis-1/4 order-4'              // Tab1: width nhỏ, luôn đứng cuối
-          : 'flex-[3] basis-3/4 order-4 ml-auto'    // Tab2: width lớn, vẫn cuối, giữ mép phải
-        : 'flex-1 basis-1/4'
-    ]"
-  />
-</TransitionGroup> -->
-
-<TransitionGroup
-  name="expand"
-  tag="div"
-  class="flex gap-6 relative w-full"
->
-  <PricingCard
-    v-for="(pkg, index) in FILTERED_PACKAGES"
-    :key="pkg.title"
-    v-bind="pkg"
-    :selected="SELECTED_INDEX === pkg.title"
-    :onSelect="() => handleSelect(pkg.title)"
-    :active_tab="ACTIVE_INDEX"
-    :class="[
-      'transition-all duration-500',
-      pkg.title === 'Enterprise'
-        ? (ACTIVE_INDEX === 0
-            ? 'order-last ml-auto flex-none w-1/4'
-            : 'order-last ml-auto flex-none w-3/4')
-        : 'flex-1 min-w-0'
-    ]"
-  />
-</TransitionGroup>
-
-
-
-                  <div class="flex flex-col gap-5">
+                <div class="flex flex-col gap-5">
                   <h2
                     class="text-3xl font-medium text-center pt-5 flex justify-center gap-2.5 items-center"
                     @click="toggleAll"
@@ -310,14 +196,29 @@
                           "
                           @click="handleSelect(plan.name)"
                         >
-                          <template v-if="(feature.values as Record<string, any>)[plan.key] === true">
+                          <!-- Kiểm tra nếu giá trị là true thì hiển thị icon check -->
+                          <template
+                            v-if="getFeatureValue(feature, plan.key) === true"
+                          >
                             <span class="text-slate-800 text-center">
                               <CheckIcon class="size-5" />
                             </span>
                           </template>
-                          <template v-else-if="(feature.values as Record<string, any>)[plan.key]">
-                            {{ (feature.values as Record<string, any>)[plan.key]  }}
+                          <!-- Kiểm tra nếu giá trị là false thì hiển thị dấu gạch ngang -->
+                          <template
+                            v-else-if="
+                              getFeatureValue(feature, plan.key) === false
+                            "
+                          >
+                            <span class="text-gray-400">-</span>
                           </template>
+                          <!-- Kiểm tra nếu giá trị tồn tại (string/number) thì hiển thị giá trị đó -->
+                          <template
+                            v-else-if="getFeatureValue(feature, plan.key)"
+                          >
+                            {{ getFeatureValue(feature, plan.key) }}
+                          </template>
+                          <!-- Nếu không có giá trị (null/undefined) thì hiển thị dấu gạch ngang -->
                           <template v-else>
                             <span class="text-gray-400">-</span>
                           </template>
@@ -463,8 +364,6 @@ const SELECTED_INDEX = ref('Lite')
 function handleSelect(index: string) {
   /** Nếu enterpise thì chuyển sang tab 1 */
   if (index === 'Enterprise') {
-    // ACTIVE_INDEX.value = 1
-    setTab2()
     ACTIVE_INDEX.value = 1
   }
   /**Chọn gói */
@@ -666,87 +565,10 @@ const boxRefs = ref<Array<HTMLElement | null>>([])
 
 const containerWidth = 100 // tính % cho responsive
 
-function setTab1() {
-  // const width = (containerWidth - 3 * (GAP / 16)) / 4 // 4 phần tử, GAP tính rem → % approx
-  // PACKAGES[0].style = {
-  //   top: '0%',
-  //   left: '0%',
-  //   width: `${width}%`,
-  //   height: '100%',
-  //   opacity: 1,
-  //   transform: 'translateX(0)',
-  // }
-  // PACKAGES[1].style = {
-  //   top: '0%',
-  //   left: `${width + GAP / 16}%`,
-  //   width: `${width}%`,
-  //   height: '100%',
-  //   opacity: 1,
-  //   transform: 'translateX(0)',
-  // }
-  // PACKAGES[2].style = {
-  //   top: '0%',
-  //   left: `${2 * (width + GAP / 16)}%`,
-  //   width: `${width}%`,
-  //   height: '100%',
-  //   opacity: 1,
-  //   transform: 'translateX(0)',
-  // }
-  // PACKAGES[3].style = {
-  //   top: '0%',
-  //   left: `${3 * (width + GAP / 16)}%`,
-  //   width: `${width}%`,
-  //   height: '100%',
-  //   opacity: 1,
-  //   transform: 'translateX(0)',
-  // }
-}
-
-function setTab2() {
-  // C = 1/4, D = 3/4, gap giữa C-D = GAP
-  // const widthC = (containerWidth - GAP / 16) * 0.25
-  // const widthD = (containerWidth - GAP / 16) * 0.75
-  // PACKAGES[0].style = {
-  //   top: '0%',
-  //   left: `-${widthC}%`,
-  //   width: `${widthC}%`,
-  //   height: '50%',
-  //   opacity: 0,
-  //   transform: 'translateX(-100%)',
-  // }
-  // PACKAGES[1].style = {
-  //   top: '0%',
-  //   left: `-${widthC}%`,
-  //   width: `${widthC}%`,
-  //   height: '50%',
-  //   opacity: 0,
-  //   transform: 'translateX(-100%)',
-  // }
-  // PACKAGES[2].style = {
-  //   top: '0%',
-  //   left: '0%',
-  //   width: `${widthC}%`,
-  //   height: '50%',
-  //   opacity: 1,
-  //   transform: 'translateX(0)',
-  // }
-  // PACKAGES[3].style = {
-  //   top: '0%',
-  //   left: `${widthC + GAP / 16}%`,
-  //   width: `${widthD}%`,
-  //   height: '50%',
-  //   opacity: 1,
-  //   transform: 'translateX(0)',
-  // }
-}
 /** selected rơ */
 const SELECTED_ROW = ref<{ sectionIndex: number; rowIndex: number } | null>(
   null
 )
-/** hàm selected row */
-function handleRowSelect(payload: { sectionIndex: number; rowIndex: number }) {
-  SELECTED_ROW.value = payload
-}
 
 /** Dữ liệu mock data compare plans và features */
 const COMPARE_DATA = {
@@ -952,27 +774,29 @@ function onRowClick(sectionIdx: number, rowIdx: number) {
   const DATA = { sectionIndex: sectionIdx, rowIndex: rowIdx }
 }
 
-/** click plan header
- * @param planKey
+/**
+ * Lấy giá trị feature theo plan key
+ * @param {Feature} feature - Feature object
+ * @param {string} key - Plan key
  */
-function onPlanClick(planKey: string) {
-  /** hàm emit plan select */
+const getFeatureValue = (feature: Feature, key: string) => {
+  return feature.values?.[key]
 }
-// Initialize Tab1
-setTab1()
 
 defineExpose({ toggleModal })
 </script>
 <style scoped lang="scss">
+/** Style cho item */
 .item {
-  @apply bg-slate-100 p-2 rounded-lg flex flex-col justify-between gap-8;
+  /** Áp dụng các class utility */
+  @apply bg-gray-100 p-2 rounded-lg flex flex-col justify-between gap-8;
 }
 .btn {
   @apply py-2 px-4 rounded-md hover:brightness-90 text-sm font-semibold;
 }
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.45s cubic-bezier(.2,.9,.3,1);
+  transition: all 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
 /* enter: từ ngoài trái */
@@ -1001,8 +825,6 @@ defineExpose({ toggleModal })
 
 /* reorder mượt */
 .expand-move {
-  transition: transform 0.45s cubic-bezier(.2,.9,.3,1);
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
-
-
 </style>
