@@ -390,6 +390,11 @@ const source: Language = {
         'Are you sure you want to change the access token? This will stop all APIs from working.',
       create_new_token: 'Create new token',
       tiktok: 'Tiktok',
+      add_member_success: 'Add member success',
+      remove_member_success: 'Remove member success',
+      sending_message: 'Sending message...',
+      sent_success: 'Sent success',
+      sent_failed: 'Sent failed',
     },
     view: {
       network: {
@@ -789,6 +794,8 @@ const source: Language = {
           chat: {
             has_send: '{name} sent a message: {message}',
             new_message_alert: 'New message alert',
+
+            reply_message: 'Reply to message',
             filter: {
               title: 'Filter messages',
               interact: {
@@ -968,6 +975,8 @@ const source: Language = {
                 place_order: 'Place order',
                 create_transaction: 'Create transaction',
                 schedule_appointment: 'Schedule appointment',
+                accept: 'Accept',
+                decline: 'Decline',
               },
               widget: {
                 not_active: 'Widget not found',

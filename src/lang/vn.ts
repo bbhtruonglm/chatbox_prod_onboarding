@@ -102,6 +102,7 @@ const source: Language = {
   'Kết nối với Tiktok': 'Kết nối với Tiktok',
   'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.':
     'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.',
+  'add _ member': 'Thêm {count} thành viên',
   v1: {
     common: {
       zalo: 'Zalo',
@@ -176,6 +177,11 @@ const source: Language = {
       copy: 'Sao chép',
       continue: 'Tiếp tục',
       warning: 'Cảnh báo',
+      share_message: 'Chuyển tiếp tin nhắn',
+      share_to: 'Chia sẻ tin nhắn',
+      sharing_content: 'Nội dung chia sẻ',
+      enter_sharing_content: 'Nhập nội dung chia sẻ',
+      attachments: 'File đính kèm',
       copy_success: 'Đã sao chép',
       hide: 'Ẩn',
       show: 'Hiển thị',
@@ -185,6 +191,11 @@ const source: Language = {
         'Bạn có chắc chắn muốn thay đổi mã truy cập không. Điều này sẽ làm các api đang hoạt động bị dừng lại?',
       create_new_token: 'Tạo mã bí mật mới',
       tiktok: 'Tiktok',
+      add_member_success: 'Thêm thành viên thành công',
+      remove_member_success: 'Xóa thành viên thành công',
+      sending_message: 'Đang gửi tin nhắn...',
+      sent_success: 'Gửi thành công',
+      sent_failed: 'Gửi thất bại',
     },
     view: {
       network: {
@@ -581,6 +592,7 @@ const source: Language = {
           chat: {
             has_send: '{name} đã nhắn tin: {message}',
             new_message_alert: 'Có tin nhắn mới',
+            reply_message: 'Trả lời tin nhắn',
             filter: {
               title: 'Lọc tin nhắn',
               interact: {
@@ -758,6 +770,8 @@ const source: Language = {
                 place_order: 'Tạo đơn hàng',
                 create_transaction: 'Tạo giao dịch',
                 schedule_appointment: 'Lập lịch',
+                accept: 'Đồng ý',
+                decline: 'Từ chối',
               },
               widget: {
                 not_active: 'Không tìm thấy widget',
