@@ -49,9 +49,9 @@ export interface IRegistrationData {
   /** Gói đã chọn */
   package_selected?: string
   /** Số lượng nhân viên (cho Enterprise) */
-  employee_count?: number
+  employee_count?: string
   /** Số tháng đăng ký (cho Enterprise) */
-  subscription_months?: number
+  subscription_months?: string
   /** Ghi chú cho Enterprise */
   enterprise_notes?: string
 }
@@ -93,6 +93,12 @@ export interface IRegistrationDataService {
       instagram?: string
       tiktok?: string
       zalo?: string
+    }
+    package_info?: {
+      package_selected?: string
+      employee_count?: string
+      subscription_months?: string
+      enterprise_notes?: string
     }
   }): void
 
@@ -183,6 +189,12 @@ export class RegistrationDataService implements IRegistrationDataService {
       tiktok?: string
       zalo?: string
     }
+    package_info?: {
+      package_selected?: string
+      employee_count?: string
+      subscription_months?: string
+      enterprise_notes?: string
+    }
   }): void {
     /** Lấy dữ liệu hiện tại */
     const CURRENT_DATA = this.getRegistrationData()
@@ -194,13 +206,47 @@ export class RegistrationDataService implements IRegistrationDataService {
     }
 
     /** Merge dữ liệu mới vào dữ liệu cũ */
-    const UPDATED_DATA: IRegistrationData = {
-      ...CURRENT_DATA,
-      industry: onboarding_data.industry,
-      role: onboarding_data.role,
-      company_name: onboarding_data.company_name,
-      preferences: onboarding_data.preferences,
-      company_details: onboarding_data.company_details,
+    const UPDATED_DATA: IRegistrationData = { ...CURRENT_DATA }
+
+    /** Cập nhật industry */
+    if (onboarding_data.industry !== undefined)
+      UPDATED_DATA.industry = onboarding_data.industry
+    /** Cập nhật role */
+    if (onboarding_data.role !== undefined)
+      UPDATED_DATA.role = onboarding_data.role
+    /** Cập nhật company_name */
+    if (onboarding_data.company_name !== undefined)
+      UPDATED_DATA.company_name = onboarding_data.company_name
+    /** Cập nhật preferences */
+    if (onboarding_data.preferences !== undefined)
+      UPDATED_DATA.preferences = onboarding_data.preferences
+
+    /** Cập nhật company_details */
+    if (onboarding_data.company_details) {
+      UPDATED_DATA.company_details = {
+        ...(UPDATED_DATA.company_details || {}),
+        ...onboarding_data.company_details,
+      }
+    }
+
+    /** Cập nhật package_info */
+    if (onboarding_data.package_info) {
+      /** Cập nhật package_selected */
+      if (onboarding_data.package_info.package_selected !== undefined)
+        UPDATED_DATA.package_selected =
+          onboarding_data.package_info.package_selected
+      /** Cập nhật employee_count */
+      if (onboarding_data.package_info.employee_count !== undefined)
+        UPDATED_DATA.employee_count =
+          onboarding_data.package_info.employee_count
+      /** Cập nhật subscription_months */
+      if (onboarding_data.package_info.subscription_months !== undefined)
+        UPDATED_DATA.subscription_months =
+          onboarding_data.package_info.subscription_months
+      /** Cập nhật enterprise_notes */
+      if (onboarding_data.package_info.enterprise_notes !== undefined)
+        UPDATED_DATA.enterprise_notes =
+          onboarding_data.package_info.enterprise_notes
     }
 
     /** Lưu lại vào LocalStorage */

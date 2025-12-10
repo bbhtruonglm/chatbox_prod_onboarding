@@ -76,6 +76,13 @@ const props = defineProps<{
   tabs: string[]
 }>()
 
+import { container } from 'tsyringe'
+import { RegistrationDataService } from '@/utils/helper/RegistrationData'
+import { watch } from 'vue'
+
+/** Service quản lý dữ liệu đăng ký */
+const REGISTRATION_SERVICE = container.resolve(RegistrationDataService)
+
 const emit = defineEmits<{
   (e: 'change-tab', index: number): void
 }>()
@@ -162,4 +169,27 @@ const EMPLOYEES = [
 const SELECTED = ref('12')
 /** giá trị lựa chọn nhân viên */
 const SELECTED_EMPLOYEES = ref('11to25')
+
+/** Lấy dữ liệu đã lưu nếu có */
+const SAVED_DATA = REGISTRATION_SERVICE.getRegistrationData()
+if (SAVED_DATA?.employee_count) {
+  SELECTED_EMPLOYEES.value = String(SAVED_DATA.employee_count)
+}
+if (SAVED_DATA?.subscription_months) {
+  SELECTED.value = String(SAVED_DATA.subscription_months)
+}
+
+/** Watch và lưu thay đổi */
+watch(
+  [SELECTED, SELECTED_EMPLOYEES],
+  ([months, employees]) => {
+    REGISTRATION_SERVICE.updateOnboardingData({
+      package_info: {
+        employee_count: employees,
+        subscription_months: months,
+      },
+    })
+  },
+  { immediate: true }
+)
 </script>

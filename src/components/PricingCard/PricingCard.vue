@@ -271,13 +271,17 @@
           to arrange a time to chat.
         </p>
 
-        <form class="mt-4 space-y-4">
+        <form
+          class="mt-4 space-y-4"
+          @submit.prevent="submitForm"
+        >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium"
                 >First name <span class="text-red-500">*</span></label
               >
               <input
+                v-model="FORM_DATA.firstName"
                 type="text"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
                 placeholder="Enter your first name"
@@ -288,6 +292,7 @@
                 >Last name <span class="text-red-500">*</span></label
               >
               <input
+                v-model="FORM_DATA.lastName"
                 type="text"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
                 placeholder="Enter your last name"
@@ -301,6 +306,7 @@
                 >Phone number <span class="text-red-500">*</span></label
               >
               <input
+                v-model="FORM_DATA.phone"
                 type="text"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
                 placeholder="Enter phone number"
@@ -311,6 +317,7 @@
                 >Company size <span class="text-red-500">*</span></label
               >
               <select
+                v-model="FORM_DATA.companySize"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
               >
                 <option>1-10</option>
@@ -327,6 +334,7 @@
               <span class="text-red-500">*</span></label
             >
             <textarea
+              v-model="FORM_DATA.description"
               rows="6"
               class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
               placeholder="Enter how can our team help you"
@@ -347,19 +355,27 @@
 </template>
 
 <script setup lang="ts">
+import { toast, toastError } from '@/service/helper/alert'
+import { RegistrationDataService } from '@/utils/helper/RegistrationData'
 import {
-  CheckBadgeIcon,
-  EnvelopeIcon,
   BookOpenIcon,
-  UserCircleIcon,
+  CheckBadgeIcon,
   CurrencyDollarIcon,
-  LockClosedIcon,
-  GifIcon,
+  EnvelopeIcon,
   GiftIcon,
+  LockClosedIcon,
+  UserCircleIcon,
 } from '@heroicons/vue/24/outline'
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 import Cookies from 'js-cookie'
-import { withDefaults } from 'vue'
+import { container } from 'tsyringe'
+import { ref, onMounted } from 'vue'
+
+/** Service quản lý dữ liệu đăng ký */
+const REGISTRATION_SERVICE = container.resolve(RegistrationDataService)
+const emit = defineEmits<{
+  (e: 'submit'): void
+}>()
 
 // --- Types ---
 type SectionItem = { text: string; enabled: boolean }
@@ -425,8 +441,71 @@ const props = withDefaults(
     discount: '',
   }
 )
+
 /** Lấy locale từ cookies */
 const locale = Cookies.get('locale') || 'en'
+
+/** Form data */
+const FORM_DATA = ref({
+  firstName: '',
+  lastName: '',
+  phone: '',
+  companySize: '1-10',
+  description: '',
+})
+
+/**
+ * Load saved data on mount
+ */
+onMounted(() => {
+  const SAVED_DATA = REGISTRATION_SERVICE.getRegistrationData()
+  if (SAVED_DATA?.enterprise_notes) {
+    try {
+      const PARSED_NOTES = JSON.parse(SAVED_DATA.enterprise_notes)
+      FORM_DATA.value = { ...FORM_DATA.value, ...PARSED_NOTES }
+    } catch (e) {
+      console.error('Failed to parse saved enterprise notes', e)
+    }
+  }
+})
+
+/** Submit form */
+const submitForm = () => {
+  if (
+    !FORM_DATA.value.firstName ||
+    !FORM_DATA.value.lastName ||
+    !FORM_DATA.value.phone ||
+    !FORM_DATA.value.description
+  ) {
+    toastError('Please fill in all required fields')
+    return
+  }
+
+  /** Save to local storage */
+  REGISTRATION_SERVICE.updateOnboardingData({
+    package_info: {
+      enterprise_notes: JSON.stringify(FORM_DATA.value),
+      package_selected: 'Enterprise',
+    },
+  })
+
+  // Emit submit event to parent
+  // Assuming parent handles flow navigation
+  // We need to inject the parent emit from UpgradeModalV2 but this is a component.
+  // We should prob emit an event that UpgradeModalV2 listens to.
+  // Actually, wait, UpgradeModalV2 listens to @submit on the component instance?
+  // Checking UpgradeModalV2... it doesn't listen to anything specific from PricingCard other than what we might add.
+  // UpgradeModalV2 has @submit="submitPackage" on itself from Onboarding.vue, but inside it calls submitPackage locally.
+  // We need to trigger the parent's generic submit flow.
+
+  // Let's emit a custom 'confirm-enterprise' event or similar if needed,
+  // OR we just assume the button inside PricingCard triggers the flow.
+  // User request: "lưu lại form này vào phải nhập thì mới cho confirm. Tiếp tục flow"
+
+  // Let's emit a 'submit-enterprise' event.
+  toast('success', 'Information saved successfully')
+  emit('submit')
+}
 </script>
 
 <style scoped>

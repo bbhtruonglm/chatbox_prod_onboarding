@@ -58,6 +58,7 @@
                     v-bind="pkg"
                     :selected="SELECTED_INDEX === pkg.title"
                     :onSelect="() => handleSelect(pkg.title)"
+                    @submit="submitPackage"
                     :active_tab="ACTIVE_INDEX"
                     :class="[
                       'transition-all duration-500',
@@ -326,6 +327,12 @@ const orgStore = useOrgStore()
 /** Hàm dịch */
 const { t: $t } = useI18n()
 
+import { RegistrationDataService } from '@/utils/helper/RegistrationData'
+import { container } from 'tsyringe'
+
+/** Service quản lý dữ liệu đăng ký */
+const REGISTRATION_SERVICE = container.resolve(RegistrationDataService)
+
 const props = defineProps<{
   selected_preference: string | null
 }>()
@@ -341,6 +348,30 @@ const $emit = defineEmits<{
 }>()
 /** Hàm submit */
 const submitPackage = () => {
+  /** Mã package */
+  let package_code = ''
+  /** Switch case chọn gói */
+  switch (SELECTED_INDEX.value) {
+    case 'Lite':
+      package_code = 'TRIAL_LITE'
+      break
+    case 'Pro':
+      package_code = 'TRIAL'
+      break
+    case 'Business':
+      package_code = 'TRIAL_BUSINESS'
+      break
+    default:
+      package_code = SELECTED_INDEX.value
+  }
+
+  /** Update package selected */
+  REGISTRATION_SERVICE.updateOnboardingData({
+    package_info: {
+      package_selected: package_code,
+    },
+  })
+
   $emit('submit')
 }
 /** Filter list package
@@ -362,12 +393,18 @@ const FILTERED_PACKAGES = computed(() => {
 const SELECTED_INDEX = ref('Lite')
 /** Hàm thay đổi index */
 function handleSelect(index: string) {
-  /** Nếu enterpise thì chuyển sang tab 1 */
-  if (index === 'Enterprise') {
+  console.log('handleSelect', index)
+  const selected = index.trim()
+
+  /** Nếu Lite hoặc Pro thì chuyển sang tab 0 */
+  if (['Lite', 'Pro'].includes(selected)) {
+    ACTIVE_INDEX.value = 0
+  } else if (['Business', 'Enterprise'].includes(selected)) {
+    /** Nếu Business hoặc Enterprise thì chuyển sang tab 1 */
     ACTIVE_INDEX.value = 1
   }
   /**Chọn gói */
-  SELECTED_INDEX.value = index
+  SELECTED_INDEX.value = selected
 }
 /** Khai báo các tab đăng ký */
 // const TABS = ref(['All plans', 'Business & Enterprise'])
@@ -545,9 +582,11 @@ const PACKAGES = [
 
 /** Hàm chuyển đổi tab */
 function handleTabChange(index: number) {
-  /**Gán tab đã chọn */
+  /** Nếu click vào tab hiện tại thì không làm gì */
+  if (ACTIVE_INDEX.value === index) return
 
-  ACTIVE_INDEX.value = ACTIVE_INDEX.value === 0 ? 1 : 0
+  /** Set active index bằng index được chọn */
+  ACTIVE_INDEX.value = index
 
   /** Mở tab business thì tự độgn chọn gói Enterprise */
   if (index === 1) {
