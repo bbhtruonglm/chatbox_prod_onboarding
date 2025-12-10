@@ -379,6 +379,8 @@ import {
 } from '@/utils/api/N4Service/Oauth'
 import { Toast } from '@/utils/helper/Alert/Toast'
 import type { IAlert } from '@/utils/helper/Alert/type'
+import { setItem, getItem } from '@/service/helper/localStorage'
+import { BillingAppOrganization } from '@/utils/api/Billing'
 
 import OnboardingLoading from './OnboardingLoading.vue'
 import OnboardingVerify from './OnboardingVerify.vue'
@@ -404,7 +406,7 @@ const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
 const API_OAUTH_FB = new N4SerivcePublicOauthFacebok()
 
 /** 1: 5 bước cơ bản, 2: loading, 3: verify phone, 4: upgrade, 5: quick start, 6: creating, 7: verify email */
-const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
+const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(5)
 
 /** email để verify */
 const email = ref('')
@@ -470,8 +472,28 @@ const skipForNow = () => {
 }
 
 /** Hàm verify phone */
-const submitPackage = () => {
+const submitPackage = async () => {
   console.log('submitPackage')
+
+  try {
+    /** Gọi API lấy danh sách tổ chức */
+    const BILLING_ORG = new BillingAppOrganization()
+    const ORGS = await BILLING_ORG.readOrg()
+
+    /** Lấy user_id từ local */
+    const USER_ID = getItem('user_id')
+
+    /** Tìm tổ chức của user */
+    const FOUND_ORG = ORGS.find((org: any) => org.org_owner_id === USER_ID)
+
+    /** Nếu tìm thấy, lưu selected_org */
+    if (FOUND_ORG) {
+      setItem('selected_org_id', (FOUND_ORG as any).org_id)
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin tổ chức', error)
+  }
+
   /** Chuyển sang step 5 quick step */
   flow_step.value = 5
 }
@@ -707,20 +729,31 @@ const submitForm = async () => {
       flow_step.value = 2
     } else if (REGISTRATION_DATA.registration_type === 'facebook') {
       /** Đăng ký với Facebook */
-      await API_OAUTH_FB.login(REGISTRATION_DATA.access_token!)
+      const LOGIN_RES = await API_OAUTH_FB.login(
+        REGISTRATION_DATA.access_token!
+      )
+
+      /** Lưu lại access token */
+      if (LOGIN_RES.access_token) {
+        setItem('access_token', LOGIN_RES.access_token)
+      }
+      /** Lưu lại user id */
+      if (LOGIN_RES.user_id) {
+        setItem('user_id', LOGIN_RES.user_id)
+      }
 
       /** Cập nhật thông tin onboarding qua API */
-      await API_OAUTH_BASIC.updateOnboardingInfo({
-        industry: REGISTRATION_DATA.industry,
-        role: REGISTRATION_DATA.role,
-        company_name: REGISTRATION_DATA.company_name,
-        preferences: REGISTRATION_DATA.preferences,
-        website: REGISTRATION_DATA.company_details?.website,
-        facebook: REGISTRATION_DATA.company_details?.facebook,
-        instagram: REGISTRATION_DATA.company_details?.instagram,
-        tiktok: REGISTRATION_DATA.company_details?.tiktok,
-        zalo: REGISTRATION_DATA.company_details?.zalo,
-      })
+      // await API_OAUTH_BASIC.updateOnboardingInfo({
+      //   industry: REGISTRATION_DATA.industry,
+      //   role: REGISTRATION_DATA.role,
+      //   company_name: REGISTRATION_DATA.company_name,
+      //   preferences: REGISTRATION_DATA.preferences,
+      //   website: REGISTRATION_DATA.company_details?.website,
+      //   facebook: REGISTRATION_DATA.company_details?.facebook,
+      //   instagram: REGISTRATION_DATA.company_details?.instagram,
+      //   tiktok: REGISTRATION_DATA.company_details?.tiktok,
+      //   zalo: REGISTRATION_DATA.company_details?.zalo,
+      // })
 
       /** Chuyển sang màn xác thực SĐT */
       flow_step.value = 3

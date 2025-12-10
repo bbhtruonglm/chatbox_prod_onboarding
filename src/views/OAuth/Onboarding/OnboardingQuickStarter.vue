@@ -56,64 +56,60 @@
               <li
                 v-for="(item, i) in PLAT_FORMS"
                 :key="i"
-                class="flex items-center justify-between px-2 py-4 gap-3"
+                class="flex flex-col px-2 py-4 gap-3"
               >
-                <!-- Thông tin -->
-                <div class="flex items-center gap-3">
-                  <ZaloIcon
-                    v-if="item.name === 'Zalo'"
-                    class="size-8"
-                  />
-                  <Facebook
-                    v-else-if="item.name === 'Facebook'"
-                    class="size-8"
-                  />
-                  <Instagram
-                    v-else-if="item.name === 'Instagram'"
-                    class="size-8"
-                  />
-                  <Whatsapp
-                    v-else-if="item.name === 'Whatsapp'"
-                    class="size-8"
-                  />
-                  <img
-                    v-else
-                    src="https://static.retion.ai/chatbox/partner/retion.logo.png"
-                    class="size-8"
-                  />
-                  <div class="flex flex-col">
-                    <span class="font-semibold text-sm">{{ item.name }}</span>
-                    <span class="text-slate-500 text-xs">{{ item.desc }}</span>
-                  </div>
-                </div>
-
-                <!-- Nút trạng thái -->
-                <div>
-                  <button
-                    v-if="CONNECTED_PLATFORMS.includes(item?.name)"
-                    class="text-blue-600 border py-2 border-transparent flex items-center gap-1 text-sm font-semibold"
-                  >
-                    {{ $t('v1.view.onboarding.connected') }}
-                    <Link2Icon class="size-4" />
-                  </button>
-                  <button
-                    v-else
-                    @click="handleAddPlatforms(item?.name)"
-                    class="px-6 py-2 bg-slate-200 border border-slate-300 font-semibold rounded-md hover:bg-slate-300 flex items-center gap-1 text-sm"
-                  >
-                    <span
-                      v-if="LOADING_PLATFORM !== item?.name"
-                      class="flex gap-1 items-center"
-                    >
-                      {{ $t('v1.view.onboarding.connect') }}
-                      <ChevronRightIcon class="size-4" />
-                    </span>
-                    <VueSpinnerIos
-                      v-else
-                      size="20"
-                      color="blue"
+                <div class="flex items-center justify-between gap-3">
+                  <!-- Thông tin -->
+                  <div class="flex items-center gap-3">
+                    <ZaloIcon
+                      v-if="item.name === 'Zalo'"
+                      class="size-8"
                     />
-                  </button>
+                    <FacebookIcon
+                      v-else-if="item.name === 'Facebook'"
+                      class="size-8"
+                    />
+                    <InstagramIcon
+                      v-else-if="item.name === 'Instagram'"
+                      class="size-8"
+                    />
+                    <Whatsapp
+                      v-else-if="item.name === 'Whatsapp'"
+                      class="size-8"
+                    />
+                    <img
+                      v-else
+                      src="https://static.retion.ai/chatbox/partner/retion.logo.png"
+                      class="size-8"
+                    />
+                    <div class="flex flex-col">
+                      <span class="font-semibold text-sm">{{ item.name }}</span>
+                      <span class="text-slate-500 text-xs">{{
+                        item.desc
+                      }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Nút trạng thái -->
+                  <div>
+                    <button
+                      v-if="CONNECTED_PLATFORMS.includes(item?.name)"
+                      class="text-blue-600 border py-2 border-transparent flex items-center gap-1 text-sm font-semibold"
+                    >
+                      {{ $t('v1.view.onboarding.connected') }}
+                      <Link2Icon class="size-4" />
+                    </button>
+                    <button
+                      v-else
+                      @click="handleAddPlatforms(item?.name)"
+                      class="px-6 py-2 bg-slate-200 border border-slate-300 font-semibold rounded-md hover:bg-slate-300 flex items-center gap-1 text-sm"
+                    >
+                      <span class="flex gap-1 items-center">
+                        {{ $t('v1.view.onboarding.connect') }}
+                        <ChevronRightIcon class="size-4" />
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </li>
             </ul>
@@ -240,6 +236,11 @@
       </div>
     </main>
   </div>
+  <OnboardingConnectModal
+    ref="onboarding_connect_modal_ref"
+    @done="onConnectDone"
+  />
+  <AlertRechQuota ref="alert_reach_quota_page_ref" />
 </template>
 
 <script setup lang="ts">
@@ -258,19 +259,32 @@ import {
 
 import { copyToClipboard } from '@/service/helper/copyWithAlert'
 
-import Facebook from '@/components/Icons/Facebook.vue'
-import Instagram from '@/components/Icons/Instagram.vue'
+import FacebookIcon from '@/components/Icons/Facebook.vue'
+import InstagramIcon from '@/components/Icons/Instagram.vue'
 import Whatsapp from '@/components/Icons/Whatsapp.vue'
 import ZaloIcon from '@/components/Icons/Zalo.vue'
 import { PlusCircleIcon } from '@heroicons/vue/24/outline'
-import { ChevronRightIcon, LinkIcon } from '@heroicons/vue/16/solid'
-import { VueSpinnerIos } from 'vue3-spinners'
+import { ChevronRightIcon } from '@heroicons/vue/16/solid'
 import { CheckIcon } from '@heroicons/vue/24/solid'
 import { Link2Icon } from 'lucide-vue-next'
+import { N4SerivceAppPage } from '@/utils/api/N4Service/Page'
+import { ToastSingleton } from '@/utils/helper/Alert/Toast'
+import { useChatbotUserStore, useOrgStore } from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
+import OnboardingConnectModal from '@/views/OAuth/Onboarding/OnboardingConnectModal.vue'
+import { BillingAppOrganization } from '@/utils/api/Billing'
+import { getItem } from '@/service/helper/localStorage'
+import AlertRechQuota from '@/components/AlertModal/AlertRechQuota.vue'
+
 /** Hàm dịch */
 const { t: $t } = useI18n()
 /** Khai báo common store */
 const commonStore = useCommonStore()
+const chatbotUserStore = useChatbotUserStore()
+const orgStore = useOrgStore()
+const $toast = ToastSingleton.getInst()
+const $route = useRoute()
+const $router = useRouter()
 
 /** Định nghĩa props */
 const props = defineProps<{
@@ -328,19 +342,89 @@ const CONNECTED_PLATFORMS = ref<String[]>([])
 /** ref cho input đầu tiên */
 const FIRST_EMAIL_INPUT = ref<HTMLInputElement | null>(null)
 
-/** Trạng thái loading */
-const LOADING_PLATFORM = ref<string | null>(null)
+/** ref modal connect page */
+const onboarding_connect_modal_ref =
+  ref<InstanceType<typeof OnboardingConnectModal>>()
+
+/** ref của modal thông báo hết quota */
+const alert_reach_quota_page_ref = ref<InstanceType<typeof AlertRechQuota>>()
+
+/** Số page hiện tại */
+const PAGE_COUNT = ref(0)
+/** Số page tối đa */
+const QUOTA_PAGE = ref(0) // 0 means default/loading, ideally should be higher or handled as loading
+
 /** Hàm thêm platform */
 const handleAddPlatforms = (platform: string) => {
-  /** Bật loading */
-  LOADING_PLATFORM.value = platform
-  setTimeout(() => {
-    /** cập nhật danh sách platform đã kết nối */
-    CONNECTED_PLATFORMS.value.push(platform)
-    /** Tắt loading */
-    LOADING_PLATFORM.value = null
-  }, 1000)
+  // Check quota
+  if (PAGE_COUNT.value >= QUOTA_PAGE.value) {
+    alert_reach_quota_page_ref.value?.toggleModal()
+    return
+  }
+  onboarding_connect_modal_ref.value?.toggleModal(platform)
 }
+
+/** Callback khi connect done từ modal */
+const onConnectDone = (platform: string) => {
+  if (platform && !CONNECTED_PLATFORMS.value.includes(platform)) {
+    CONNECTED_PLATFORMS.value.push(platform)
+    // Tăng số lượng page
+    PAGE_COUNT.value++
+  }
+}
+/** Hàm xử lý callback sau khi oauth zalo */
+const afterOauthZalo = async () => {
+  try {
+    /** Lấy query */
+    let { code, oa_id, state } = $route.query
+    if (!code || !oa_id || !state) return
+
+    commonStore.is_loading_full_screen = true
+
+    // xoá query để không bị chạy 2 lần
+    $router.replace({ path: $route.path, query: {} })
+
+    // gọi api để khởi tạo trang
+    await new N4SerivceAppPage().syncZaloOaPage({
+      oa_id: String(oa_id),
+      code: String(code),
+      code_verifier: String(state),
+      staff_name: chatbotUserStore.chatbot_user?.full_name,
+    })
+
+    CONNECTED_PLATFORMS.value.push('Zalo')
+    $toast.success($t('Kết nối Zalo OA thành công'))
+  } catch (e: any) {
+    $toast.error(e)
+  } finally {
+    commonStore.is_loading_full_screen = false
+  }
+}
+
+/** On mounted check callback */
+onMounted(async () => {
+  // Xử lý callback Zalo trước
+  await afterOauthZalo()
+
+  // Lấy thông tin tổ chức để check quota
+  try {
+    const ORGS = await new BillingAppOrganization().readOrg()
+    orgStore.list_org = ORGS
+    const selected_org_id = getItem('selected_org_id')
+    if (selected_org_id) {
+      orgStore.selected_org_id = selected_org_id
+      const ORG = ORGS.find((o: any) => (o.org_id || o._id) === selected_org_id)
+      if (ORG) {
+        orgStore.selected_org_info = ORG
+        // Cập nhật quota
+        PAGE_COUNT.value = ORG.org_package?.org_current_page || 0
+        QUOTA_PAGE.value = ORG.org_package?.org_quota_page || 0
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+})
 /** Trạng thái  */
 const IS_VALID_BTN_NEXT = computed(() => {
   /** Đang ở step 1 */
