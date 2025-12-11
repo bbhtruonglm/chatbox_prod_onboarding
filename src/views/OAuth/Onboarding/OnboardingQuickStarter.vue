@@ -236,8 +236,8 @@
       </div>
     </main>
   </div>
-  <OnboardingConnectModal
-    ref="onboarding_connect_modal_ref"
+  <ConnectPage
+    ref="connect_page_ref"
     @done="onConnectDone"
   />
   <AlertRechQuota ref="alert_reach_quota_page_ref" />
@@ -269,9 +269,9 @@ import { CheckIcon } from '@heroicons/vue/24/solid'
 import { Link2Icon } from 'lucide-vue-next'
 import { N4SerivceAppPage } from '@/utils/api/N4Service/Page'
 import { ToastSingleton } from '@/utils/helper/Alert/Toast'
-import { useChatbotUserStore, useOrgStore } from '@/stores'
+import { useChatbotUserStore, useOrgStore, useConnectPageStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
-import OnboardingConnectModal from '@/views/OAuth/Onboarding/OnboardingConnectModal.vue'
+import ConnectPage from '@/views/Dashboard/ConnectPage.vue'
 import { BillingAppOrganization } from '@/utils/api/Billing'
 import { getItem } from '@/service/helper/localStorage'
 import AlertRechQuota from '@/components/AlertModal/AlertRechQuota.vue'
@@ -282,6 +282,7 @@ const { t: $t } = useI18n()
 const commonStore = useCommonStore()
 const chatbotUserStore = useChatbotUserStore()
 const orgStore = useOrgStore()
+const connectPageStore = useConnectPageStore()
 const $toast = ToastSingleton.getInst()
 const $route = useRoute()
 const $router = useRouter()
@@ -343,8 +344,7 @@ const CONNECTED_PLATFORMS = ref<String[]>([])
 const FIRST_EMAIL_INPUT = ref<HTMLInputElement | null>(null)
 
 /** ref modal connect page */
-const onboarding_connect_modal_ref =
-  ref<InstanceType<typeof OnboardingConnectModal>>()
+const connect_page_ref = ref<InstanceType<typeof ConnectPage>>()
 
 /** ref của modal thông báo hết quota */
 const alert_reach_quota_page_ref = ref<InstanceType<typeof AlertRechQuota>>()
@@ -354,21 +354,48 @@ const PAGE_COUNT = ref(0)
 /** Số page tối đa */
 const QUOTA_PAGE = ref(0) // 0 means default/loading, ideally should be higher or handled as loading
 
+/** Platform hiện tại đang kết nối */
+const current_connecting_platform = ref('')
+
 /** Hàm thêm platform */
 const handleAddPlatforms = (platform: string) => {
-  // Check quota
+  /** Check quota */
   if (PAGE_COUNT.value >= QUOTA_PAGE.value) {
     alert_reach_quota_page_ref.value?.toggleModal()
     return
   }
-  onboarding_connect_modal_ref.value?.toggleModal(platform)
+
+  /** Lưu platform đang kết nối */
+  current_connecting_platform.value = platform
+
+  let key = ''
+  switch (platform) {
+    case 'Facebook':
+      key = 'FB_MESS'
+      break
+    case 'Instagram':
+      key = 'FB_INSTAGRAM'
+      break
+    case 'Zalo':
+      key = 'ZALO_PERSONAL'
+      break
+    case 'Website':
+      key = 'WEBSITE'
+      break
+  }
+
+  /** Mở modal connect page */
+  if (key && connect_page_ref.value) {
+    connect_page_ref.value.toggleModal(key, true)
+  }
 }
 
 /** Callback khi connect done từ modal */
-const onConnectDone = (platform: string) => {
+const onConnectDone = () => {
+  const platform = current_connecting_platform.value
   if (platform && !CONNECTED_PLATFORMS.value.includes(platform)) {
     CONNECTED_PLATFORMS.value.push(platform)
-    // Tăng số lượng page
+    /** Tăng số lượng page */
     PAGE_COUNT.value++
   }
 }
@@ -381,10 +408,10 @@ const afterOauthZalo = async () => {
 
     commonStore.is_loading_full_screen = true
 
-    // xoá query để không bị chạy 2 lần
+    /** Xoá query để không bị chạy 2 lần */
     $router.replace({ path: $route.path, query: {} })
 
-    // gọi api để khởi tạo trang
+    /** Gọi api để khởi tạo trang */
     await new N4SerivceAppPage().syncZaloOaPage({
       oa_id: String(oa_id),
       code: String(code),
@@ -403,21 +430,30 @@ const afterOauthZalo = async () => {
 
 /** On mounted check callback */
 onMounted(async () => {
-  // Xử lý callback Zalo trước
+  /** Xử lý callback Zalo trước */
   await afterOauthZalo()
 
-  // Lấy thông tin tổ chức để check quota
+  /** Lấy thông tin tổ chức để check quota */
   try {
+    /** Lấy danh sách các tổ chức từ API */
     const ORGS = await new BillingAppOrganization().readOrg()
+    /** Cập nhật danh sách tổ chức vào store */
     orgStore.list_org = ORGS
-    const selected_org_id = getItem('selected_org_id')
-    if (selected_org_id) {
-      orgStore.selected_org_id = selected_org_id
-      const ORG = ORGS.find((o: any) => (o.org_id || o._id) === selected_org_id)
+    /** Lấy ID của tổ chức đã chọn từ localStorage */
+    const SELECTED_ORG_ID = getItem('selected_org_id')
+    /** Nếu có tổ chức đã chọn */
+    if (SELECTED_ORG_ID) {
+      /** Cập nhật ID tổ chức đã chọn vào store */
+      orgStore.selected_org_id = SELECTED_ORG_ID
+      /** Tìm thông tin tổ chức đã chọn trong danh sách */
+      const ORG = ORGS.find((o: any) => (o.org_id || o._id) === SELECTED_ORG_ID)
+      /** Nếu tìm thấy tổ chức */
       if (ORG) {
+        /** Cập nhật thông tin chi tiết của tổ chức đã chọn vào store */
         orgStore.selected_org_info = ORG
-        // Cập nhật quota
+        /** Cập nhật số lượng trang hiện tại của tổ chức */
         PAGE_COUNT.value = ORG.org_package?.org_current_page || 0
+        /** Cập nhật hạn mức trang của tổ chức */
         QUOTA_PAGE.value = ORG.org_package?.org_quota_page || 0
       }
     }
@@ -511,6 +547,7 @@ onBeforeUnmount(() => {
 /** INVITE LINK */
 const INVITE_LINKS = 'https://retion.ai/invite?code=123123'
 
+/** Trạng thái copied */
 const IS_COPIED = ref<Boolean>(false)
 /** Email */
 const emails = ref(['', '']) // mặc định 2 ô như ảnh

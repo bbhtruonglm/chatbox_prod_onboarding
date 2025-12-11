@@ -78,7 +78,14 @@
           />
 
           <Zalo
-            v-else-if="connectPageStore.current_menu?.includes('ZALO')"
+            v-else-if="
+              connectPageStore.current_menu?.includes('ZALO') &&
+              connectPageStore.current_menu !== 'ZALO_PERSONAL'
+            "
+            @done="$emit('done')"
+          />
+          <ZaloPersonal
+            v-else-if="connectPageStore.current_menu === 'ZALO_PERSONAL'"
             @done="$emit('done')"
           />
 
@@ -111,6 +118,7 @@ import Member from '@/views/Dashboard/ConnectPage/Member.vue'
 import Facebook from '@/views/Dashboard/ConnectPage/Facebook.vue'
 import Website from '@/views/Dashboard/ConnectPage/Website.vue'
 import Zalo from '@/views/Dashboard/ConnectPage/Zalo.vue'
+import ZaloPersonal from '@/views/Dashboard/ConnectPage/ZaloPersonal.vue'
 import Search from '@/views/Dashboard/ConnectPage/Search.vue'
 import Instagram from '@/components/OAuth/Instagram.vue'
 
@@ -123,26 +131,31 @@ const orgStore = useOrgStore()
 const modal_connect_page_ref = ref<InstanceType<typeof Modal>>()
 
 /**ẩn hiện modal của component */
-function toggleModal(key?: string) {
-  // tự động chọn menu
+function toggleModal(key?: string, is_hidden_menu?: boolean) {
+  /**tự động chọn menu */
   if (key) connectPageStore.selectMenu(key)
 
-  // ẩn hiện modal
+  /**ẩn logic menu */
+  if (typeof is_hidden_menu === 'boolean') {
+    connectPageStore.is_hidden_menu = is_hidden_menu
+  }
+
+  /**ẩn hiện modal */
   modal_connect_page_ref.value?.toggleModal()
 }
 
 class Main {
   /**nạp lại dữ liệu gốc */
   resetStore() {
-    // xóa cờ
+    /**xóa cờ */
     connectPageStore.is_hidden_menu = false
   }
 }
 const $main = new Main()
 
-// cung cấp hàm toggle modal cho component cha
+/**cung cấp hàm toggle modal cho component cha */
 defineExpose({ toggleModal })
 
-// cung cấp hàm toggle modal cho component con
+/**cung cấp hàm toggle modal cho component con */
 provide(KEY_TOGGLE_MODAL_FUNCT, toggleModal)
 </script>

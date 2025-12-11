@@ -353,7 +353,6 @@
       @complete="completeCreatingAccount"
     />
 
-    <!-- flow 7: verify email -->
     <OnboardingVerifyEmail
       v-else-if="flow_step === 7"
       :email="email"
@@ -361,6 +360,24 @@
       @resend="resendEmailVerification"
       @back="backToOnboarding"
     />
+
+    <Modal ref="relogin_modal_ref">
+      <template #header>
+        {{ $t('Cập nhật quyền truy cập') }}
+      </template>
+      <template #body>
+        <div class="p-5 flex flex-col items-center gap-4 bg-white rounded-b-md">
+          <p>
+            {{
+              $t(
+                'Phiên đăng nhập Facebook đã hết hạn. Vui lòng kết nối lại để tiếp tục.'
+              )
+            }}
+          </p>
+          <Facebook @access_token="onReLoginSuccess" />
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -382,6 +399,8 @@ import type { IAlert } from '@/utils/helper/Alert/type'
 import { setItem, getItem } from '@/service/helper/localStorage'
 import { BillingAppOrganization } from '@/utils/api/Billing'
 
+import Modal from '@/components/Modal.vue'
+import Facebook from '@/components/OAuth/Facebook.vue'
 import OnboardingLoading from './OnboardingLoading.vue'
 import OnboardingVerify from './OnboardingVerify.vue'
 import OnboardingVerifyEmail from './OnboardingVerifyEmail.vue'
@@ -406,7 +425,7 @@ const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
 const API_OAUTH_FB = new N4SerivcePublicOauthFacebok()
 
 /** 1: 5 bước cơ bản, 2: loading, 3: verify phone, 4: upgrade, 5: quick start, 6: creating, 7: verify email */
-const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(5)
+const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
 
 /** email để verify */
 const email = ref('')
@@ -471,7 +490,7 @@ const skipForNow = () => {
   }
 }
 
-/** Hàm verify phone */
+/** Hàm submit package (Chọn gói cho tổ chức) */
 const submitPackage = async () => {
   console.log('submitPackage')
 
@@ -533,12 +552,28 @@ const verifyEmail = async (otp: string) => {
     /** Gọi API xác thực email */
     await API_OAUTH_BASIC.verifyEmail(email.value, otp)
 
+    /** Tự động đăng nhập sau khi verify */
+    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+    /** Nếu đăng ký bằng email và có mật khẩu */
+    if (REGISTRATION_DATA?.password) {
+      /** Gọi API đăng nhập */
+      const LOGIN_RES = await API_OAUTH_BASIC.login(
+        email.value,
+        REGISTRATION_DATA.password
+      )
+      /** Nếu đăng nhập thành công */
+      if (LOGIN_RES.access_token)
+        setItem('access_token', LOGIN_RES.access_token)
+      if (LOGIN_RES.user_id) setItem('user_id', LOGIN_RES.user_id)
+    }
+    /** Thông báo xác thực thành công */
     SERVICE_TOAST.success($t('Xác thực email thành công'))
 
     /** Xác thực thành công, chuyển sang màn verify phone */
     flow_step.value = 3
   } catch (error: any) {
     console.error('Lỗi khi xác thực email:', error)
+    /** Thông báo lỗi */
     SERVICE_TOAST.error(error.message || $t('Mã xác thực không đúng'))
   }
 }
@@ -729,9 +764,11 @@ const submitForm = async () => {
       flow_step.value = 2
     } else if (REGISTRATION_DATA.registration_type === 'facebook') {
       /** Đăng ký với Facebook */
-      const LOGIN_RES = await API_OAUTH_FB.login(
-        REGISTRATION_DATA.access_token!
-      )
+      /** Lấy token từ local hoặc từ dữ liệu đăng ký */
+      const TOKEN =
+        facebook_access_token.value || REGISTRATION_DATA.access_token!
+      /** Gọi API đăng nhập */
+      const LOGIN_RES = await API_OAUTH_FB.login(TOKEN)
 
       /** Lưu lại access token */
       if (LOGIN_RES.access_token) {
@@ -760,8 +797,33 @@ const submitForm = async () => {
     }
   } catch (error: any) {
     console.error('Lỗi khi tạo tài khoản:', error)
+
+    /** Check nếu đăng ký với Facebook -> show modal */
+    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+    /** Nếu đăng ký với Facebook */
+    if (REGISTRATION_DATA?.registration_type === 'facebook') {
+      /** Show modal */
+      relogin_modal_ref.value?.toggleModal()
+      return
+    }
+    /** Nếu đăng ký với email */
     SERVICE_TOAST.error(error.message || $t('Có lỗi xảy ra khi tạo tài khoản'))
   }
+}
+
+/** --------------- RE-LOGIN FACEBOOK ---------------- */
+const relogin_modal_ref = ref<InstanceType<typeof Modal>>()
+/** Token từ Facebook */
+const facebook_access_token = ref('')
+
+/** Hàm khi re-login thành công */
+async function onReLoginSuccess(token: string) {
+  /** Lưu token */
+  facebook_access_token.value = token
+  /** Close modal */
+  relogin_modal_ref.value?.toggleModal()
+  /** Submit form */
+  await submitForm()
 }
 
 /** Step 1 */
