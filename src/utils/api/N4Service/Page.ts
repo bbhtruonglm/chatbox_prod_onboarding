@@ -32,6 +32,12 @@ export class N4SerivceAppPage extends N4Serivce {
     /** gọi api */
     return this.post('get_current_page', body)
   }
+  public async getListActivePage(
+    body?: Record<string, any>
+  ): Promise<CurrentPageData> {
+    // gọi api
+    return this.post('get_available_pages', body)
+  }
   /**
    * đọc danh sách trang đang kích hoạt của tổ chức
    * @param org_id id tổ chức

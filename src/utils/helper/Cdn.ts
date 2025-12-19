@@ -56,6 +56,11 @@ export interface ICdn {
    */
   fbMessageMedia(page_id?: string, message_id?: string, index?: number): string
   igMessageMedia(page_id?: string, message_id?: string, index?: number): string
+  tiktokMessageMedia(
+    page_id?: string,
+    message_id?: string,
+    index?: number
+  ): string
   webMessageMedia(page_id?: string, message_id?: string, index?: number): string
   /**
    * đường dẫn ảnh đại diện của page zalo
@@ -104,6 +109,9 @@ export class Cdn implements ICdn {
   }
   webMessageMedia(page_id?: string, message_id?: string, index?: number) {
     return `${this.HOST}/media/web/${page_id}/message/${message_id}/${index}`
+  }
+  tiktokMessageMedia(page_id?: string, message_id?: string, index?: number) {
+    return `${this.HOST}/media/tiktok/${page_id}/message/${message_id}/${index}`
   }
   zlpPageAvt(page_id?: string) {
     return `${this.HOST}/media/zlp/${page_id}/page`
