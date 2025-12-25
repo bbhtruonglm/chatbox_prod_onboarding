@@ -441,7 +441,7 @@ onMounted(() => {
   /** Lấy dữ liệu đăng ký */
   const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
 
-  /** Nếu không có dữ liệu thì redirect về trang đăng ký */
+  // Nếu không có dữ liệu thì redirect về trang đăng ký
   if (!REGISTRATION_DATA) {
     SERVICE_TOAST.error($t('Không tìm thấy dữ liệu đăng ký'))
     /** Redirect về trang đăng ký */
