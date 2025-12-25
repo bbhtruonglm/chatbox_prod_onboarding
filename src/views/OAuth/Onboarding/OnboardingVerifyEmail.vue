@@ -292,9 +292,7 @@ const onPasteOTP = (event: ClipboardEvent) => {
   const FOCUS_INDEX = OTP_DIGITS.length < 4 ? LAST_FILLED_INDEX + 1 : 3
   /** Focus vào ô */
   nextTick(() => {
-    if (inputs.value[FOCUS_INDEX]) {
-      inputs.value[FOCUS_INDEX].focus()
-    }
+    inputs.value[FOCUS_INDEX]?.focus()
   })
 }
 
