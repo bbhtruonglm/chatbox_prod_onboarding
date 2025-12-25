@@ -42,6 +42,35 @@
               {{ STEP_TITLE }}
             </h2>
             <p class="font-medium">{{ STEP_DESCRIPTIONS }}</p>
+            <div
+              v-if="current_org_info"
+              class="mt-2 text-sm text-slate-600 flex items-center gap-2"
+            >
+              <span>Tổ chức:</span>
+              <div
+                class="flex items-center gap-3 px-3 py-1.5 bg-gray-50 rounded-md border border-gray-200"
+              >
+                <img
+                  v-if="current_org_info.org_info?.org_avatar"
+                  :src="current_org_info.org_info.org_avatar"
+                  class="size-8 rounded-full object-cover shadow-sm flex-shrink-0"
+                />
+                <div
+                  v-else
+                  class="size-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold uppercase flex-shrink-0"
+                >
+                  {{ current_org_info.org_info?.org_name?.charAt(0) || 'O' }}
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-bold text-black text-base leading-tight">{{
+                    current_org_info.org_info.org_name
+                  }}</span>
+                  <span class="text-xs text-gray-500 font-mono leading-tight">{{
+                    current_org_info.org_id || current_org_info._id
+                  }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="flex flex-col gap-5">
@@ -280,7 +309,7 @@ import { useChatbotUserStore, useOrgStore, useConnectPageStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 import ConnectPage from '@/views/Dashboard/ConnectPage.vue'
 import { BillingAppOrganization } from '@/utils/api/Billing'
-import { getItem } from '@/service/helper/localStorage'
+import { getItem, setItem } from '@/service/helper/localStorage'
 import AlertRechQuota from '@/components/AlertModal/AlertRechQuota.vue'
 
 /** Hàm dịch */
@@ -360,6 +389,11 @@ const alert_reach_quota_page_ref = ref<InstanceType<typeof AlertRechQuota>>()
 const PAGE_COUNT = ref(0)
 /** Số page tối đa */
 const QUOTA_PAGE = ref(0) // 0 means default/loading, ideally should be higher or handled as loading
+
+/** Thông tin organization */
+const current_org_info = ref<any>(null)
+
+console.log('current_org_info.value', current_org_info.value)
 
 /** Platform hiện tại đang kết nối */
 const current_connecting_platform = ref('')
@@ -443,26 +477,52 @@ onMounted(async () => {
   /** Lấy thông tin tổ chức để check quota */
   try {
     /** Lấy danh sách các tổ chức từ API */
-    const ORGS = await new BillingAppOrganization().readOrg()
+    const ALL_ORGS = await new BillingAppOrganization().readOrg()
+
+    console.log('ALL_ORGS', ALL_ORGS)
+    console.log('chatbotUserStore.chatbot_user', chatbotUserStore.chatbot_user)
+    /** Lấy user id */
+    const USER_ID = chatbotUserStore.chatbot_user?._id || getItem('user_id')
+
+    /** Filter chỉ lấy Org mà user là Owner */
+    const OWNER_ORGS = USER_ID
+      ? ALL_ORGS.filter((o: any) => o.org_owner_id === USER_ID)
+      : ALL_ORGS
+
     /** Cập nhật danh sách tổ chức vào store */
-    orgStore.list_org = ORGS
-    /** Lấy ID của tổ chức đã chọn từ localStorage */
-    const SELECTED_ORG_ID = getItem('selected_org_id')
-    /** Nếu có tổ chức đã chọn */
-    if (SELECTED_ORG_ID) {
-      /** Cập nhật ID tổ chức đã chọn vào store */
-      orgStore.selected_org_id = SELECTED_ORG_ID
-      /** Tìm thông tin tổ chức đã chọn trong danh sách */
-      const ORG = ORGS.find((o: any) => (o.org_id || o._id) === SELECTED_ORG_ID)
-      /** Nếu tìm thấy tổ chức */
-      if (ORG) {
-        /** Cập nhật thông tin chi tiết của tổ chức đã chọn vào store */
-        orgStore.selected_org_info = ORG
-        /** Cập nhật số lượng trang hiện tại của tổ chức */
-        PAGE_COUNT.value = ORG.org_package?.org_current_page || 0
-        /** Cập nhật hạn mức trang của tổ chức */
-        QUOTA_PAGE.value = ORG.org_package?.org_quota_page || 0
-      }
+    orgStore.list_org = ALL_ORGS as any
+    /** Logic xử lý chọn tổ chức */
+    let selected_id = getItem('selected_org_id')
+    let selected_org = null
+
+    /** Tìm tổ chức theo ID đã lưu */
+    if (selected_id) {
+      selected_org = OWNER_ORGS.find(
+        (o: any) => (o.org_id || o._id) === selected_id
+      )
+    }
+
+    console.log('--- DEBUG SELECT ORG ---')
+    console.log('OWNER_ORGS:', OWNER_ORGS)
+    console.log('Local selected_id:', selected_id)
+    console.log('Found valid owner org:', selected_org)
+
+    /** Nếu không tìm thấy (hoặc chưa có), mặc định lấy tổ chức đầu tiên */
+    if (!selected_org && OWNER_ORGS.length > 0) {
+      console.log('Fallback to first owner org')
+      selected_org = OWNER_ORGS[0]
+      selected_id = selected_org.org_id || (selected_org as any)._id
+      /** Lưu vào storage */
+      setItem('selected_org_id', selected_id)
+    }
+
+    /** Cập nhật store nếu có org hợp lệ */
+    if (selected_org && selected_id) {
+      orgStore.selected_org_id = selected_id
+      orgStore.selected_org_info = selected_org
+      current_org_info.value = selected_org
+      PAGE_COUNT.value = selected_org.org_package?.org_current_page || 0
+      QUOTA_PAGE.value = selected_org.org_package?.org_quota_page || 0
     }
   } catch (e) {
     console.error(e)

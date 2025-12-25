@@ -109,6 +109,7 @@
                   type="text"
                   :placeholder="$t('v1.view.onboarding.enter_company_name')"
                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
+                  @keyup.enter="IS_STEP_VALID && nextStep()"
                 />
               </div>
 
@@ -266,16 +267,24 @@
                 </a>
               </p>
               <button
-                :disabled="!IS_STEP_VALID"
+                :disabled="!IS_STEP_VALID || is_submitting"
                 :class="[
-                  'px-10 py-3 rounded-md font-medium focus:outline-none flex-shrink-0',
-                  IS_STEP_VALID
+                  'px-10 py-3 rounded-md font-medium focus:outline-none flex-shrink-0 flex items-center justify-center gap-2',
+                  IS_STEP_VALID && !is_submitting
                     ? 'bg-blue-600 text-white'
-                    : 'bg-blue-100 text-blue-600',
+                    : 'bg-blue-100 text-blue-600 disabled:opacity-70 disabled:cursor-not-allowed',
                 ]"
                 @click="submitForm"
               >
-                {{ $t('v1.view.onboarding.create_account') }}
+                <div
+                  v-if="is_submitting"
+                  class="animate-spin rounded-full h-5 w-5 border-b-2 border-current"
+                ></div>
+                {{
+                  is_submitting
+                    ? $t('v1.common.loading')
+                    : $t('v1.view.onboarding.create_account')
+                }}
               </button>
             </template>
 
@@ -383,7 +392,7 @@
 
 <script setup lang="ts">
 import { useCommonStore } from '@/stores'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { container } from 'tsyringe'
 import {
@@ -436,12 +445,15 @@ const email = ref('')
 /** Số điện thoại */
 const phone = ref('')
 
+/** Promise của setup bổ sung */
+const setup_promise = ref<Promise<void> | null>(null)
+
 /** Khởi tạo: Load dữ liệu registration */
 onMounted(() => {
   /** Lấy dữ liệu đăng ký */
   const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
 
-  // Nếu không có dữ liệu thì redirect về trang đăng ký
+  /** Nếu không có dữ liệu thì redirect về trang đăng ký */
   if (!REGISTRATION_DATA) {
     SERVICE_TOAST.error($t('Không tìm thấy dữ liệu đăng ký'))
     /** Redirect về trang đăng ký */
@@ -511,7 +523,41 @@ const submitPackage = async () => {
 
     /** Nếu tìm thấy, lưu selected_org */
     if (FOUND_ORG) {
-      setItem('selected_org_id', (FOUND_ORG as any).org_id)
+      const ORG_ID = (FOUND_ORG as any).org_id || (FOUND_ORG as any)._id
+      setItem('selected_org_id', ORG_ID)
+
+      /** Logic đăng ký gói dùng thử */
+      const ORG_PACKAGE = (FOUND_ORG as any).org_package
+      /** Kiểm tra gói hiện tại có phải Free không */
+      const IS_FREE = !ORG_PACKAGE || ORG_PACKAGE.package_pid === 'FREE'
+
+      if (IS_FREE) {
+        /** Kiểm tra đã dùng thử chưa */
+        const HAS_TRIAL = ORG_PACKAGE?.org_has_trial
+        if (!HAS_TRIAL) {
+          try {
+            /** Lấy thông tin ví */
+            const WALLET = await read_wallet(ORG_ID)
+            const WALLET_ID = WALLET.wallet_id || (WALLET as any)._id
+
+            /** Lấy mã gói từ dữ liệu đăng ký */
+            const REG_DATA = REGISTRATION_SERVICE.getRegistrationData()
+            const TRIAL_CODE =
+              (REG_DATA as any)?.package_info?.package_selected ||
+              (REG_DATA as any)?.package_selected ||
+              'SR_TRIAL'
+
+            /** Gọi API đăng ký gói dùng thử */
+            await purchase_package(ORG_ID, WALLET_ID, TRIAL_CODE as any, 1)
+            SERVICE_TOAST.success('Đăng ký gói dùng thử thành công')
+            console.log('Call api purchase_package trial', TRIAL_CODE)
+          } catch (e) {
+            console.error('Lỗi khi đăng ký trial', e)
+          }
+        } else {
+          SERVICE_TOAST.success($t('Bạn đã đăng ký gói dùng thử rồi'))
+        }
+      }
     }
   } catch (error) {
     console.error('Lỗi khi lấy thông tin tổ chức', error)
@@ -544,8 +590,13 @@ const completeLoading = () => {
 }
 /** Hàm hoàn thành loading */
 const completeCreatingAccount = async () => {
-  /** Chạy các hàm bổ sung */
-  await runAdditionalSetup()
+  /** Chạy các hàm bổ sung (đã chạy song song, giờ wait) */
+  if (setup_promise.value) {
+    await setup_promise.value
+  } else {
+    // Fallback
+    await runAdditionalSetup()
+  }
 
   /** Xóa dữ liệu đăng ký */
   REGISTRATION_SERVICE.clearRegistrationData()
@@ -604,6 +655,8 @@ const backToOnboarding = () => {
 }
 /**Bước hiện tại */
 const current_step = ref(0)
+/** Trạng thái submit form */
+const is_submitting = ref(false)
 /** Tổng số bước */
 const total_steps = 5
 
@@ -728,10 +781,11 @@ const handlePreference = (option: string) => {
 
 /** Hàm submit form tạo tài khoản */
 const submitForm = async () => {
-  /** Nếu k valid thì return luôn */
-  if (!IS_STEP_VALID) return
+  /** Nếu k valid hoặc đang submit thì return luôn */
+  if (!IS_STEP_VALID.value || is_submitting.value) return
 
   try {
+    is_submitting.value = true
     /** Lưu dữ liệu onboarding vào storage */
     REGISTRATION_SERVICE.updateOnboardingData({
       industry: SELECTED_INDUSTRY.value ?? undefined,
@@ -803,6 +857,7 @@ const submitForm = async () => {
       flow_step.value = 3
     }
   } catch (error: any) {
+    is_submitting.value = false
     console.error('Lỗi khi tạo tài khoản:', error)
 
     /** Check nếu đăng ký với Facebook -> show modal */
@@ -929,6 +984,13 @@ const runAdditionalSetup = async () => {
     console.error('Lỗi khi chạy setup bổ sung:', error)
   }
 }
+
+/** Watch step để chạy setup song song */
+watch(flow_step, step => {
+  if (step === 6) {
+    setup_promise.value = runAdditionalSetup()
+  }
+})
 
 /** Step 1 */
 const OPTION_INDUSTRY = [

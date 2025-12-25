@@ -67,6 +67,7 @@
                 :placeholder="$t('v1.view.onboarding.enter_phone')"
                 class="w-full rounded-md px-3 py-2 outline-none focus:outline-none"
                 :disabled="is_sending_verify_code"
+                @keyup.enter="handleVerify"
               />
             </div>
             <p
@@ -213,25 +214,24 @@
           </div>
 
           <!-- Nút verify mới (Updated: Unverify flow) -->
-          <div class="flex gap-5">
-            <button
-              :class="[
-                'px-10 py-3 flex items-center gap-1 rounded-md font-medium',
-                phone_value.trim() && IS_PHONE_VALID
-                  ? 'bg-blue-700 text-white hover:bg-blue-500'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed',
-              ]"
-              :disabled="!phone_value.trim() || !IS_PHONE_VALID"
-              @click="handleVerify"
-            >
-              {{ $t('v1.view.onboarding.continue') || 'Tiếp tục' }}
-            </button>
-          </div>
 
           <!-- OTP section removed/hidden as per request 'nhập phone -> unverify' -->
         </div>
       </div>
-      <div class="h-16"></div>
+      <div class="flex justify-end w-full pb-0">
+        <button
+          :class="[
+            'px-10 py-3 flex items-center gap-1 rounded-md font-medium',
+            phone_value.trim() && IS_PHONE_VALID
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-blue-100 text-blue-600 opacity-50 cursor-not-allowed',
+          ]"
+          :disabled="!phone_value.trim() || !IS_PHONE_VALID"
+          @click="handleVerify"
+        >
+          {{ $t('v1.view.onboarding.continue') || 'Tiếp tục' }}
+        </button>
+      </div>
     </main>
   </div>
 </template>
@@ -530,6 +530,7 @@ onBeforeUnmount(() => {
 
 /** Hàm gửi verify */
 const handleVerify = () => {
+  if (!phone_value.value.trim() || !IS_PHONE_VALID.value) return
   /** Không cần gửi mã verify, emit luôn */
   $emit('verify')
 }

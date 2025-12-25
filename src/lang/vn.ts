@@ -290,8 +290,8 @@ const source: Language = {
         enter_zalo: 'username_company',
         create_account: 'Tạo tài khoản',
         step_5_description:
-          'Your data will be hosted in the Singapore. By creating an account you are agreeing to the ',
-        step_5_description_2: 'Retion Customer Terms of Service',
+          'Dữ liệu của bạn sẽ được lưu trữ tại Singapore. Bằng cách tạo tài khoản, bạn đồng ý với ',
+        step_5_description_2: 'Điều khoản dịch vụ khách hàng của Retion',
         verify_account: 'Bảo mật tài khoản',
         verify_account_description:
           'Chúng tôi cần xác thực tài khoản để hỗ trợ, bảo hành và bảo mật tài khoản của bạn.',

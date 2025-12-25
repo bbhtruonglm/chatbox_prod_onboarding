@@ -30,7 +30,7 @@
       >
         {{ $t('v1.view.onboarding.popular') }}
       </div>
-      <div class="pb-2 flex flex-col min-h-[320px]">
+      <div class="pb-2 flex flex-col min-h-[320px] min-w-0 w-full">
         <!-- Title + price -->
         <div class="flex items-center gap-2 h-172">
           <div
@@ -212,7 +212,7 @@
 
     <div
       v-show="active_tab == 1 && title === 'Enterprise'"
-      class="h-full w-full bg-white/60 rounded-xl p-5 space-y-6 border"
+      class="h-full w-full bg-white/60 rounded-xl p-5 space-y-6 border min-w-0"
     >
       <!-- Title -->
       <div>
@@ -259,13 +259,87 @@
             })
           "
         ></p>
-        <div class="flex flex-wrap items-center gap-6 text-gray-400">
-          <span class="font-semibold">NPAY</span>
-          <span class="font-semibold">Grab</span>
-          <span class="font-semibold">Viettel</span>
-          <span class="font-semibold">CocaCola</span>
-          <span class="font-semibold">Cốc Cốc</span>
-          <span class="font-semibold">PEPSI</span>
+        <div class="w-full max-w-full relative overflow-hidden group py-2">
+          <!-- Gradient Mask -->
+          <div
+            class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10"
+          ></div>
+          <div
+            class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10"
+          ></div>
+
+          <!-- Marquee Container -->
+          <div
+            class="flex animate-marquee gap-8 grayscale opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap items-center"
+          >
+            <!-- Set 1 -->
+            <img
+              src="@/assets/imgs/partner-vn/VNPAY.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Grab.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Viettel.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Coca.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Coccoc.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/PepsiCo.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/VinID.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Meta.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+
+            <!-- Set 2 (Duplicate) -->
+            <img
+              src="@/assets/imgs/partner-vn/VNPAY.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Grab.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Viettel.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Coca.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Coccoc.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/PepsiCo.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/VinID.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+            <img
+              src="@/assets/imgs/partner-vn/Meta.svg"
+              class="h-7 w-auto object-contain flex-shrink-0"
+            />
+          </div>
         </div>
       </div>
       <hr class="" />
@@ -538,13 +612,29 @@ const submitForm = () => {
   // User request: "lưu lại form này vào phải nhập thì mới cho confirm. Tiếp tục flow"
 
   // Let's emit a 'submit-enterprise' event.
-  toast('success', 'Information saved successfully')
-  emit('submit')
+  toast('success', 'Lưu thông tin thành công')
+  // emit('submit') // Không tự động chuyển màn hình
 }
 </script>
 
 <style scoped>
 .absolute {
   transition: all 0.5s ease;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 </style>
