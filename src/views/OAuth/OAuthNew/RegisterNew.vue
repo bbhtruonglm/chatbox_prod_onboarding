@@ -130,12 +130,14 @@ class Main {
   @handleLoadingOauth
   @handleErrorOauth()
   async goRegisterDetail() {
+    /** xoá khoảng trắng */
+    email.value = email.value?.trim()
+
     /** kiểm tra email */
     await VLD_EMAIL.validate({ email: email.value })
 
     /** kiểm tra email đã tồn tại trên hệ thống chưa */
-    // const RES = await this.API_OAUTH_BASIC.checkEmail(email.value!)
-    // console.log(RES, 'RES')
+    await this.API_OAUTH_BASIC.checkEmail(email.value!)
 
     /** chuyển hướng vào trang chi tiết đăng ký */
     this.SERVICE_OAUTH.redirect({

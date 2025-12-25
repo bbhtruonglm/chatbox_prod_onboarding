@@ -429,7 +429,7 @@ const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
 const API_OAUTH_FB = new N4SerivcePublicOauthFacebok()
 
 /** 1: 5 bước cơ bản, 2: loading, 3: verify phone, 4: upgrade, 5: quick start, 6: creating, 7: verify email */
-const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(4)
+const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
 
 /** email để verify */
 const email = ref('')

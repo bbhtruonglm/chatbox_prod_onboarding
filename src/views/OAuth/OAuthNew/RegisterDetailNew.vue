@@ -200,8 +200,6 @@ class Main {
       path: '/onboarding',
     })
 
-    /** thông báo thành công */
-    this.SERVICE_TOAST.success($t('Đăng ký tài khoản thành công'))
     return
     // đăng ký thành công thì chuyển về đăng nhập email
     this.SERVICE_OAUTH.redirect({
