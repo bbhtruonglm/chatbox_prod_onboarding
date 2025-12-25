@@ -1,6 +1,8 @@
 <template>
   <div class="flex flex-col gap-4 min-h-0 flex-grow overflow-hidden">
-    <div class="flex-shrink-0 flex items-center gap-3">
+    <div
+      class="flex-shrink-0 flex flex-col md:flex-row w-full md:items-center gap-3"
+    >
       <SelectOrg class="rounded-lg" />
       <SelectPageOrg class="rounded-lg" />
     </div>
@@ -84,9 +86,9 @@ import ArrowRightLeftIcon from '@/components/Icons/ArrowRightLeft.vue'
 
 import type { AppInstalledInfo } from '@/service/interface/app/widget'
 import type { CbError } from '@/service/interface/function'
-
+/** Khai báo emit loading */
 const $emit = defineEmits(['is_loading'])
-
+/** Khai báo các thông tin trong store */
 const pageStore = usePageStore()
 const widgetStore = useWidgetStore()
 const orgStore = useOrgStore()
@@ -99,7 +101,7 @@ const confirm_delete_ref = ref<InstanceType<typeof ConfirmDelete>>()
 /**ref của modal kết nối lại app */
 const confirm_re_connect_ref = ref<InstanceType<typeof ConfirmReConnect>>()
 
-// lấy dữ liệu của trang được chọn
+/** lấy dữ liệu của trang được chọn */
 onMounted(getInstalledWidget)
 
 // // khi chọn nền tảng thì xoá trang đã chọn
@@ -107,47 +109,49 @@ onMounted(getInstalledWidget)
 //   () => orgStore.selected_org_id,
 //   () => (widgetStore.selected_page_id = undefined)
 // )
-// khi lấy dữ liệu trang của tổ chức thì tự động chọn trang đầu tiên
+/** khi lấy dữ liệu trang của tổ chức thì tự động chọn trang đầu tiên */
 watch(() => pageStore.all_page_list, getSelectPageData)
-// khi chọn trang thì lấy dữ liệu widget đã cài
+/** khi chọn trang thì lấy dữ liệu widget đã cài */
 watch(() => widgetStore.selected_page_id, getInstalledWidget)
 
 /**tự động nạp dữ liệu của trang đầu tiên được chọn nếu có */
 function getSelectPageData() {
-  // nếu đã chọn trang thì thôi
+  /** nếu đã chọn trang thì thôi */
   if (widgetStore.selected_page_id) return
 
-  // nếu chưa chọn trang thì chọn trang đầu tiên
+  /** nếu chưa chọn trang thì chọn trang đầu tiên */
   widgetStore.selected_page_id = map(
     pageStore.all_page_list
   )?.[0]?.page?.fb_page_id
 }
 /**lấy tên trang được chọn */
 function getSelectedPageName() {
-  // nếu không có trang nào được chọn thì thôi
+  /** nếu không có trang nào được chọn thì thôi */
   if (!widgetStore.selected_page_id) return
 
-  // trả về tên trang được chọn
-  return getPageName(pageStore.all_page_list?.[widgetStore.selected_page_id]?.page)
+  /** trả về tên trang được chọn */
+  return getPageName(
+    pageStore.all_page_list?.[widgetStore.selected_page_id]?.page
+  )
 }
 /**gỡ cài đặt ứng dụng */
 function deleteApp(id: string) {
   waterfall(
     [
-      // * loading
+      /** * loading */
       (cb: CbError) => {
         toggle_loading(true)
 
         cb()
       },
-      // * gọi api xoá
+      /** * gọi api xoá */
       (cb: CbError) =>
         uninstall_widget(id, (e, r) => {
           if (e) return cb(e)
 
           cb()
         }),
-      // * loại bỏ data khỏi frontend
+      /** * loại bỏ data khỏi frontend */
       (cb: CbError) => {
         remove(app_installed_list.value, app => app._id === id)
 
@@ -168,11 +172,12 @@ function deleteApp(id: string) {
 }
 /**lấy toàn bộ danh sách widget đã cài cho page này */
 function getInstalledWidget() {
+  /** Nếu k có page_id thì return luôn */
   if (!widgetStore.selected_page_id) return
 
-  // bật cờ loading
+  /** bật cờ loading */
   widgetStore.is_loading = true
-
+  /** Lấy thông widget đã cài đặt */
   get_installed_widget(
     {
       _type: 'short-time-token',
@@ -181,7 +186,7 @@ function getInstalledWidget() {
       fb_page_id: widgetStore.selected_page_id,
     },
     (e, r) => {
-      // tắt cờ loading
+      /** tắt cờ loading */
       widgetStore.is_loading = false
 
       if (r) app_installed_list.value = r
@@ -190,6 +195,7 @@ function getInstalledWidget() {
 }
 /**kết nối lại ứng dụng */
 function linkApp(app: AppInstalledInfo) {
+  /** Mở popup */
   openPopup(
     `${app?.snap_app?.url_auth}?page_id=${widgetStore.selected_page_id}&access_token=${app?.access_token}`
   )

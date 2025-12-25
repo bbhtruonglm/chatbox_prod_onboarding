@@ -180,12 +180,14 @@ import ZaloAddMember from './MessageList/MessageItem/PhoneAction/ZaloAddMember.v
 import { storeToRefs } from 'pinia'
 
 const $emit = defineEmits(['toggle_change_assign_staff'])
-
+/** Khai báo các hàm từ store */
 const orgStore = useOrgStore()
 const commonStore = useCommonStore()
 const conversationStore = useConversationStore()
 const extensionStore = useExtensionStore()
+/** hàm copy clipboard */
 const $clipboard = container.resolve(Clipboard)
+/** Hàm toast */
 const $toast = container.resolve(Toast)
 /** Lấy thông tin user */
 const chatbotUserStore = useChatbotUserStore()

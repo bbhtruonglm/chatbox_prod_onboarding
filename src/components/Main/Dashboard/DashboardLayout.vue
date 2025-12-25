@@ -9,11 +9,13 @@
       :class="class_content"
       class="w-full h-full min-w-0"
     >
+      <slot name="menu_mobile" />
       <slot name="content" />
     </div>
   </div>
 </template>
 <script setup lang="ts">
+/** Khai báo props */
 const $props = withDefaults(
   defineProps<{
     /**class của nội dung */

@@ -27,6 +27,7 @@ import PageNotFound from '@/views/404.vue'
 import PostAnalyticIframe from '@/views/PostAnalyticIframe.vue'
 import Pricing from '@/views/Dashboard/Pricing.vue'
 import Register from '@/views/OAuth/Register.vue'
+import RegisterNew from '@/views/OAuth/OAuthNew/RegisterNew.vue'
 import RegisterDetail from '@/views/OAuth/RegisterDetail.vue'
 import ResetPassword from '@/views/OAuth/ResetPassword.vue'
 import SelectPage from '@/views/Dashboard/SelectPage.vue'
@@ -37,7 +38,9 @@ import TiktokRedirectUri from '@/views/TiktokRedirectUri.vue'
 import User from '@/views/Dashboard/User.vue'
 import Widget from '@/views/Dashboard/Widget.vue'
 import ZaloPeronalCore from '@/views/ZaloPeronalCore.vue'
-
+import LoginNew from '@/views/OAuth/OAuthNew/LoginNew.vue'
+import LoginEmailNew from '@/views/OAuth/OAuthNew/LoginEmailNew.vue'
+import RegisterDetailNew from '@/views/OAuth/OAuthNew/RegisterDetailNew.vue'
 export const routes = [
   { path: '/', component: ChatShort },
   // { path: '/', redirect: '/oauth' },
@@ -48,9 +51,13 @@ export const routes = [
     component: OAuthV2,
     children: [
       { path: 'login', component: Login },
+      { path: 'login-new', component: LoginNew },
       { path: 'login-email', component: LoginEmail },
+      { path: 'login-email-new', component: LoginEmailNew },
       { path: 'register', component: Register },
+      { path: 'register-new', component: RegisterNew },
       { path: 'register-detail', component: RegisterDetail },
+      { path: 'register-detail-new', component: RegisterDetailNew },
       { path: 'forgot-password', component: ForgotPassword },
       { path: 'reset-password', component: ResetPassword },
     ],

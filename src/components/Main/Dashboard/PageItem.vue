@@ -98,6 +98,7 @@ class Main {
   reloadPageData() {
     reloadPageData?.()
   }
+
   /**ẩn hiện modal kết nối nền tảng */
   toggleModalConnectPage() {
     // ẩn bỏ các chi tiết thừa

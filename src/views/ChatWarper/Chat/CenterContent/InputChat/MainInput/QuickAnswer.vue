@@ -486,22 +486,22 @@ function selectQuickAnswer(answer: QuickAnswerInfo) {
   /**nội dung của câu trả lời nhanh này */
   let { id, content, list_images, is_ai } = answer
 
-  //  xử lý AI
+  /**  xử lý AI */
   if (is_ai) return handleAi(id)
 
   /**input chat mục tiêu */
   const INPUT_CHAT = document.getElementById('chat-text-input-message')
 
-  // nếu không có nội dung thì thôi
+  /** nếu không có nội dung thì thôi */
   if (!content || !INPUT_CHAT) return
 
-  // thay đổi nội dung template dang {{xxx}} thành giá trị thực nếu có
+  /** thay đổi nội dung template dang {{xxx}} thành giá trị thực nếu có */
   content = replaceTemplateMessage(content)
 
-  // gán giá trị vào input
+  /** gán giá trị vào input */
   $input_service.setInputText(content)
 
-  // nếu trả lời nhanh có ảnh thì thêm vào danh sách tập tin đính kèm
+  /** nếu trả lời nhanh có ảnh thì thêm vào danh sách tập tin đính kèm */
   if (size(list_images))
     messageStore.upload_file_list =
       list_images?.map(url => ({
@@ -512,18 +512,18 @@ function selectQuickAnswer(answer: QuickAnswerInfo) {
         url,
       })) || []
 
-  // tắt modal
+  /** tắt modal */
   commonStore.is_show_quick_answer = false
 
-  // focus vào lại input chat
+  /** focus vào lại input chat */
   focusChat()
 }
 /**xử lý AI */
 function handleAi(action?: string) {
-  // nếu không có hành động gì thì thôi
+  /** nếu không có hành động gì thì thôi */
   if (!action) return
 
-  // xử lý hành động
+  /** xử lý hành động */
   switch (action) {
     case 'translate':
       transalate()
@@ -589,12 +589,12 @@ async function transalate() {
     if (e !== 'DONE') toastError(e)
   }
 
-  // đánh dấu AI đã chạy xong
+  /** đánh dấu AI đã chạy xong */
   messageStore.is_input_run_ai = false
 }
 /**hoàn thành câu */
 async function complete() {
-  // nếu đang loading thì thôi
+  /** nếu đang loading thì thôi */
   if (
     messageStore.is_input_run_ai ||
     !messageStore.list_message ||
@@ -602,14 +602,14 @@ async function complete() {
   )
     return
 
-  // đánh dấu đang chạy AI
+  /** đánh dấu đang chạy AI */
   messageStore.is_input_run_ai = true
 
   try {
-    // tắt modal
+    /** tắt modal */
     commonStore.is_show_quick_answer = false
 
-    // focus vào lại input chat
+    /** focus vào lại input chat */
     focusChat()
 
     /**nội dung chat */
@@ -626,16 +626,16 @@ async function complete() {
     /**input chat */
     const INPUT_CHAT = document.getElementById('chat-text-input-message')
 
-    // nếu không có input chat thì thôi
+    /** nếu không có input chat thì thôi */
     if (!INPUT_CHAT) throw 'DONE'
 
     /**nội dung chat */
     let text = INPUT_CHAT?.innerText
 
-    // nếu không có nội dung thì thôi
+    /** nếu không có nội dung thì thôi */
     if (!text) throw 'DONE'
 
-    // xóa dấu /hoanthanh ở cuối câu, loại bỏ khoảng trắng
+    /** xóa dấu /hoanthanh ở cuối câu, loại bỏ khoảng trắng */
     text = text
       .replace(
         /\/(?:h(?:oanthanh|oanthan|oantha|oanth|oant|oan|oa|o)?|\/)?$/,
@@ -643,10 +643,10 @@ async function complete() {
       )
       .trim()
 
-    // cập nhật lại input trước 1 lần
+    /** cập nhật lại input trước 1 lần */
     $input_service.setInputText(text)
 
-    // gọi api tạo nội dung
+    /** gọi api tạo nội dung */
     const RES = await gen_answer({
       source: SOURCE,
       current: text,
@@ -654,35 +654,35 @@ async function complete() {
       client_id: client_id.value,
     })
 
-    // nếu không có dữ liệu thì thôi
+    /** nếu không có dữ liệu thì thôi */
     if (!RES?.text)
       throw $t('v1.view.main.dashboard.chat.quick_answer.complete_error')
 
-    // thay đổi nội dung mới vào input chat, nếu chưa bị huỷ
+    /** thay đổi nội dung mới vào input chat, nếu chưa bị huỷ */
     if (messageStore.is_input_run_ai) $input_service.setInputText(RES.text)
   } catch (e) {
-    // hiển thị thông báo lỗi
+    /** hiển thị thông báo lỗi */
     if (e !== 'DONE') toastError(e)
   }
 
-  // đánh dấu AI đã chạy xong
+  /** đánh dấu AI đã chạy xong */
   messageStore.is_input_run_ai = false
 }
 /** hàm xử lý thay đổi id page */
 function onChangePageId(id: string) {
   if (!id || !conversationStore.select_conversation?.fb_page_id) return
 
-  // cập nhật id page
+  /** cập nhật id page */
   page_id.value = id
-
+  /** Lấy data từ local storage */
   const PAGE_ID_MAP = getItem('quick_answer_page_id') || {}
-
+  /** Cập nhật value */
   setItem('quick_answer_page_id', {
     ...PAGE_ID_MAP,
     [conversationStore.select_conversation.fb_page_id]: id,
   })
 
-  // lấy dữ liệu trả lời nhanh
+  /** lấy dữ liệu trả lời nhanh */
   getQuickAnswer()
 }
 
@@ -693,7 +693,7 @@ function replaceTemplateMessage(content: string) {
   /** id page của page hiện tại */
   const PAGE_ID = CONVERSATION?.fb_page_id
 
-  // loại bỏ các template chưa xử lý được
+  /** loại bỏ các template chưa xử lý được */
   content = content
     .replace(/#{{FIRST_NAME}}/g, '')
     .replace(/#{{LAST_NAME}}/g, '')
@@ -717,27 +717,27 @@ function replaceTemplateMessage(content: string) {
 
   return (
     content
-      // tên khách hàng
+      /** tên khách hàng */
       .replace(/#{FULL_NAME}/g, CLIENT_NAME)
       .replace(/#{{FULL_NAME}}/g, CLIENT_NAME)
 
-      // tên nhân viên chăm sóc
+      /** tên nhân viên chăm sóc */
       .replace(/#{STAFF_NAME}/g, STAFF_NAME)
       .replace(/#{{STAFF_NAME}}/g, STAFF_NAME)
 
-      // số điện thoại khách hàng
+      /** số điện thoại khách hàng */
       .replace(/#{PHONE}/g, PHONE)
       .replace(/#{{PHONE}}/g, PHONE)
 
-      // email khách hàng
+      /** email khách hàng */
       .replace(/#{EMAIL}/g, EMAIL)
       .replace(/#{{EMAIL}}/g, EMAIL)
 
-      // tên trang
+      /** tên trang */
       .replace(/#{PAGE_NAME}/g, PAGE_NAME)
       .replace(/#{{PAGE_NAME}}/g, PAGE_NAME)
 
-      // giới tính
+      /** giới tính */
       .replace(
         /#SEX\{\{([^|}]+)\|([^|}]+)\|([^|}]+)\}\}/g,
         (_, male, female, unknown) =>
@@ -747,11 +747,11 @@ function replaceTemplateMessage(content: string) {
         getGender(CONVERSATION?.client_gender, male, female, unknown)
       )
 
-      // giá trị ngẫu nhiên
+      /** giá trị ngẫu nhiên */
       .replace(/#\{\{([^}|]+\|[^}]+)\}\}/g, (_, value) => getRandomValue(value))
       .replace(/#\{([^}|]+\|[^}]+)\}/g, (_, value) => getRandomValue(value))
 
-      // thời gian
+      /** thời gian */
       .replace(
         /#\{\{(TODAY|YESTERDAY|TOMORROW)\{((?:DD|MM|YYYY|HH|mm)([/:])(?:DD|MM|YYYY|HH|mm)(?:\3(?:DD|MM|YYYY))?)\}\}\}/g,
         (_, DATE, FORMAT) => formatTime(DATE, FORMAT)
@@ -776,11 +776,11 @@ function getGender(
   female: string,
   unknown: string
 ) {
-  // nếu là giới tính nam
+  /** nếu là giới tính nam */
   if (gender === 'male') return male
-  // nếu là giới tính nữ
+  /** nếu là giới tính nữ */
   if (gender === 'female') return female
-  // nếu là không rõ giới tính
+  /** nếu là không rõ giới tính */
   return unknown
 }
 
@@ -790,7 +790,7 @@ function getRandomValue(content: string) {
   const OPTIONS = content.split('|')
   /** tạo 1 chỉ số ngẫu nhiên */
   const randomIndex = Math.floor(Math.random() * OPTIONS.length)
-  // trả về phần tử ngẫu nhiên
+  /** trả về phần tử ngẫu nhiên */
   return OPTIONS[randomIndex]
 }
 
@@ -801,7 +801,7 @@ function formatTime(date: string, format_str: string) {
   /** định dạng mong muốn */
   let format_rule = ''
 
-  // tạo thời gian theo điều kiện
+  /** tạo thời gian theo điều kiện */
   switch (date) {
     case 'TODAY':
       time = new Date()
@@ -816,7 +816,7 @@ function formatTime(date: string, format_str: string) {
       time = new Date(date)
   }
 
-  // lowercase DD và YYYY vẫn giữ MM
+  /** lowercase DD và YYYY vẫn giữ MM */
   format_rule = format_str?.replace('DD', 'dd')
   format_rule = format_rule?.replace('YYYY', 'yyyy')
 
@@ -917,16 +917,16 @@ onUnmounted(() => window.removeEventListener('message', onWidgetEvent))
 
 /**xử lý dữ liệu widget truyền vào */
 function onWidgetEvent($event: MessageEvent<WidgetEventData>) {
-  // lấy ra các dữ liệu cần thiết
+  /** lấy ra các dữ liệu cần thiết */
   let { _type, content, list_images } = $event?.data
 
-  // chỉ xử lý dữ liệu từ widget
+  /** chỉ xử lý dữ liệu từ widget */
   if (_type !== 'WIDGET') return true
 
   /**nội dung văn bản, đã lọc bỏ cú pháp hình ảnh cũ */
   const CONTENT = content?.split('\n\n##attachment##')?.[0]
 
-  // chạy logic chung vơi trả lời nhanh nội bộ
+  /** chạy logic chung vơi trả lời nhanh nội bộ */
   selectQuickAnswer({ content: CONTENT, list_images })
 }
 

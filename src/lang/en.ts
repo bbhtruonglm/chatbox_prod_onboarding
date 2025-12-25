@@ -555,6 +555,37 @@ const source: Language = {
         free_consultation: 'Free consultation',
         discount: 'discount',
         plans_and_feature: 'Compare plans and features',
+        package_info: 'Package Info',
+        enterprise_form: {
+          title: 'Let’s talk about what Retion can do for you',
+          subtitle:
+            'Our team is here to answer any questions or tailor a solution for you.',
+          expect: {
+            title: 'What you can expect',
+            item_1: 'Learn more about our advanced features',
+            item_2: 'Connect with an expert to discuss your specific needs',
+            item_3: 'Discuss pricing and choose the right plan',
+            item_4: 'No commitment required',
+          },
+          trusted_by:
+            'TRUSTED BY MORE THAN <span class="font-bold">{count}</span> COMPANIES FROM 10+ COUNTRIES',
+          form: {
+            title: 'Talk with a consultant',
+            desc: "We'll call you or email you at {email} to arrange a time to chat.",
+            first_name: 'First name',
+            last_name: 'Last name',
+            phone: 'Phone number',
+            company_size: 'Company size',
+            help_you: 'How can our team help you?',
+            submit: 'Submit',
+            placeholder: {
+              first_name: 'Enter your first name',
+              last_name: 'Enter your last name',
+              phone: 'Enter your phone number',
+              help: 'Enter how can our team help you',
+            },
+          },
+        },
         select_platform_to_connect: 'Select platform to connect:',
         copy_clipboard: 'Copy link',
         copied: 'Copied',
@@ -1133,6 +1164,11 @@ const source: Language = {
               create_folder: 'Create Folder',
               edit_name: 'Rename',
               folder_new_name: 'New Folder',
+              select_album_from_other_page: 'Select album from another page',
+              album_desc:
+                'Each folder displays up to 80 photos, even if there may actually be more.',
+              album_desc_2: 'Use Search to find photos beyond the 81st one.',
+              search: 'Search',
             },
           },
           user: {
@@ -1416,6 +1452,8 @@ const source: Language = {
               domain_logo: 'Domain and logo',
               support: 'Support',
               client: 'Customer count',
+              page: 'Page',
+              member: 'Member',
               fau: 'Activation scenario',
               new_client: 'New customer count',
               ai_text: 'AI text',

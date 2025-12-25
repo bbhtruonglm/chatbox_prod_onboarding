@@ -30,7 +30,7 @@
       >
         {{ $t('v1.view.onboarding.popular') }}
       </div>
-      <div class="pb-10 h-full">
+      <div class="pb-2 flex flex-col min-h-[320px]">
         <!-- Title + price -->
         <div class="flex items-center gap-2 h-172">
           <div
@@ -53,11 +53,11 @@
         <div
           v-if="title !== 'Enterprise'"
           class="py-3 flex gap-3"
-          :class="locale === 'vn' ? 'flex-col' : 'flex-row'"
+          :class="LOCALE === 'vn' ? 'flex-col' : 'flex-row'"
         >
           <span
             class="font-bold"
-            :class="[locale === 'vn' ? 'text-4xl' : 'text-6xl']"
+            :class="[LOCALE === 'vn' ? 'text-4xl' : 'text-6xl']"
           >
             {{ price }}
           </span>
@@ -79,13 +79,19 @@
         </div>
         <div
           v-else
-          class="size-20 my-0.5 text-black"
+          class="py-[3px] text-black"
         >
           <img
             src="@/assets/icons/Enterprise.svg"
             alt="Logo"
-            class="w-20 h-20"
+            class="size-20"
           />
+        </div>
+        <div
+          v-if="note"
+          class="text-xs text-green-600 font-bold mt-1"
+        >
+          {{ note }}
         </div>
 
         <p class="text-sm text-gray-800 font-medium">
@@ -117,7 +123,7 @@
 
       <hr class="" />
 
-      <p class="text-sm text-gray-800 font-medium py-5">
+      <p class="text-sm text-gray-800 font-medium py-5 min-h-[110px]">
         {{ description }}
       </p>
       <!-- Sections -->
@@ -211,44 +217,49 @@
       <!-- Title -->
       <div>
         <h2 class="text-xl font-semibold">
-          Let’s talk about what Retion can do for you
+          {{ $t('v1.view.onboarding.enterprise_form.title') }}
         </h2>
         <p class="text-sm font-medium">
-          Our team is here to answer any questions or tailor a solution for you.
+          {{ $t('v1.view.onboarding.enterprise_form.subtitle') }}
         </p>
       </div>
 
       <!-- What you can expect -->
       <div class="flex flex-col gap-3 text-sm">
-        <h3 class="font-semibold">What you can expect</h3>
+        <h3 class="font-semibold">
+          {{ $t('v1.view.onboarding.enterprise_form.expect.title') }}
+        </h3>
         <ul class="text-gray-700 space-y-3">
           <li class="flex items-center gap-2">
-            <span><BookOpenIcon class="size-5" /></span> Learn more about our
-            advanced features
+            <span><BookOpenIcon class="size-5" /></span>
+            {{ $t('v1.view.onboarding.enterprise_form.expect.item_1') }}
           </li>
           <li class="flex items-center gap-2">
-            <span><UserCircleIcon class="size-5" /></span> Connect with an
-            expert to discuss your specific needs
+            <span><UserCircleIcon class="size-5" /></span>
+            {{ $t('v1.view.onboarding.enterprise_form.expect.item_2') }}
           </li>
           <li class="flex items-center gap-2">
-            <span><CurrencyDollarIcon class="size-5" /></span> Discuss pricing
-            and choose the right plan
+            <span><CurrencyDollarIcon class="size-5" /></span>
+            {{ $t('v1.view.onboarding.enterprise_form.expect.item_3') }}
           </li>
           <li class="flex items-center gap-2">
-            <span><LockClosedIcon class="size-5" /></span> No commitment
-            required
+            <span><LockClosedIcon class="size-5" /></span>
+            {{ $t('v1.view.onboarding.enterprise_form.expect.item_4') }}
           </li>
         </ul>
       </div>
 
       <!-- Logos -->
       <div class="w-full flex flex-col justify-center items-center py-3 gap-3">
-        <p class="text-gray-600 text-sm">
-          TRUSTED BY MORE THAN
-          <span class="font-bold">10,000</span> COMPANIES FROM 10+ COUNTRIES
-        </p>
+        <p
+          class="text-gray-600 text-sm upppercase"
+          v-html="
+            $t('v1.view.onboarding.enterprise_form.trusted_by', {
+              count: '10,000',
+            })
+          "
+        ></p>
         <div class="flex flex-wrap items-center gap-6 text-gray-400">
-          <!-- thay bằng <img> logos thực -->
           <span class="font-semibold">NPAY</span>
           <span class="font-semibold">Grab</span>
           <span class="font-semibold">Viettel</span>
@@ -260,37 +271,53 @@
       <hr class="" />
       <!-- Form -->
       <div class="">
-        <h3 class="font-semibold text-xl">Talk with a consultant</h3>
-        <p class="text-gray-600 text-sm">
-          We'll call you or email you at
-          <a
-            href="mailto:mike@botbanhang.vn"
-            class="text-black font-semibold"
-            >mike@botbanhang.vn</a
-          >
-          to arrange a time to chat.
-        </p>
+        <h3 class="font-semibold text-xl">
+          {{ $t('v1.view.onboarding.enterprise_form.form.title') }}
+        </h3>
+        <p
+          class="text-gray-600 text-sm"
+          v-html="
+            $t('v1.view.onboarding.enterprise_form.form.desc', {
+              email: `<a href='mailto:mike@botbanhang.vn' class='text-black font-semibold'>mike@botbanhang.vn</a>`,
+            })
+          "
+        ></p>
 
-        <form class="mt-4 space-y-4">
+        <form
+          class="mt-4 space-y-4"
+          @submit.prevent="submitForm"
+        >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium"
-                >First name <span class="text-red-500">*</span></label
+                >{{ $t('v1.view.onboarding.enterprise_form.form.first_name') }}
+                <span class="text-red-500">*</span></label
               >
               <input
+                v-model="FORM_DATA.firstName"
                 type="text"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
-                placeholder="Enter your first name"
+                :placeholder="
+                  $t(
+                    'v1.view.onboarding.enterprise_form.form.placeholder.first_name'
+                  )
+                "
               />
             </div>
             <div>
               <label class="block text-sm font-medium"
-                >Last name <span class="text-red-500">*</span></label
+                >{{ $t('v1.view.onboarding.enterprise_form.form.last_name') }}
+                <span class="text-red-500">*</span></label
               >
               <input
+                v-model="FORM_DATA.lastName"
                 type="text"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
-                placeholder="Enter your last name"
+                :placeholder="
+                  $t(
+                    'v1.view.onboarding.enterprise_form.form.placeholder.last_name'
+                  )
+                "
               />
             </div>
           </div>
@@ -298,19 +325,29 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium"
-                >Phone number <span class="text-red-500">*</span></label
+                >{{ $t('v1.view.onboarding.enterprise_form.form.phone') }}
+                <span class="text-red-500">*</span></label
               >
               <input
+                v-model="FORM_DATA.phone"
                 type="text"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
-                placeholder="Enter phone number"
+                :placeholder="
+                  $t(
+                    'v1.view.onboarding.enterprise_form.form.placeholder.phone'
+                  )
+                "
               />
             </div>
             <div>
               <label class="block text-sm font-medium"
-                >Company size <span class="text-red-500">*</span></label
+                >{{
+                  $t('v1.view.onboarding.enterprise_form.form.company_size')
+                }}
+                <span class="text-red-500">*</span></label
               >
               <select
+                v-model="FORM_DATA.companySize"
                 class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
               >
                 <option>1-10</option>
@@ -323,13 +360,16 @@
 
           <div>
             <label class="block text-sm font-medium"
-              >How can our team help you?
+              >{{ $t('v1.view.onboarding.enterprise_form.form.help_you') }}
               <span class="text-red-500">*</span></label
             >
             <textarea
+              v-model="FORM_DATA.description"
               rows="6"
               class="p-2 border block w-full rounded-md border-gray-300 shadow-sm"
-              placeholder="Enter how can our team help you"
+              :placeholder="
+                $t('v1.view.onboarding.enterprise_form.form.placeholder.help')
+              "
             ></textarea>
           </div>
           <div class="flex w-full justify-end">
@@ -337,7 +377,7 @@
               type="submit"
               class="bg-cyan-700 text-white px-6 py-2 rounded-md hover:bg-cyan-800"
             >
-              Submit
+              {{ $t('v1.view.onboarding.enterprise_form.form.submit') }}
             </button>
           </div>
         </form>
@@ -347,19 +387,27 @@
 </template>
 
 <script setup lang="ts">
+import { toast, toastError } from '@/service/helper/alert'
+import { RegistrationDataService } from '@/utils/helper/RegistrationData'
 import {
-  CheckBadgeIcon,
-  EnvelopeIcon,
   BookOpenIcon,
-  UserCircleIcon,
+  CheckBadgeIcon,
   CurrencyDollarIcon,
-  LockClosedIcon,
-  GifIcon,
+  EnvelopeIcon,
   GiftIcon,
+  LockClosedIcon,
+  UserCircleIcon,
 } from '@heroicons/vue/24/outline'
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 import Cookies from 'js-cookie'
-import { withDefaults } from 'vue'
+import { container } from 'tsyringe'
+import { ref, onMounted } from 'vue'
+
+/** Service quản lý dữ liệu đăng ký */
+const REGISTRATION_SERVICE = container.resolve(RegistrationDataService)
+const emit = defineEmits<{
+  (e: 'submit'): void
+}>()
 
 // --- Types ---
 type SectionItem = { text: string; enabled: boolean }
@@ -404,6 +452,8 @@ const props = withDefaults(
     discount_percent?: string
     /** Mô tả giảm giá */
     discount?: string
+    /** Ghi chú thêm */
+    note?: string
   }>(),
   {
     title: '',
@@ -423,10 +473,74 @@ const props = withDefaults(
     code: '',
     discount_percent: '',
     discount: '',
+    note: '',
   }
 )
+
 /** Lấy locale từ cookies */
-const locale = Cookies.get('locale') || 'en'
+const LOCALE = Cookies.get('locale') || 'vn'
+
+/** Form data */
+const FORM_DATA = ref({
+  firstName: '',
+  lastName: '',
+  phone: '',
+  companySize: '1-10',
+  description: '',
+})
+
+/**
+ * Load saved data on mount
+ */
+onMounted(() => {
+  const SAVED_DATA = REGISTRATION_SERVICE.getRegistrationData()
+  if (SAVED_DATA?.enterprise_notes) {
+    try {
+      const PARSED_NOTES = JSON.parse(SAVED_DATA.enterprise_notes)
+      FORM_DATA.value = { ...FORM_DATA.value, ...PARSED_NOTES }
+    } catch (e) {
+      console.error('Failed to parse saved enterprise notes', e)
+    }
+  }
+})
+
+/** Submit form */
+const submitForm = () => {
+  if (
+    !FORM_DATA.value.firstName ||
+    !FORM_DATA.value.lastName ||
+    !FORM_DATA.value.phone ||
+    !FORM_DATA.value.description
+  ) {
+    toastError('Please fill in all required fields')
+    return
+  }
+
+  /** Save to local storage */
+  REGISTRATION_SERVICE.updateOnboardingData({
+    package_info: {
+      enterprise_notes: JSON.stringify(FORM_DATA.value),
+      package_selected: 'Enterprise',
+    },
+  })
+
+  // Emit submit event to parent
+  // Assuming parent handles flow navigation
+  // We need to inject the parent emit from UpgradeModalV2 but this is a component.
+  // We should prob emit an event that UpgradeModalV2 listens to.
+  // Actually, wait, UpgradeModalV2 listens to @submit on the component instance?
+  // Checking UpgradeModalV2... it doesn't listen to anything specific from PricingCard other than what we might add.
+  // UpgradeModalV2 has @submit="submitPackage" on itself from Onboarding.vue, but inside it calls submitPackage locally.
+  // We need to trigger the parent's generic submit flow.
+
+  // Let's emit a custom 'confirm-enterprise' event or similar if needed,
+  // OR we just assume the button inside PricingCard triggers the flow.
+  // User request: "lưu lại form này vào phải nhập thì mới cho confirm. Tiếp tục flow"
+
+  // Let's emit a 'submit-enterprise' event.
+  toast('success', 'Information saved successfully')
+  emit('submit')
+}
 </script>
 
 <style scoped>

@@ -50,13 +50,34 @@ export function composableService() {
       // chuyển hướng vào dashboard
       this.redirect('/dashboard')
     }
+    /**đăng nhập chatbox bằng token fb từ màn đăng ký*/
+    @loadingV2(commonStore, 'is_loading_full_screen')
+    @error()
+    async loginFbRegister(access_token: string) {
+      /**jwt đại diện cho người dùng */
+      const { access_token: JWT } = await this.API_OAUTH_FB.login(
+        access_token,
+        this.SERVICE_LOCAL_STORAGE.getItem('ref')
+      )
+
+      /** lưu token vào local storage */
+      this.SERVICE_LOCAL_STORAGE.setItem('access_token', JWT)
+
+      /** chuyển hướng vào dashboard */
+      this.redirect('/onboarding')
+    }
     /**chuyển hướng */
     redirect(to: RouteLocationRaw) {
-      // xóa thông báo lỗi trước khi
+      /* xóa thông báo lỗi trước khi */
       oAuthStore.error_message = undefined
 
-      // chuyển hướng đến trang khác
+      /** chuyển hướng đến trang khác */
       $router.push(to)
+    }
+    /** lưu token fb vào local storage */
+    saveAccessToken(access_token: string) {
+      // lưu token vào local storage
+      this.SERVICE_LOCAL_STORAGE.setItem('temp_token', access_token)
     }
   }
 
