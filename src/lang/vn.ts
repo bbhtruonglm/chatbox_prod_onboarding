@@ -312,6 +312,37 @@ const source: Language = {
         free_consultation: 'Tư vấn miễn phí',
         discount: 'giảm giá',
         plans_and_feature: 'So sánh các gói dịch vụ và tính năng',
+        package_info: 'Thông tin gói',
+        enterprise_form: {
+          title: 'Hãy trao đổi về những gì Retion có thể làm cho bạn',
+          subtitle:
+            'Đội ngũ của chúng tôi sẵn sàng giải đáp mọi thắc mắc hoặc tùy chỉnh giải pháp cho bạn.',
+          expect: {
+            title: 'Những gì bạn có thể mong đợi',
+            item_1: 'Tìm hiểu thêm về các tính năng nâng cao',
+            item_2: 'Kết nối với chuyên gia để thảo luận nhu cầu cụ thể',
+            item_3: 'Thảo luận về giá và chọn gói phù hợp',
+            item_4: 'Không yêu cầu cam kết',
+          },
+          trusted_by:
+            'ĐƯỢC TIN DÙNG BỞI HƠN <span class="font-bold">{count}</span> DOANH NGHIỆP TỪ 10+ QUỐC GIA',
+          form: {
+            title: 'Trò chuyện với tư vấn viên',
+            desc: 'Chúng tôi sẽ gọi hoặc gửi email cho bạn tại {email} để sắp xếp thời gian trò chuyện.',
+            first_name: 'Tên',
+            last_name: 'Họ',
+            phone: 'Số điện thoại',
+            company_size: 'Quy mô công ty',
+            help_you: 'Đội ngũ chúng tôi có thể giúp gì cho bạn?',
+            submit: 'Gửi thông tin',
+            placeholder: {
+              first_name: 'Nhập tên của bạn',
+              last_name: 'Nhập họ của bạn',
+              phone: 'Nhập số điện thoại',
+              help: 'Nhập nội dung bạn cần hỗ trợ',
+            },
+          },
+        },
         select_platform_to_connect: 'Chọn nền tảng cần Kết nối:',
         copy_clipboard: 'Copy link',
         copied: 'Copied',
@@ -1160,12 +1191,14 @@ const source: Language = {
               staff_amount: 'Số lượng nhân sự',
               bot: 'Chatbot',
               chat_feature: 'Các tính năng chat',
-              ai_feature: 'Các tính năng AI',
+              ai_feature: 'Tính năng AI',
               company_name: 'Tên doanh nghiệp',
               api_integrate: 'Tích hợp API',
               domain_logo: 'Tên miền và logo',
               support: 'Hỗ trợ',
               client: 'Số khách hàng',
+              page: 'Trang',
+              member: 'Thành viên',
               fau: 'Kịch bản kích hoạt',
               new_client: 'Số khách hàng mới',
               ai_text: 'AI văn bản',
@@ -1376,6 +1409,16 @@ const source: Language = {
                 waiting_payment: 'Đang chờ thành toán',
               },
               lite: 'Lite',
+              lite_description:
+                'Phù hợp với cá nhân, cửa hàng, hộ kinh doanh mới bắt đầu.',
+              pro_description:
+                'Phù hợp với doanh nghiệp vừa và nhỏ đang sẵn sàng mở rộng và tăng trưởng.',
+              business_description:
+                'Phù hợp với Doanh nghiệp có lượng lớn khách hàng',
+              enterprise_description:
+                'Phù hợp với Doanh nghiệp lớn, Tập đoàn cần bảo mật dữ liệu. Đáp ứng các yêu cầu đặc biệt.',
+              custom: 'Tùy chỉnh',
+
               upgrade_v2: {
                 title: 'Choose the right plan for your team',
                 choose_team_plan: 'Choose your team plan',

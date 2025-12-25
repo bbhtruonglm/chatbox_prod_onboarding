@@ -145,52 +145,59 @@
                 </button>
               </div>
 
-              <!-- Email addresses -->
-              <div
-                v-for="(email, index) in emails"
-                :key="index"
-                class="flex items-center gap-5"
-              >
-                <div class="flex-1">
-                  <label class="block text-sm font-medium mb-1">{{
-                    $t('v1.view.onboarding.email_address')
-                  }}</label>
-                  <input
-                    type="email"
-                    v-model="emails[index]"
-                    :placeholder="$t('v1.view.onboarding.enter_email')"
-                    class="w-full border rounded-md px-3 py-2 relative"
-                    :ref="el => { if (index === 0) FIRST_EMAIL_INPUT = el as HTMLInputElement }"
-                  />
-                  <p
-                    v-if="emailErrors[index]"
-                    class="text-red-500 text-xs absolute"
-                  >
-                    {{ emailErrors[index] }}
-                  </p>
-                </div>
-                <button
-                  @click="sendInvite(email, index)"
-                  class="mt-6 px-4 py-2 w-28 rounded-md text-sm font-medium"
-                  :class="[
-                    /** Check có email và không sai regex */
-                    email[index] && !emailErrors[index]
-                      ? 'bg-blue-600 hover:bg-blue-500 text-white'
-                      : 'bg-gray-100 hover:bg-gray-200',
-                  ]"
+              <!-- Email addresses (Ẩn đi do chưa có API) -->
+              <div v-if="false">
+                <div
+                  v-for="(email, index) in emails"
+                  :key="index"
+                  class="flex items-center gap-5"
                 >
-                  {{ $t('v1.view.onboarding.send_invite') }}
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium mb-1">{{
+                      $t('v1.view.onboarding.email_address')
+                    }}</label>
+                    <input
+                      type="email"
+                      v-model="emails[index]"
+                      :placeholder="$t('v1.view.onboarding.enter_email')"
+                      class="w-full border rounded-md px-3 py-2 relative"
+                      :ref="
+                        el => {
+                          if (index === 0)
+                            FIRST_EMAIL_INPUT = el as HTMLInputElement
+                        }
+                      "
+                    />
+                    <p
+                      v-if="emailErrors[index]"
+                      class="text-red-500 text-xs absolute"
+                    >
+                      {{ emailErrors[index] }}
+                    </p>
+                  </div>
+                  <button
+                    @click="sendInvite(email, index)"
+                    class="mt-6 px-4 py-2 w-28 rounded-md text-sm font-medium"
+                    :class="[
+                      /** Check có email và không sai regex */
+                      email[index] && !emailErrors[index]
+                        ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                        : 'bg-gray-100 hover:bg-gray-200',
+                    ]"
+                  >
+                    {{ $t('v1.view.onboarding.send_invite') }}
+                  </button>
+                </div>
+
+                <!-- Add more email field -->
+                <button
+                  @click="addEmailField"
+                  class="flex items-center gap-2 text-sm text-gray-700 hover:text-black"
+                >
+                  <PlusCircleIcon class="size-5" />
+                  {{ $t('v1.view.onboarding.invite_email') }}
                 </button>
               </div>
-
-              <!-- Add more email field -->
-              <button
-                @click="addEmailField"
-                class="flex items-center gap-2 text-sm text-gray-700 hover:text-black"
-              >
-                <PlusCircleIcon class="size-5" />
-                {{ $t('v1.view.onboarding.invite_email') }}
-              </button>
             </div>
           </div>
         </div>
@@ -545,7 +552,7 @@ onBeforeUnmount(() => {
 })
 
 /** INVITE LINK */
-const INVITE_LINKS = 'https://retion.ai/invite?code=123123'
+const INVITE_LINKS = import.meta.env.VITE_REGISTER_URL
 
 /** Trạng thái copied */
 const IS_COPIED = ref<Boolean>(false)

@@ -77,138 +77,158 @@
             </p>
           </div>
 
-          <!-- Nút verify -->
-          <div
-            v-if="!is_sending_verify_code"
-            class="flex gap-5"
-          >
-            <button
-              :class="[
-                'px-6 py-3 flex items-center gap-1 border rounded-md font-medium ',
-                phone_value.trim()
-                  ? 'bg-blue-700 text-white border-blue-700'
-                  : 'bg-blue-100 text-blue-700 border-blue-300',
-              ]"
-              @click="handleVerify"
+          <!-- PHẦN CŨ (ẨN ĐI THEO YÊU CẦU) -->
+          <div v-if="false">
+            <!-- Nút verify -->
+            <div
+              v-if="!is_sending_verify_code"
+              class="flex gap-5"
             >
-              <ZaloIcon class="size-4" />
-              {{ $t('v1.view.onboarding.verify_via_zalo') }}
-            </button>
-            <button
-              :class="[
-                'px-6 py-3 flex items-center gap-1 border  rounded-md font-medium ',
-                phone_value.trim()
-                  ? 'bg-green-700 text-white border-green-700'
-                  : 'bg-green-100 text-green-700 border-green-300',
-              ]"
-              @click="handleVerify"
-            >
-              <WhatsappIcon />
-              {{ $t('v1.view.onboarding.verify_via_whatsapp') }}
-            </button>
-            <button
-              :class="[
-                'px-6 py-3 flex items-center gap-1 border rounded-md font-medium ',
-                phone_value.trim()
-                  ? 'bg-slate-700 text-white border-slate-700'
-                  : 'bg-slate-100 text-slate-700 border-slate-300',
-              ]"
-              @click="handleVerify"
-            >
-              <div
+              <button
                 :class="[
-                  'flex justify-center items-center p-1 rounded-full ',
+                  'px-6 py-3 flex items-center gap-1 border rounded-md font-medium ',
                   phone_value.trim()
-                    ? 'bg-white text-slate-700'
-                    : 'bg-slate-700 text-white',
+                    ? 'bg-blue-700 text-white border-blue-700'
+                    : 'bg-blue-100 text-blue-700 border-blue-300',
                 ]"
+                @click="handleVerify"
               >
-                <ChatBubbleLeftEllipsisIcon class="size-3" />
-              </div>
-              {{ $t('v1.view.onboarding.verify_via_sms') }}
-            </button>
-          </div>
+                <ZaloIcon class="size-4" />
+                {{ $t('v1.view.onboarding.verify_via_zalo') }}
+              </button>
+              <button
+                :class="[
+                  'px-6 py-3 flex items-center gap-1 border  rounded-md font-medium ',
+                  phone_value.trim()
+                    ? 'bg-green-700 text-white border-green-700'
+                    : 'bg-green-100 text-green-700 border-green-300',
+                ]"
+                @click="handleVerify"
+              >
+                <WhatsappIcon />
+                {{ $t('v1.view.onboarding.verify_via_whatsapp') }}
+              </button>
+              <button
+                :class="[
+                  'px-6 py-3 flex items-center gap-1 border rounded-md font-medium ',
+                  phone_value.trim()
+                    ? 'bg-slate-700 text-white border-slate-700'
+                    : 'bg-slate-100 text-slate-700 border-slate-300',
+                ]"
+                @click="handleVerify"
+              >
+                <div
+                  :class="[
+                    'flex justify-center items-center p-1 rounded-full ',
+                    phone_value.trim()
+                      ? 'bg-white text-slate-700'
+                      : 'bg-slate-700 text-white',
+                  ]"
+                >
+                  <ChatBubbleLeftEllipsisIcon class="size-3" />
+                </div>
+                {{ $t('v1.view.onboarding.verify_via_sms') }}
+              </button>
+            </div>
 
-          <!-- OTP -->
-
-          <div
-            v-else
-            class="flex flex-col gap-3"
-          >
-            <button
-              v-if="is_sending_verify_code"
-              class="px-5 py-2 w-60 flex justify-center border bg-slate-200 text-slate-700 hover:bg-slate-700 hover:text-white border-slate-700 items-center gap-1 rounded-md font-semibold text-sm"
-              @click="changePhone"
+            <!-- OTP form (Ẩn đi) -->
+            <div
+              v-else
+              class="flex flex-col gap-3"
             >
-              {{ $t('v1.view.onboarding.change_phone') }}
-            </button>
+              <button
+                v-if="is_sending_verify_code"
+                class="px-5 py-2 w-60 flex justify-center border bg-slate-200 text-slate-700 hover:bg-slate-700 hover:text-white border-slate-700 items-center gap-1 rounded-md font-semibold text-sm"
+                @click="changePhone"
+              >
+                {{ $t('v1.view.onboarding.change_phone') }}
+              </button>
 
-            <h4 class="text-sm">{{ $t('v1.view.onboarding.pin_code') }}</h4>
+              <h4 class="text-sm">{{ $t('v1.view.onboarding.pin_code') }}</h4>
 
-            <div class="flex flex-col gap-2">
-              <div class="flex gap-2 items-center">
-                <!-- 3 ô trái -->
-                <div class="flex">
-                  <input
-                    v-for="(__, i) in 3"
-                    :key="'left-' + i"
-                    type="text"
-                    maxlength="1"
-                    v-model="OTP[i]"
-                    @input="onInputOTP(i, $event)"
-                    @keydown="onKeydownOTP(i, $event)"
-                    @paste="onPasteOTP($event)"
-                    class="size-9 text-center border"
-                    :ref="el => setInputRef(el as HTMLInputElement | null, i)"
-                    :class="[
-                      i === 0
-                        ? 'rounded-l-md'
-                        : i === 2
-                        ? 'rounded-r-md'
-                        : 'border-x-0',
-                    ]"
-                  />
+              <div class="flex flex-col gap-2">
+                <div class="flex gap-2 items-center">
+                  <!-- 3 ô trái -->
+                  <div class="flex">
+                    <input
+                      v-for="(__, i) in 3"
+                      :key="'left-' + i"
+                      type="text"
+                      maxlength="1"
+                      v-model="OTP[i]"
+                      @input="onInputOTP(i, $event)"
+                      @keydown="onKeydownOTP(i, $event)"
+                      @paste="onPasteOTP($event)"
+                      class="size-9 text-center border"
+                      :ref="el => setInputRef(el as HTMLInputElement | null, i)"
+                      :class="[
+                        i === 0
+                          ? 'rounded-l-md'
+                          : i === 2
+                          ? 'rounded-r-md'
+                          : 'border-x-0',
+                      ]"
+                    />
+                  </div>
+                  <span>-</span>
+                  <!-- 3 ô phải -->
+                  <div class="flex">
+                    <input
+                      v-for="(__, i) in 3"
+                      :key="'right-' + i"
+                      type="text"
+                      maxlength="1"
+                      v-model="OTP[i + 3]"
+                      @input="onInputOTP(i + 3, $event)"
+                      @keydown="onKeydownOTP(i + 3, $event)"
+                      @paste="onPasteOTP($event)"
+                      class="size-9 text-center border"
+                      :ref="el => setInputRef(el as HTMLInputElement | null, i + 3)"
+                      :class="[
+                        i === 0
+                          ? 'rounded-l-md'
+                          : i === 2
+                          ? 'rounded-r-md'
+                          : 'border-x-0',
+                      ]"
+                    />
+                  </div>
                 </div>
-                <span>-</span>
-                <!-- 3 ô phải -->
-                <div class="flex">
-                  <input
-                    v-for="(__, i) in 3"
-                    :key="'right-' + i"
-                    type="text"
-                    maxlength="1"
-                    v-model="OTP[i + 3]"
-                    @input="onInputOTP(i + 3, $event)"
-                    @keydown="onKeydownOTP(i + 3, $event)"
-                    @paste="onPasteOTP($event)"
-                    class="size-9 text-center border"
-                    :ref="el => setInputRef(el as HTMLInputElement | null, i + 3)"
-                    :class="[
-                      i === 0
-                        ? 'rounded-l-md'
-                        : i === 2
-                        ? 'rounded-r-md'
-                        : 'border-x-0',
-                    ]"
-                  />
-                </div>
+                <h4
+                  v-if="time_remaining"
+                  class="text-sm text-gray-500"
+                >
+                  {{ $t('v1.view.onboarding.get_pin_code') }}
+                  (<span>{{ time_remaining }}s</span>)
+                </h4>
+                <a
+                  v-else
+                  target="_blank"
+                  class="underline text-sm"
+                >
+                  {{ $t('v1.view.onboarding.send_code_again') }}
+                </a>
               </div>
-              <h4
-                v-if="time_remaining"
-                class="text-sm text-gray-500"
-              >
-                {{ $t('v1.view.onboarding.get_pin_code') }}
-                (<span>{{ time_remaining }}s</span>)
-              </h4>
-              <a
-                v-else
-                target="_blank"
-                class="underline text-sm"
-              >
-                {{ $t('v1.view.onboarding.send_code_again') }}
-              </a>
             </div>
           </div>
+
+          <!-- Nút verify mới (Updated: Unverify flow) -->
+          <div class="flex gap-5">
+            <button
+              :class="[
+                'px-10 py-3 flex items-center gap-1 rounded-md font-medium',
+                phone_value.trim() && IS_PHONE_VALID
+                  ? 'bg-blue-700 text-white hover:bg-blue-500'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed',
+              ]"
+              :disabled="!phone_value.trim() || !IS_PHONE_VALID"
+              @click="handleVerify"
+            >
+              {{ $t('v1.view.onboarding.continue') || 'Tiếp tục' }}
+            </button>
+          </div>
+
+          <!-- OTP section removed/hidden as per request 'nhập phone -> unverify' -->
         </div>
       </div>
       <div class="h-16"></div>
@@ -512,8 +532,8 @@ onBeforeUnmount(() => {
 
 /** Hàm gửi verify */
 const handleVerify = () => {
-  /** bật Check verify */
-  is_sending_verify_code.value = true
+  /** Không cần gửi mã verify, emit luôn */
+  $emit('verify')
 }
 
 /** đổi số điện thoại */

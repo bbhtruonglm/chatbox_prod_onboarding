@@ -398,6 +398,9 @@ import { Toast } from '@/utils/helper/Alert/Toast'
 import type { IAlert } from '@/utils/helper/Alert/type'
 import { setItem, getItem } from '@/service/helper/localStorage'
 import { BillingAppOrganization } from '@/utils/api/Billing'
+import { N4SerivceAppUser } from '@/utils/api/N4Service/User'
+import { purchase_package, read_wallet } from '@/service/api/chatbox/billing'
+import { useOrgStore } from '@/stores'
 
 import Modal from '@/components/Modal.vue'
 import Facebook from '@/components/OAuth/Facebook.vue'
@@ -412,6 +415,7 @@ import OnboardingQuickStarter from './OnboardingQuickStarter.vue'
 const { t: $t } = useI18n()
 /** Common store */
 const commonStore = useCommonStore()
+const orgStore = useOrgStore()
 /** Service quản lý dữ liệu đăng ký */
 const REGISTRATION_SERVICE: IRegistrationDataService = container.resolve(
   RegistrationDataService
@@ -425,7 +429,7 @@ const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
 const API_OAUTH_FB = new N4SerivcePublicOauthFacebok()
 
 /** 1: 5 bước cơ bản, 2: loading, 3: verify phone, 4: upgrade, 5: quick start, 6: creating, 7: verify email */
-const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
+const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(4)
 
 /** email để verify */
 const email = ref('')
@@ -539,7 +543,10 @@ const completeLoading = () => {
   }
 }
 /** Hàm hoàn thành loading */
-const completeCreatingAccount = () => {
+const completeCreatingAccount = async () => {
+  /** Chạy các hàm bổ sung */
+  await runAdditionalSetup()
+
   /** Xóa dữ liệu đăng ký */
   REGISTRATION_SERVICE.clearRegistrationData()
   /** Chuyển sang màn dashboard hoặc trang chủ */
@@ -824,6 +831,103 @@ async function onReLoginSuccess(token: string) {
   relogin_modal_ref.value?.toggleModal()
   /** Submit form */
   await submitForm()
+}
+
+/** Hàm chạy các setup bổ sung */
+const runAdditionalSetup = async () => {
+  console.log('Running additional setup functions...')
+  try {
+    /** Lấy thông tin cần thiết */
+    const USER_ID = getItem('user_id')
+    const ORG_ID = getItem('selected_org_id')
+    const ORG_PHONE = phone.value
+
+    /** Lấy dữ liệu onboarding từ service */
+    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+
+    /** Helper format link */
+    const formatLink = (prefix: string, value?: string) => {
+      if (!value || value.trim() === '') return undefined
+      /** Nếu đã có http thì giữ nguyên */
+      if (value.startsWith('http')) return value
+      /** Nối prefix */
+      return `https://${prefix}${value}`
+    }
+
+    /** Gọi API cập nhật thông tin user */
+    if (USER_ID && ORG_ID && REGISTRATION_DATA) {
+      /** Tạo service */
+      const SERVICE_USER = new N4SerivceAppUser()
+      // Cập nhật thông tin user
+      await SERVICE_USER.updateChatbotUserInfo({
+        custom_id: USER_ID,
+        org_id: ORG_ID,
+        org_phone: ORG_PHONE,
+        /** Map các trường onboarding */
+        industry: REGISTRATION_DATA.industry,
+        role: REGISTRATION_DATA.role,
+        company_name: REGISTRATION_DATA.company_name,
+        preferences: REGISTRATION_DATA.preferences,
+        /** Map company details */
+        website: formatLink('', REGISTRATION_DATA.company_details?.website), // Input UI đã có www. nhưng value chỉ là phần nhập
+        facebook_link: formatLink(
+          'facebook.com/',
+          REGISTRATION_DATA.company_details?.facebook
+        ),
+        instagram_link: formatLink(
+          'instagram.com/',
+          REGISTRATION_DATA.company_details?.instagram
+        ),
+        tiktok_link: formatLink(
+          'tiktok.com/',
+          REGISTRATION_DATA.company_details?.tiktok
+        ),
+        zalo_link: formatLink(
+          'zalo.me/',
+          REGISTRATION_DATA.company_details?.zalo
+        ),
+      })
+      console.log('Cập nhật thông tin chatbot user thành công')
+
+      /** Kích hoạt gói dùng thử nếu có */
+      if (
+        REGISTRATION_DATA.package_selected &&
+        REGISTRATION_DATA.package_selected !== 'Enterprise'
+      ) {
+        try {
+          console.log(
+            'Đang kích hoạt gói dùng thử:',
+            REGISTRATION_DATA.package_selected
+          )
+          /* Lấy thông tin ví */
+          const WALLET = await read_wallet(ORG_ID)
+          // Kiểm tra ví
+          if (WALLET?.wallet_id) {
+            /** Gọi API đăng ký gói */
+            await purchase_package(
+              ORG_ID,
+              WALLET.wallet_id,
+              REGISTRATION_DATA.package_selected as any,
+              1
+            )
+            console.log('Kích hoạt gói thành công')
+          } else {
+            console.warn('Không tìm thấy ví để kích hoạt gói')
+          }
+        } catch (error) {
+          console.error('Lỗi khi kích hoạt gói:', error)
+          /** Không throw lỗi để flow tiếp tục */
+        }
+        // Kích hoạt gói dùng thử thành công
+      } else if (REGISTRATION_DATA.package_selected === 'Enterprise') {
+        console.log(
+          'Gói Enterprise đã được lưu, nhân viên tư vấn sẽ liên hệ sau.'
+        )
+      }
+    }
+  } catch (error) {
+    console.error('Lỗi khi chạy setup bổ sung:', error)
+  }
 }
 
 /** Step 1 */

@@ -325,7 +325,7 @@ const COMMON_STORE = useCommonStore()
 /** Lấy giá trị org */
 const orgStore = useOrgStore()
 /** Hàm dịch */
-const { t: $t } = useI18n()
+const { t: $t, locale } = useI18n()
 
 import { RegistrationDataService } from '@/utils/helper/RegistrationData'
 import { container } from 'tsyringe'
@@ -381,10 +381,10 @@ const submitPackage = () => {
 const FILTERED_PACKAGES = computed(() => {
   if (ACTIVE_INDEX.value === 0) {
     /** Tab 0 = All plans */
-    return PACKAGES
+    return PACKAGES.value
   } else {
     /** Tab 1 = Business & Enterprise */
-    return PACKAGES.filter(pkg =>
+    return PACKAGES.value.filter(pkg =>
       ['Business', 'Enterprise'].includes(pkg.title)
     )
   }
@@ -415,136 +415,297 @@ const ACTIVE_INDEX = ref(0)
 const LOCALE = Cookies.get('locale') || 'en'
 
 /** Mock các gói */
-const PACKAGES = [
+const PACKAGES = computed(() => [
   {
     title: 'Lite',
-    price: LOCALE === 'en' ? '$8' : currency(199000) + 'đ',
-    is_sale_off: $t('v1.view.onboarding.is_sale_off'),
-    original_price: LOCALE === 'en' ? '$10' : currency(270000) + 'đ',
-    code: 'BBH',
-    discount_percent: '40%',
-    discount: $t('v1.view.onboarding.discount'),
-    subtitle: $t('v1.view.onboarding.lite_subtitle'),
+    price: locale.value === 'en' ? '$8' : currency(199000) + 'đ',
+    is_sale_off: '',
+    original_price: locale.value === 'en' ? '$8' : currency(199000) + 'đ',
+    code: 'LITE',
+    discount_percent: '',
+    discount: '',
+    note: $t('v1.view.main.dashboard.org.pay.note'),
+    subtitle: $t('v1.view.main.dashboard.org.pay.lite_description'),
     ctaText: $t('v1.view.onboarding.use_trial_7_day'),
-    ctaOnClick: () => handleClick('Free'),
+    ctaOnClick: () => handleClick('Lite'),
     description: $t('v1.view.onboarding.lite_description'),
     style: {},
     sections: [
       {
-        heading: 'LIMITS',
+        heading: $t('v1.view.onboarding.package_info'), // 'Thông tin gói'
         items: [
-          { text: '1,000 Active contacts & deals', enabled: true },
-          { text: '1 Custom dashboard', enabled: true },
-          { text: '5 Columns per board max', enabled: true },
-          { text: 'Custom automation', enabled: false },
-          { text: 'Guest', enabled: false },
+          {
+            text: '3 ' + $t('v1.view.main.dashboard.org.pay.page'),
+            enabled: true,
+          },
+          {
+            text: '3 ' + $t('v1.view.main.dashboard.org.pay.member'),
+            enabled: true,
+          },
+          {
+            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.fau'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.client'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.chat_feature') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.all'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.company_name') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.none'),
+            enabled: false,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.api_integrate') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.none'),
+            enabled: false,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.domain_logo') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.none'),
+            enabled: false,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.support') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.standard'),
+            enabled: true,
+          },
         ],
       },
       {
-        heading: 'ADVANCES',
+        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
         items: [
-          { text: 'Centralized comms hub', enabled: true },
-          { text: 'iOS & Android apps', enabled: true },
-          { text: 'Send mass emails', enabled: false },
-          { text: 'Email sequences', enabled: false },
-          { text: 'Quotes & invoices', enabled: false },
+          {
+            text: '1.000.000 ' + $t('v1.view.main.dashboard.org.pay.text'),
+            enabled: true,
+          },
+          {
+            text: $t('v1.view.main.dashboard.org.pay.ai_image'),
+            enabled: false,
+          },
+          {
+            text: $t('v1.view.main.dashboard.org.pay.ai_sound'),
+            enabled: false,
+          },
         ],
       },
     ],
-    aiFeatures: [
-      { text: 'AI Automation', enabled: false },
-      { text: 'AI Writing', enabled: false },
-      { text: 'AI Research', enabled: false },
-    ],
+    aiFeatures: [],
   },
   {
     title: 'Pro',
-    price: LOCALE === 'en' ? '$18' : currency(480000) + 'đ',
-    is_sale_off: $t('v1.view.onboarding.is_sale_off'),
-    original_price: LOCALE === 'en' ? '$20' : currency(540000) + 'đ',
-    code: 'BBH',
-    discount_percent: '40%',
-    discount: $t('v1.view.onboarding.discount'),
-    subtitle: $t('v1.view.onboarding.pro_subtitle'),
+    price: locale.value === 'en' ? '$20' : currency(480000) + 'đ',
+    is_sale_off: '',
+    original_price: '',
+    code: 'PRO',
+    discount_percent: '',
+    discount: '',
+    subtitle: $t('v1.view.main.dashboard.org.pay.pro_description'),
     ctaText: $t('v1.view.onboarding.use_trial_7_day'),
-    ctaOnClick: () => handleClick('Lite'),
+    ctaOnClick: () => handleClick('Pro'),
     is_popular: true,
     style: {},
     description: $t('v1.view.onboarding.pro_description'),
     sections: [
       {
-        heading: 'LIMITS',
+        heading: $t('v1.view.onboarding.package_info'),
         items: [
-          { text: '1,000 Active contacts & deals', enabled: true },
-          { text: '1 Custom dashboard', enabled: true },
-          { text: '5 Columns per board max', enabled: true },
-          { text: 'Custom automation', enabled: false },
-          { text: 'Guest', enabled: false },
+          {
+            text: '5 ' + $t('v1.view.main.dashboard.org.pay.page'),
+            enabled: true,
+          },
+          {
+            text: '10 ' + $t('v1.view.main.dashboard.org.pay.member'),
+            enabled: true,
+          },
+          {
+            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.fau'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.client'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.chat_feature') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.all'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.company_name') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.api_integrate') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.domain_logo') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.none'),
+            enabled: false,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.support') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.prioritize'),
+            enabled: true,
+          },
         ],
       },
       {
-        heading: 'ADVANCES',
+        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
         items: [
-          { text: 'Centralized comms hub', enabled: true },
-          { text: 'iOS & Android apps', enabled: true },
-          { text: 'Send mass emails', enabled: false },
-          { text: 'Email sequences', enabled: false },
-          { text: 'Quotes & invoices', enabled: false },
+          {
+            text: '1.000.000 ' + $t('v1.view.main.dashboard.org.pay.text'),
+            enabled: true,
+          },
+          {
+            text: '1.000 ' + $t('v1.view.main.dashboard.org.pay.image'),
+            enabled: true,
+          },
+          {
+            text: '1.000 ' + $t('v1.view.main.dashboard.org.pay.minute'),
+            enabled: true,
+          },
         ],
       },
     ],
-    aiFeatures: [
-      { text: 'AI Automation', enabled: true },
-      { text: 'AI Writing', enabled: true },
-      { text: 'AI Research', enabled: false },
-    ],
+    aiFeatures: [],
   },
   {
     title: 'Business',
-    price: LOCALE === 'en' ? '$90' : currency(2200000) + 'đ',
-    is_sale_off: $t('v1.view.onboarding.is_sale_off'),
-    original_price: LOCALE === 'en' ? '$99' : currency(2600000) + 'đ',
-    code: 'BBH',
-    discount_percent: '40%',
-    discount: $t('v1.view.onboarding.discount'),
-    subtitle: $t('v1.view.onboarding.business_subtitle'),
+    price: locale.value === 'en' ? '$110' : currency(2600000) + 'đ',
+    is_sale_off: '',
+    original_price: '',
+    code: 'BUSINESS',
+    discount_percent: '',
+    discount: '',
+    subtitle: $t('v1.view.main.dashboard.org.pay.business_description'),
     ctaText: $t('v1.view.onboarding.use_trial_7_day'),
-    ctaOnClick: () => handleClick('Pro'),
+    ctaOnClick: () => handleClick('Business'),
     style: {},
     description: $t('v1.view.onboarding.business_description'),
     sections: [
       {
-        heading: 'LIMITS',
+        heading: $t('v1.view.onboarding.package_info'),
         items: [
-          { text: '1,000 Active contacts & deals', enabled: true },
-          { text: '1 Custom dashboard', enabled: true },
-          { text: '5 Columns per board max', enabled: true },
-          { text: 'Custom automation', enabled: false },
-          { text: 'Guest', enabled: false },
+          {
+            text: '40 ' + $t('v1.view.main.dashboard.org.pay.page'),
+            enabled: true,
+          },
+          {
+            text: '40 ' + $t('v1.view.main.dashboard.org.pay.member'),
+            enabled: true,
+          },
+          {
+            text: '50.000 ' + $t('v1.view.main.dashboard.org.pay.fau'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.client'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.chat_feature') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.all'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.company_name') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.api_integrate') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.domain_logo') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.support') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.high'),
+            enabled: true,
+          },
         ],
       },
       {
-        heading: 'ADVANCES',
+        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
         items: [
-          { text: 'Centralized comms hub', enabled: true },
-          { text: 'iOS & Android apps', enabled: true },
-          { text: 'Send mass emails', enabled: false },
-          { text: 'Email sequences', enabled: false },
-          { text: 'Quotes & invoices', enabled: false },
+          {
+            text: '10.000.000 ' + $t('v1.view.main.dashboard.org.pay.text'),
+            enabled: true,
+          },
+          {
+            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.image'),
+            enabled: true,
+          },
+          {
+            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.minute'),
+            enabled: true,
+          },
         ],
       },
     ],
-    aiFeatures: [
-      { text: 'AI Automation', enabled: true },
-      { text: 'AI Writing', enabled: true },
-      { text: 'AI Research', enabled: true },
-    ],
+    aiFeatures: [],
   },
   {
     title: 'Enterprise',
-    price: '$0',
-
-    subtitle: $t('v1.view.onboarding.enterprise_subtitle'),
+    price: '',
+    is_sale_off: '',
+    original_price: '',
+    code: 'ENTERPRISE',
+    discount_percent: '',
+    discount: '',
+    subtitle: $t('v1.view.main.dashboard.org.pay.enterprise_description'),
     ctaText: $t('v1.view.onboarding.free_consultation'),
     ctaOnClick: () => handleClick('Enterprise'),
     is_popular: true,
@@ -552,33 +713,103 @@ const PACKAGES = [
     description: $t('v1.view.onboarding.enterprise_description'),
     sections: [
       {
-        heading: 'LIMITS',
+        heading: $t('v1.view.onboarding.package_info'),
         items: [
-          { text: '1,000 Active contacts & deals', enabled: true },
-          { text: '1 Custom dashboard', enabled: true },
-          { text: '5 Columns per board max', enabled: true },
-          { text: 'Custom automation', enabled: false },
-          { text: 'Guest', enabled: false },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.page'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.member'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.fau'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.client'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.chat_feature') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.all'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.company_name') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.api_integrate') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.domain_logo') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.yes'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.support') +
+              ': ' +
+              $t('v1.view.main.dashboard.org.pay.high'),
+            enabled: true,
+          },
         ],
       },
       {
-        heading: 'ADVANCES',
+        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
         items: [
-          { text: 'Centralized comms hub', enabled: true },
-          { text: 'iOS & Android apps', enabled: true },
-          { text: 'Send mass emails', enabled: false },
-          { text: 'Email sequences', enabled: false },
-          { text: 'Quotes & invoices', enabled: false },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.text'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.image'),
+            enabled: true,
+          },
+          {
+            text:
+              $t('v1.view.main.dashboard.org.pay.unlimited') +
+              ' ' +
+              $t('v1.view.main.dashboard.org.pay.minute'),
+            enabled: true,
+          },
         ],
       },
     ],
-    aiFeatures: [
-      { text: 'AI Automation', enabled: true },
-      { text: 'AI Writing', enabled: true },
-      { text: 'AI Research', enabled: true },
-    ],
+    aiFeatures: [],
   },
-]
+])
 
 /** Hàm chuyển đổi tab */
 function handleTabChange(index: number) {
@@ -591,11 +822,11 @@ function handleTabChange(index: number) {
   /** Mở tab business thì tự độgn chọn gói Enterprise */
   if (index === 1) {
     // setTab2()
-    SELECTED_INDEX.value = 'Enterprise'
+    handleSelect('Enterprise')
     /** Nếu chuyển lại all plans thì auto chọn gói Lite */
   } else {
     // setTab1()
-    SELECTED_INDEX.value = 'Pro'
+    handleSelect('Pro')
   }
 }
 // Gap = 1.5rem = 24px
@@ -610,7 +841,8 @@ const SELECTED_ROW = ref<{ sectionIndex: number; rowIndex: number } | null>(
 )
 
 /** Dữ liệu mock data compare plans và features */
-const COMPARE_DATA = {
+/** Dữ liệu mock data compare plans và features */
+const COMPARE_DATA = computed(() => ({
   title: $t('v1.view.onboarding.plans_and_feature'),
   plans: [
     { key: 'lite', name: 'Lite' },
@@ -620,100 +852,130 @@ const COMPARE_DATA = {
   ],
   sections: [
     {
-      title: 'Essentials',
+      title: $t('v1.view.onboarding.package_info'),
       features: [
         {
-          name: 'Active contacts & deals (limit)',
+          name: $t('v1.view.main.dashboard.org.pay.page'),
           values: {
-            lite: '1,000',
-            pro: '10,000',
-            business: '10,000',
-            enterprise: 'Unlimited',
+            lite: '3',
+            pro: '5',
+            business: '40',
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
           },
         },
         {
-          name: 'Feature A',
-          values: { lite: true, pro: true, business: true, enterprise: true },
+          name: $t('v1.view.main.dashboard.org.pay.member'),
+          values: {
+            lite: '3',
+            pro: '10',
+            business: '40',
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+          },
         },
         {
-          name: 'Feature B',
-          values: { lite: false, pro: false, business: true, enterprise: true },
+          name: $t('v1.view.main.dashboard.org.pay.fau'),
+          values: {
+            lite: '10.000',
+            pro: '10.000',
+            business: '50.000',
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+          },
+        },
+        {
+          name: $t('v1.view.main.dashboard.org.pay.client'),
+          values: {
+            lite: $t('v1.view.main.dashboard.org.pay.unlimited'),
+            pro: $t('v1.view.main.dashboard.org.pay.unlimited'),
+            business: $t('v1.view.main.dashboard.org.pay.unlimited'),
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+          },
         },
       ],
     },
     {
-      title: 'Essentials',
+      title: $t('v1.view.main.dashboard.org.pay.ai_feature'),
       features: [
         {
-          name: 'Active contacts & deals (limit)',
+          name: $t('v1.view.main.dashboard.org.pay.ai_text'),
           values: {
-            lite: '1,000',
-            pro: '10,000',
-            business: '10,000',
-            enterprise: 'Unlimited',
+            lite: '1.000.000',
+            pro: '1.000.000',
+            business: '10.000.000',
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
           },
         },
         {
-          name: 'Feature A',
-          values: { lite: true, pro: true, business: true, enterprise: true },
+          name: $t('v1.view.main.dashboard.org.pay.ai_image'),
+          values: {
+            lite: false,
+            pro: '1.000',
+            business: '10.000',
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+          },
         },
         {
-          name: 'Feature B',
-          values: { lite: false, pro: false, business: true, enterprise: true },
+          name: $t('v1.view.main.dashboard.org.pay.ai_sound'),
+          values: {
+            lite: false,
+            pro: '1.000',
+            business: '10.000',
+            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+          },
         },
       ],
     },
     {
-      title: 'Essentials',
+      title: $t('v1.view.main.dashboard.org.pay.custom'),
       features: [
         {
-          name: 'Active contacts & deals (limit)',
+          name: $t('v1.view.main.dashboard.org.pay.chat_feature'),
           values: {
-            lite: '1,000',
-            pro: '10,000',
-            business: '10,000',
-            enterprise: 'Unlimited',
+            lite: $t('v1.view.main.dashboard.org.pay.all'),
+            pro: $t('v1.view.main.dashboard.org.pay.all'),
+            business: $t('v1.view.main.dashboard.org.pay.all'),
+            enterprise: $t('v1.view.main.dashboard.org.pay.all'),
           },
         },
         {
-          name: 'Feature A',
-          values: { lite: true, pro: true, business: true, enterprise: true },
-        },
-        {
-          name: 'Feature B',
-          values: { lite: false, pro: false, business: true, enterprise: true },
-        },
-      ],
-    },
-    {
-      title: 'Retion AI',
-      features: [
-        {
-          name: 'AI credits (monthly)',
+          name: $t('v1.view.main.dashboard.org.pay.company_name'),
           values: {
-            lite: '1,000',
-            pro: '10,000',
-            business: '10,000',
-            enterprise: 'Unlimited',
+            lite: false,
+            pro: true,
+            business: true,
+            enterprise: true,
           },
         },
         {
-          name: 'AI assistant',
-          values: { lite: true, pro: true, business: true, enterprise: true },
+          name: $t('v1.view.main.dashboard.org.pay.api_integrate'),
+          values: {
+            lite: false,
+            pro: true,
+            business: true,
+            enterprise: true,
+          },
         },
-      ],
-    },
-    {
-      title: 'Automation',
-      features: [
         {
-          name: 'Workflow automations',
-          values: { lite: false, pro: true, business: true, enterprise: true },
+          name: $t('v1.view.main.dashboard.org.pay.domain_logo'),
+          values: {
+            lite: false,
+            pro: false,
+            business: true,
+            enterprise: true,
+          },
+        },
+        {
+          name: $t('v1.view.main.dashboard.org.pay.support'),
+          values: {
+            lite: $t('v1.view.main.dashboard.org.pay.standard'),
+            pro: $t('v1.view.main.dashboard.org.pay.prioritize'),
+            business: $t('v1.view.main.dashboard.org.pay.high'),
+            enterprise: $t('v1.view.main.dashboard.org.pay.high'),
+          },
         },
       ],
     },
   ],
-}
+}))
 
 /**ẩn hiện modal */
 const IS_OPEN = ref(false)
@@ -793,7 +1055,9 @@ const toggleAll = () => {
   open_all.value = !open_all.value
 }
 /** tạo call  */
-const GRID_COLS = `416px repeat(${COMPARE_DATA.plans.length}, minmax(120px,1fr))`
+const GRID_COLS = computed(
+  () => `416px repeat(${COMPARE_DATA.value.plans.length}, minmax(120px,1fr))`
+)
 
 /** helper: kiểm tra row đang được chọn (theo section) */
 function isRowSelected(sectionIdx: number, rowIdx: number) {

@@ -13,4 +13,9 @@ export class N4SerivceAppUser extends N4Serivce {
     // gọi api
     return this.post('read_another_chatbot_user', { user_id })
   }
+
+  /** Cập nhật thông tin chatbot user */
+  public async updateChatbotUserInfo(payload: any): Promise<any> {
+    return this.post('update_chatbot_user_info', payload)
+  }
 }
