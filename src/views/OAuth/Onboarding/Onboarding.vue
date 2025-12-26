@@ -985,7 +985,7 @@ const RunAdditionalSetup = async () => {
 
         // Check xem có phải gói FREE không
         const ORG_PACKAGE = (CURRENT_ORG as any)?.org_package
-        const IS_FREE = !ORG_PACKAGE || ORG_PACKAGE.package_pid === 'FREE'
+        const IS_FREE = !ORG_PACKAGE || ORG_PACKAGE.org_package_type === 'FREE'
 
         if (IS_FREE) {
           /** Lấy thông tin ví của tổ chức */
