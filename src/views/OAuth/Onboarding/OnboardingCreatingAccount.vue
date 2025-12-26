@@ -91,20 +91,25 @@ const STEPS = ref([
 const current_step = ref(0)
 
 onMounted(() => {
-  /** Khai báo index step */
+  /** Index của bước hiện tại */
   let step_index = 0
-  /** Tạo 1 interval */
+
+  /** Interval chạy tiến trình giả lập */
   const INTERVAL = setInterval(() => {
-    /** đánh dấu xong step hiện tại */
-    STEPS.value[step_index].done = true
-    /** chuyển sang step tiếp theo */
-    step_index++
-    current_step.value = step_index
-    /** Nếu hoàn thành thì chuyển đến bước tiếp theo */
-    if (step_index >= STEPS.value.length) {
+    // Nếu là bước cuối cùng thì dừng (để giữ trạng thái loading cho đến khi cha redirect)
+    if (step_index >= STEPS.value.length - 1) {
       clearInterval(INTERVAL)
       setTimeout(() => $emit('complete'), 500)
+      return
     }
+
+    // Đánh dấu bước hiện tại là đã xong
+    STEPS.value[step_index].done = true
+
+    // Tăng index
+    step_index++
+    // Cập nhật màn hình hiển thị
+    current_step.value = step_index
   }, 1000)
 })
 </script>

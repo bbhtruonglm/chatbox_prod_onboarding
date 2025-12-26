@@ -366,7 +366,7 @@
       v-else-if="flow_step === 7"
       :email="email"
       @verify="verifyEmail"
-      @resend="resendEmailVerification"
+      @resend="ResendEmailVerification"
       @back="backToOnboarding"
     />
 
@@ -595,7 +595,7 @@ const completeCreatingAccount = async () => {
     await setup_promise.value
   } else {
     // Fallback
-    await runAdditionalSetup()
+    await RunAdditionalSetup()
   }
 
   /** Xóa dữ liệu đăng ký */
@@ -637,13 +637,16 @@ const verifyEmail = async (otp: string) => {
 }
 
 /** Hàm gửi lại mã xác thực email */
-const resendEmailVerification = async () => {
+const ResendEmailVerification = async () => {
   try {
-    /** Gọi API gửi lại mã */
+    // Gọi API gửi lại mã xác thực tới email
     await API_OAUTH_BASIC.resendVerifyEmail(email.value)
+    // Thông báo thành công
     SERVICE_TOAST.success($t('Đã gửi lại mã xác thực'))
   } catch (error: any) {
+    // Log lỗi ra console
     console.error('Lỗi khi gửi lại mã:', error)
+    // Thông báo lỗi
     SERVICE_TOAST.error(error.message || $t('Không thể gửi lại mã'))
   }
 }
@@ -785,7 +788,13 @@ const submitForm = async () => {
   if (!IS_STEP_VALID.value || is_submitting.value) return
 
   try {
+    // Set is_submitting true
     is_submitting.value = true
+
+    // Xóa user_id và access_token cũ để tránh conflict
+    localStorage.removeItem('user_id')
+    localStorage.removeItem('access_token')
+
     /** Lưu dữ liệu onboarding vào storage */
     REGISTRATION_SERVICE.updateOnboardingData({
       industry: SELECTED_INDUSTRY.value ?? undefined,
@@ -813,13 +822,20 @@ const submitForm = async () => {
     /** Xử lý theo loại đăng ký */
     if (REGISTRATION_DATA.registration_type === 'email') {
       /** Đăng ký với email */
-      await API_OAUTH_BASIC.register(
+      const REGISTER_RES = await API_OAUTH_BASIC.register(
         REGISTRATION_DATA.email!,
         REGISTRATION_DATA.password!,
         `${REGISTRATION_DATA.first_name} ${REGISTRATION_DATA.last_name}`,
         REGISTRATION_DATA.first_name!,
         REGISTRATION_DATA.last_name!
       )
+
+      // Lấy ID user từ response
+      const UID = REGISTER_RES.user_id || REGISTER_RES._id
+      // Lưu user_id vào local
+      if (UID) {
+        setItem('user_id', UID)
+      }
 
       /** Chuyển sang màn loading trước */
       flow_step.value = 2
@@ -835,9 +851,11 @@ const submitForm = async () => {
       if (LOGIN_RES.access_token) {
         setItem('access_token', LOGIN_RES.access_token)
       }
-      /** Lưu lại user id */
-      if (LOGIN_RES.user_id) {
-        setItem('user_id', LOGIN_RES.user_id)
+      // Lấy ID user từ response
+      const UID = LOGIN_RES.user_id || LOGIN_RES._id
+      // Lưu user_id vào local
+      if (UID) {
+        setItem('user_id', UID)
       }
 
       /** Cập nhật thông tin onboarding qua API */
@@ -889,106 +907,131 @@ async function onReLoginSuccess(token: string) {
 }
 
 /** Hàm chạy các setup bổ sung */
-const runAdditionalSetup = async () => {
+const RunAdditionalSetup = async () => {
+  // Log thông tin bắt đầu
   console.log('Running additional setup functions...')
   try {
-    /** Lấy thông tin cần thiết */
+    /** Lấy ID user từ storage */
     const USER_ID = getItem('user_id')
+    /** Lấy ID tổ chức từ storage */
     const ORG_ID = getItem('selected_org_id')
+    /** Lấy số điện thoại từ biến reactive */
     const ORG_PHONE = phone.value
-
-    /** Lấy dữ liệu onboarding từ service */
+    /** Lấy dữ liệu đăng ký từ service */
     const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
 
-    /** Helper format link */
-    const formatLink = (prefix: string, value?: string) => {
-      if (!value || value.trim() === '') return undefined
-      /** Nếu đã có http thì giữ nguyên */
-      if (value.startsWith('http')) return value
-      /** Nối prefix */
-      return `https://${prefix}${value}`
+    // Nếu thiếu thông tin bắt buộc thì dừng hàm
+    if (!USER_ID || !ORG_ID || !REGISTRATION_DATA) return
+
+    /** Helper format link: thêm https và prefix nếu cần */
+    const FORMAT_LINK = (prefix: string, value?: string) => {
+      // Nếu giá trị rỗng thì trả về undefined
+      if (!value?.trim()) return undefined
+      // Nếu đã có http(s) thì giữ nguyên, ngược lại thêm prefix
+      return value.startsWith('http') ? value : `https://${prefix}${value}`
     }
 
-    /** Gọi API cập nhật thông tin user */
-    if (USER_ID && ORG_ID && REGISTRATION_DATA) {
-      /** Tạo service */
-      const SERVICE_USER = new N4SerivceAppUser()
-      // Cập nhật thông tin user
-      await SERVICE_USER.updateChatbotUserInfo({
-        custom_id: USER_ID,
-        org_id: ORG_ID,
-        org_phone: ORG_PHONE,
-        /** Map các trường onboarding */
-        industry: REGISTRATION_DATA.industry,
-        role: REGISTRATION_DATA.role,
-        company_name: REGISTRATION_DATA.company_name,
-        preferences: REGISTRATION_DATA.preferences,
-        /** Map company details */
-        website: formatLink('', REGISTRATION_DATA.company_details?.website), // Input UI đã có www. nhưng value chỉ là phần nhập
-        facebook_link: formatLink(
-          'facebook.com/',
-          REGISTRATION_DATA.company_details?.facebook
-        ),
-        instagram_link: formatLink(
-          'instagram.com/',
-          REGISTRATION_DATA.company_details?.instagram
-        ),
-        tiktok_link: formatLink(
-          'tiktok.com/',
-          REGISTRATION_DATA.company_details?.tiktok
-        ),
-        zalo_link: formatLink(
-          'zalo.me/',
-          REGISTRATION_DATA.company_details?.zalo
-        ),
-      })
-      console.log('Cập nhật thông tin chatbot user thành công')
+    /** Trích xuất chi tiết công ty */
+    const { company_details: COMPANY_DETAILS } = REGISTRATION_DATA
+    /** Khởi tạo service user */
+    const SERVICE_USER = new N4SerivceAppUser()
 
-      /** Kích hoạt gói dùng thử nếu có */
-      if (
-        REGISTRATION_DATA.package_selected &&
-        REGISTRATION_DATA.package_selected !== 'Enterprise'
-      ) {
-        try {
-          console.log(
-            'Đang kích hoạt gói dùng thử:',
-            REGISTRATION_DATA.package_selected
-          )
-          /* Lấy thông tin ví */
+    // Gọi API cập nhật thông tin user chatbot
+    await SERVICE_USER.updateChatbotUserInfo({
+      /** ID người dùng */
+      custom_id: USER_ID,
+      /** ID tổ chức */
+      org_id: ORG_ID,
+      /** Số điện thoại tổ chức */
+      org_phone: ORG_PHONE,
+      /** Ngành nghề */
+      industry: REGISTRATION_DATA.industry,
+      /** Vai trò user */
+      role: REGISTRATION_DATA.role,
+      /** Tên công ty */
+      company_name: REGISTRATION_DATA.company_name,
+      /** Quy mô/Ưu tiên */
+      preferences: REGISTRATION_DATA.preferences,
+      /** Website (format chuẩn) */
+      website: FORMAT_LINK('', COMPANY_DETAILS?.website),
+      /** Facebook (thêm domain facebook) */
+      facebook_link: FORMAT_LINK('facebook.com/', COMPANY_DETAILS?.facebook),
+      /** Instagram (thêm domain instagram) */
+      instagram_link: FORMAT_LINK('instagram.com/', COMPANY_DETAILS?.instagram),
+      /** Tiktok (thêm domain tiktok) */
+      tiktok_link: FORMAT_LINK('tiktok.com/', COMPANY_DETAILS?.tiktok),
+      /** Zalo (thêm domain zalo) */
+      zalo_link: FORMAT_LINK('zalo.me/', COMPANY_DETAILS?.zalo),
+    })
+
+    // Log thông báo cập nhật thành công
+    console.log('Cập nhật thông tin chatbot user thành công')
+
+    /** Trích xuất gói đã chọn */
+    const { package_selected: PACKAGE_SELECTED } = REGISTRATION_DATA
+
+    // Kiểm tra nếu có chọn gói và không phải Enterprise
+    if (PACKAGE_SELECTED && PACKAGE_SELECTED !== 'Enterprise') {
+      try {
+        // Log gói đang kích hoạt
+        console.log('Đang kích hoạt gói dùng thử:', PACKAGE_SELECTED)
+
+        // Lấy thông tin tổ chức hiện tại để check gói
+        const BILLING_ORG = new BillingAppOrganization()
+        const ORGS = await BILLING_ORG.readOrg()
+        const CURRENT_ORG = ORGS.find(
+          (o: any) => (o.org_id || o._id) === ORG_ID
+        )
+
+        // Check xem có phải gói FREE không
+        const ORG_PACKAGE = (CURRENT_ORG as any)?.org_package
+        const IS_FREE = !ORG_PACKAGE || ORG_PACKAGE.package_pid === 'FREE'
+
+        if (IS_FREE) {
+          /** Lấy thông tin ví của tổ chức */
           const WALLET = await read_wallet(ORG_ID)
-          // Kiểm tra ví
+
+          // Nếu ví tồn tại
           if (WALLET?.wallet_id) {
-            /** Gọi API đăng ký gói */
+            // Gọi API mua gói (trial)
             await purchase_package(
               ORG_ID,
               WALLET.wallet_id,
-              REGISTRATION_DATA.package_selected as any,
+              PACKAGE_SELECTED as any,
               1
             )
-            console.log('Kích hoạt gói thành công')
+            // Thông báo thành công
+            SERVICE_TOAST.success($t('Kích hoạt gói thành công'))
           } else {
-            console.warn('Không tìm thấy ví để kích hoạt gói')
+            // Cảnh báo nếu không thấy ví
+            SERVICE_TOAST.error($t('Không tìm thấy ví để kích hoạt gói'))
           }
-        } catch (error) {
-          console.error('Lỗi khi kích hoạt gói:', error)
-          /** Không throw lỗi để flow tiếp tục */
+        } else {
+          // Nếu đã có gói thì thông báo
+          SERVICE_TOAST.success($t('Tổ chức đã có gói dịch vụ'))
         }
-        // Kích hoạt gói dùng thử thành công
-      } else if (REGISTRATION_DATA.package_selected === 'Enterprise') {
-        console.log(
-          'Gói Enterprise đã được lưu, nhân viên tư vấn sẽ liên hệ sau.'
-        )
+      } catch (error: any) {
+        // Log lỗi nếu kích hoạt thất bại
+        console.error('Lỗi khi kích hoạt gói:', error)
+        SERVICE_TOAST.error(error.message || $t('Lỗi khi kích hoạt gói'))
       }
+    } else if (PACKAGE_SELECTED === 'Enterprise') {
+      // Trường hợp gói Enterprise
+      SERVICE_TOAST.success(
+        $t('Gói Enterprise đã được lưu, nhân viên tư vấn sẽ liên hệ sau.')
+      )
     }
   } catch (error) {
+    // Log lỗi chung
     console.error('Lỗi khi chạy setup bổ sung:', error)
   }
 }
 
 /** Watch step để chạy setup song song */
 watch(flow_step, step => {
+  // Nếu là bước tạo tài khoản
   if (step === 6) {
-    setup_promise.value = runAdditionalSetup()
+    setup_promise.value = RunAdditionalSetup()
   }
 })
 

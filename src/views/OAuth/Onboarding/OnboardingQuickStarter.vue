@@ -481,8 +481,8 @@ onMounted(async () => {
 
     console.log('ALL_ORGS', ALL_ORGS)
     console.log('chatbotUserStore.chatbot_user', chatbotUserStore.chatbot_user)
-    /** Lấy user id */
-    const USER_ID = chatbotUserStore.chatbot_user?._id || getItem('user_id')
+    /** Lấy user id (ưu tiên local storage vì mới login/register xong) */
+    const USER_ID = getItem('user_id') || chatbotUserStore.chatbot_user?.user_id
 
     /** Filter chỉ lấy Org mà user là Owner */
     const OWNER_ORGS = USER_ID
@@ -502,26 +502,26 @@ onMounted(async () => {
       )
     }
 
-    console.log('--- DEBUG SELECT ORG ---')
-    console.log('OWNER_ORGS:', OWNER_ORGS)
-    console.log('Local selected_id:', selected_id)
-    console.log('Found valid owner org:', selected_org)
-
     /** Nếu không tìm thấy (hoặc chưa có), mặc định lấy tổ chức đầu tiên */
     if (!selected_org && OWNER_ORGS.length > 0) {
       console.log('Fallback to first owner org')
       selected_org = OWNER_ORGS[0]
-      selected_id = selected_org.org_id || (selected_org as any)._id
+      selected_id = selected_org.org_id
       /** Lưu vào storage */
       setItem('selected_org_id', selected_id)
     }
 
     /** Cập nhật store nếu có org hợp lệ */
     if (selected_org && selected_id) {
+      // Set selected org
       orgStore.selected_org_id = selected_id
+      // Set selected org info
       orgStore.selected_org_info = selected_org
+      // Set current org info
       current_org_info.value = selected_org
+      // Set page count
       PAGE_COUNT.value = selected_org.org_package?.org_current_page || 0
+      // Set quota page
       QUOTA_PAGE.value = selected_org.org_package?.org_quota_page || 0
     }
   } catch (e) {
