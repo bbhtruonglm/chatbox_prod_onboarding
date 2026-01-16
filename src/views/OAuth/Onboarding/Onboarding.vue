@@ -2,7 +2,28 @@
   <!-- <div class="h-screen bg-gradient-primary py-10 px-6 font-sans"> -->
   <div class="h-screen bg-gradient-primary py-10 px-6 font-sans">
     <div
-      v-if="flow_step === 1"
+      v-if="is_loading_check"
+      class="flex mx-auto overflow-hidden gap-2.5 flex-grow h-full min-h-0 animate-pulse"
+    >
+      <aside
+        class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
+      >
+        <div class="flex flex-col gap-10">
+          <div class="h-7 w-32 bg-slate-200 rounded"></div>
+          <div class="flex flex-col gap-3">
+            <div class="h-12 w-full bg-slate-200 rounded"></div>
+            <div class="h-4 w-2/3 bg-slate-200 rounded"></div>
+          </div>
+        </div>
+      </aside>
+      <main
+        class="flex w-full flex-grow min-h-0 h-full gap-3 px-3 py-5 rounded-xl bg-white flex-col justify-between"
+      >
+        <div class="h-full w-full bg-slate-200 rounded"></div>
+      </main>
+    </div>
+    <div
+      v-else-if="flow_step === 1"
       class="flex mx-auto overflow-hidden gap-2.5 flex-grow h-full min-h-0"
     >
       <!-- Left panel -->
@@ -10,14 +31,7 @@
         class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
       >
         <div class="flex flex-col gap-10">
-          <div class="flex flex-col gap-10">
-            <div
-              :style="{
-                backgroundImage: `url(${commonStore.partner?.logo?.full})`,
-              }"
-              class="h-7 w-full bg-contain bg-no-repeat bg-left flex-shrink-0"
-            />
-          </div>
+          <PartnerLogo />
           <div class="flex flex-col gap-3">
             <h1 class="text-5xl leading-tight font-semibold">
               {{ $t('v1.view.onboarding.personal_experience') }}
@@ -394,6 +408,7 @@
 import { useCommonStore } from '@/stores'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { container } from 'tsyringe'
 import {
   RegistrationDataService,
@@ -419,6 +434,7 @@ import OnboardingVerifyEmail from './OnboardingVerifyEmail.vue'
 import UpgradeModalV2 from '@/views/OAuth/Onboarding/UpgradeModalV2.vue'
 import OnboardingCreatingAccount from './OnboardingCreatingAccount.vue'
 import OnboardingQuickStarter from './OnboardingQuickStarter.vue'
+import PartnerLogo from '@/components/PartnerLogo.vue'
 
 /** Hàm dịch ngôn ngữ */
 const { t: $t } = useI18n()
@@ -431,6 +447,8 @@ const REGISTRATION_SERVICE: IRegistrationDataService = container.resolve(
 )
 /** Service thông báo */
 const SERVICE_TOAST: IAlert = container.resolve(Toast)
+
+const router = useRouter()
 
 /** API OAuth Basic */
 const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
@@ -445,29 +463,26 @@ const email = ref('')
 /** Số điện thoại */
 const phone = ref('')
 
-/** Promise của setup bổ sung */
-const setup_promise = ref<Promise<void> | null>(null)
+/** loading check user */
+const is_loading_check = ref(true)
 
 /** Khởi tạo: Load dữ liệu registration */
-onMounted(() => {
+onMounted(async () => {
   /** Lấy dữ liệu đăng ký */
-  const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
+  /** Kiểm tra thông tin user_id và selected_org_id */
+  const USER_ID = getItem('user_id')
+  /** Lấy thông tin org_id */
+  const ORG_ID = getItem('selected_org_id')
 
-  /** Nếu không có dữ liệu thì redirect về trang đăng ký */
-  if (!REGISTRATION_DATA) {
-    SERVICE_TOAST.error($t('Không tìm thấy dữ liệu đăng ký'))
-    /** Redirect về trang đăng ký */
-    window.location.href = '/oauth/register-new'
+  /** Nếu không có thông tin thì back về màn login */
+  if (!USER_ID || !ORG_ID) {
+    // back về màn login
+    window.location.href = '/oauth/login'
     return
   }
 
-  /** Lấy email từ registration data */
-  if (REGISTRATION_DATA.email) {
-    email.value = REGISTRATION_DATA.email
-  }
-
-  /** Log thông tin để debug */
-  console.log('Dữ liệu đăng ký:', REGISTRATION_DATA)
+  /** có data mới tắt loading */
+  is_loading_check.value = false
 })
 
 /** Hàm verify phone */
@@ -507,62 +522,7 @@ const skipForNow = () => {
 }
 
 /** Hàm submit package (Chọn gói cho tổ chức) */
-const submitPackage = async () => {
-  console.log('submitPackage')
-
-  try {
-    /** Gọi API lấy danh sách tổ chức */
-    const BILLING_ORG = new BillingAppOrganization()
-    const ORGS = await BILLING_ORG.readOrg()
-
-    /** Lấy user_id từ local */
-    const USER_ID = getItem('user_id')
-
-    /** Tìm tổ chức của user */
-    const FOUND_ORG = ORGS.find((org: any) => org.org_owner_id === USER_ID)
-
-    /** Nếu tìm thấy, lưu selected_org */
-    if (FOUND_ORG) {
-      const ORG_ID = (FOUND_ORG as any).org_id || (FOUND_ORG as any)._id
-      setItem('selected_org_id', ORG_ID)
-
-      /** Logic đăng ký gói dùng thử */
-      const ORG_PACKAGE = (FOUND_ORG as any).org_package
-      /** Kiểm tra gói hiện tại có phải Free không */
-      const IS_FREE = !ORG_PACKAGE || ORG_PACKAGE.package_pid === 'FREE'
-
-      if (IS_FREE) {
-        /** Kiểm tra đã dùng thử chưa */
-        const HAS_TRIAL = ORG_PACKAGE?.org_has_trial
-        if (!HAS_TRIAL) {
-          try {
-            /** Lấy thông tin ví */
-            const WALLET = await read_wallet(ORG_ID)
-            const WALLET_ID = WALLET.wallet_id || (WALLET as any)._id
-
-            /** Lấy mã gói từ dữ liệu đăng ký */
-            const REG_DATA = REGISTRATION_SERVICE.getRegistrationData()
-            const TRIAL_CODE =
-              (REG_DATA as any)?.package_info?.package_selected ||
-              (REG_DATA as any)?.package_selected ||
-              'SR_TRIAL'
-
-            /** Gọi API đăng ký gói dùng thử */
-            await purchase_package(ORG_ID, WALLET_ID, TRIAL_CODE as any, 1)
-            SERVICE_TOAST.success('Đăng ký gói dùng thử thành công')
-            console.log('Call api purchase_package trial', TRIAL_CODE)
-          } catch (e) {
-            console.error('Lỗi khi đăng ký trial', e)
-          }
-        } else {
-          SERVICE_TOAST.success($t('Bạn đã đăng ký gói dùng thử rồi'))
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Lỗi khi lấy thông tin tổ chức', error)
-  }
-
+const submitPackage = () => {
   /** Chuyển sang step 5 quick step */
   flow_step.value = 5
 }
@@ -573,7 +533,7 @@ const resendVerification = () => {
 }
 /** Hàm trợ lại trang login */
 const backToLogin = () => {
-  console.log('Quay lại trang login')
+  router.push('/oauth/login')
 }
 /** Hàm hoàn thành loading */
 const completeLoading = () => {
@@ -590,14 +550,13 @@ const completeLoading = () => {
 }
 /** Hàm hoàn thành loading */
 const completeCreatingAccount = async () => {
-  /** Chạy các hàm bổ sung (đã chạy song song, giờ wait) */
-  if (setup_promise.value) {
-    await setup_promise.value
-  } else {
-    // Fallback
-    await RunAdditionalSetup()
-  }
+  /** Chạy các hàm bổ sung */
+  await RunAdditionalSetup()
 
+  /** Đánh dấu hoàn tất onboarding */
+  setItem('is_onboarding', 'done')
+  /** Xóa user_id */
+  localStorage.removeItem('user_id')
   /** Xóa dữ liệu đăng ký */
   REGISTRATION_SERVICE.clearRegistrationData()
   /** Chuyển sang màn dashboard hoặc trang chủ */
@@ -791,11 +750,7 @@ const submitForm = async () => {
     // Set is_submitting true
     is_submitting.value = true
 
-    // Xóa user_id và access_token cũ để tránh conflict
-    localStorage.removeItem('user_id')
-    localStorage.removeItem('access_token')
-
-    /** Lưu dữ liệu onboarding vào storage */
+    /** Lưu dữ liệu onboarding vào storage thông qua service để các bước sau có thể lấy được */
     REGISTRATION_SERVICE.updateOnboardingData({
       industry: SELECTED_INDUSTRY.value ?? undefined,
       role: SELECTED_ROLE.value ?? undefined,
@@ -810,84 +765,14 @@ const submitForm = async () => {
       },
     })
 
-    /** Lấy dữ liệu đăng ký đã lưu */
-    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
-
-    /** Kiểm tra có dữ liệu không */
-    if (!REGISTRATION_DATA) {
-      console.error('Không có dữ liệu đăng ký')
-      return
-    }
-
-    /** Xử lý theo loại đăng ký */
-    if (REGISTRATION_DATA.registration_type === 'email') {
-      /** Đăng ký với email */
-      const REGISTER_RES = await API_OAUTH_BASIC.register(
-        REGISTRATION_DATA.email!,
-        REGISTRATION_DATA.password!,
-        `${REGISTRATION_DATA.first_name} ${REGISTRATION_DATA.last_name}`,
-        REGISTRATION_DATA.first_name!,
-        REGISTRATION_DATA.last_name!
-      )
-
-      // Lấy ID user từ response
-      const UID = REGISTER_RES.user_id || REGISTER_RES._id
-      // Lưu user_id vào local
-      if (UID) {
-        setItem('user_id', UID)
-      }
-
-      /** Chuyển sang màn loading trước */
-      flow_step.value = 2
-    } else if (REGISTRATION_DATA.registration_type === 'facebook') {
-      /** Đăng ký với Facebook */
-      /** Lấy token từ local hoặc từ dữ liệu đăng ký */
-      const TOKEN =
-        facebook_access_token.value || REGISTRATION_DATA.access_token!
-      /** Gọi API đăng nhập */
-      const LOGIN_RES = await API_OAUTH_FB.login(TOKEN)
-
-      /** Lưu lại access token */
-      if (LOGIN_RES.access_token) {
-        setItem('access_token', LOGIN_RES.access_token)
-      }
-      // Lấy ID user từ response
-      const UID = LOGIN_RES.user_id || LOGIN_RES._id
-      // Lưu user_id vào local
-      if (UID) {
-        setItem('user_id', UID)
-      }
-
-      /** Cập nhật thông tin onboarding qua API */
-      // await API_OAUTH_BASIC.updateOnboardingInfo({
-      //   industry: REGISTRATION_DATA.industry,
-      //   role: REGISTRATION_DATA.role,
-      //   company_name: REGISTRATION_DATA.company_name,
-      //   preferences: REGISTRATION_DATA.preferences,
-      //   website: REGISTRATION_DATA.company_details?.website,
-      //   facebook: REGISTRATION_DATA.company_details?.facebook,
-      //   instagram: REGISTRATION_DATA.company_details?.instagram,
-      //   tiktok: REGISTRATION_DATA.company_details?.tiktok,
-      //   zalo: REGISTRATION_DATA.company_details?.zalo,
-      // })
-
-      /** Chuyển sang màn xác thực SĐT */
-      flow_step.value = 3
-    }
+    /** Chuyển sang màn xác thực SĐT (Step 3) */
+    flow_step.value = 3
   } catch (error: any) {
+    console.error('Lỗi khi submit form:', error)
+    // thông báo lỗi
+    SERVICE_TOAST.error($t('Có lỗi xảy ra'))
+  } finally {
     is_submitting.value = false
-    console.error('Lỗi khi tạo tài khoản:', error)
-
-    /** Check nếu đăng ký với Facebook -> show modal */
-    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
-    /** Nếu đăng ký với Facebook */
-    if (REGISTRATION_DATA?.registration_type === 'facebook') {
-      /** Show modal */
-      relogin_modal_ref.value?.toggleModal()
-      return
-    }
-    /** Nếu đăng ký với email */
-    SERVICE_TOAST.error(error.message || $t('Có lỗi xảy ra khi tạo tài khoản'))
   }
 }
 
@@ -914,7 +799,28 @@ const RunAdditionalSetup = async () => {
     /** Lấy ID user từ storage */
     const USER_ID = getItem('user_id')
     /** Lấy ID tổ chức từ storage */
-    const ORG_ID = getItem('selected_org_id')
+    let ORG_ID = getItem('selected_org_id')
+
+    /** Nếu không có ORG_ID (do logic xóa ở bước trước), ta cần tìm lại */
+    if (!ORG_ID && USER_ID) {
+      try {
+        /** Khởi tạo service org */
+        const BILLING_ORG = new BillingAppOrganization()
+        /** Lấy danh sách org */
+        const ORGS = await BILLING_ORG.readOrg()
+        /** Tìm tổ chức của user */
+        const FOUND_ORG = ORGS.find((org: any) => org.org_owner_id === USER_ID)
+        /** Nếu tìm thấy */
+        if (FOUND_ORG) {
+          ORG_ID = (FOUND_ORG as any).org_id || (FOUND_ORG as any)._id
+          // Lưu lại để dùng sau này
+          setItem('selected_org_id', ORG_ID)
+        }
+      } catch (e) {
+        console.error('Lỗi khi fetch org fallback:', e)
+      }
+    }
+
     /** Lấy số điện thoại từ biến reactive */
     const ORG_PHONE = phone.value
     /** Lấy dữ liệu đăng ký từ service */
@@ -962,6 +868,8 @@ const RunAdditionalSetup = async () => {
       tiktok_link: FORMAT_LINK('tiktok.com/', COMPANY_DETAILS?.tiktok),
       /** Zalo (thêm domain zalo) */
       zalo_link: FORMAT_LINK('zalo.me/', COMPANY_DETAILS?.zalo),
+      /** Đánh dấu hoàn tất onboarding */
+      is_onboarding: 'done',
     })
 
     // Log thông báo cập nhật thành công
@@ -1001,39 +909,33 @@ const RunAdditionalSetup = async () => {
               1
             )
             // Thông báo thành công
-            SERVICE_TOAST.success($t('Kích hoạt gói thành công'))
+            SERVICE_TOAST.success(
+              $t('v1.view.onboarding.activate_package_success')
+            )
           } else {
             // Cảnh báo nếu không thấy ví
-            SERVICE_TOAST.error($t('Không tìm thấy ví để kích hoạt gói'))
+            SERVICE_TOAST.error($t('v1.view.onboarding.wallet_not_found'))
           }
         } else {
           // Nếu đã có gói thì thông báo
-          SERVICE_TOAST.success($t('Tổ chức đã có gói dịch vụ'))
+          SERVICE_TOAST.success($t('v1.view.onboarding.org_has_package'))
         }
       } catch (error: any) {
         // Log lỗi nếu kích hoạt thất bại
         console.error('Lỗi khi kích hoạt gói:', error)
-        SERVICE_TOAST.error(error.message || $t('Lỗi khi kích hoạt gói'))
+        SERVICE_TOAST.error(
+          error.message || $t('v1.view.onboarding.activate_package_error')
+        )
       }
     } else if (PACKAGE_SELECTED === 'Enterprise') {
       // Trường hợp gói Enterprise
-      SERVICE_TOAST.success(
-        $t('Gói Enterprise đã được lưu, nhân viên tư vấn sẽ liên hệ sau.')
-      )
+      SERVICE_TOAST.success($t('v1.view.onboarding.enterprise_saved'))
     }
   } catch (error) {
     // Log lỗi chung
     console.error('Lỗi khi chạy setup bổ sung:', error)
   }
 }
-
-/** Watch step để chạy setup song song */
-watch(flow_step, step => {
-  // Nếu là bước tạo tài khoản
-  if (step === 6) {
-    setup_promise.value = RunAdditionalSetup()
-  }
-})
 
 /** Step 1 */
 const OPTION_INDUSTRY = [

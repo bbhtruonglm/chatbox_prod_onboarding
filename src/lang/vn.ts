@@ -103,6 +103,43 @@ const source: Language = {
   'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.':
     'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.',
   'add _ member': 'Thêm {count} thành viên',
+  what_is_page: 'Trang là gì?',
+  children_what_is_page:
+    'Mỗi kênh bán hàng sẽ có các Trang bán hàng (Page) của bạn. Ví dụ: Bạn bán hàng trên Zalo, bạn có 5 tài khoản Zalo cá nhân thì được coi là 5 Page.',
+  monthly_payment: 'Tôi muốn thanh toán hàng tháng được không?',
+  children_monthly_payment:
+    'Tất nhiên, bạn có thể thanh toán định kỳ hàng tháng.',
+  refund_policy: 'Sau khi mua tôi có được hoàn tiền không?',
+  children_refund_policy:
+    'Có, trong 30 ngày đầu tiên sau khi thanh toán. Nếu bạn không hài lòng với sản phẩm/dịch vụ của chúng tôi, chúng tôi sẽ hoàn tiền 100% cho bạn.',
+  'see-more':
+    '<a href="/refund" target="_blank" style="color: red; font-weight: 500">Xem chi tiết</a>.',
+  expired_plan: 'Nếu gói của tôi hết hạn thì điều gì xảy ra?',
+  children_expired_plan:
+    'Trong vòng 14 ngày kể từ gói hết hạn, chúng tôi sẽ gửi thông báo cho bạn. Nếu bạn không gia hạn thì hệ thống sẽ tự động chuyển về gói Miễn phí.',
+  data_storage_duration: 'Dữ liệu của tôi lưu trong bao lâu?',
+  children_data_storage_duration:
+    'Với gói trả phí sẽ lưu trữ khi bạn sử dụng. Với gói miễn phí sẽ lưu trữ trong 90 ngày (nếu Page không phát sinh tin nhắn gửi đi), sau 90 ngày hệ thống tự động xoá toàn bộ dữ liệu của Page.',
+  data_storage_inactive: 'Tôi không sử dụng thì dữ liệu tôi có lưu trữ không?',
+  children_data_storage_inactive:
+    'Không, hệ thống chúng tôi tự động xoá toàn bộ dữ liệu. Và tuân thủ chính sách bảo mật. <a href="/privacy.html" target="_blank" style="color: red; font-weight: 500">Xem chính sách</a>.',
+  delete_data: 'Tôi có thể chủ động xoá dữ liệu được không?',
+  children_delete_data:
+    'Chắc chắn rồi, bạn truy cập: Page -> Thiết lập -> Tìm đến nút "Xoá vĩnh viễn Page".',
+  'see-guide':
+    '<a href="/privacy" target="_blank" style="color: red; font-weight: 500">Xem hướng dẫn</a>.',
+  self_host_data: 'Tôi muốn lưu trữ dữ liệu tại máy chủ của tôi được không?',
+  children_self_host_data:
+    'Hiện tại chúng tôi chưa hỗ trợ tính năng này. Nếu bạn có nhu cầu vui lòng liên hệ với chúng tôi.',
+  direct_support: 'Tôi cần hỗ trợ trực tiếp',
+  children_direct_support:
+    'Hiện tại chúng tôi hỗ trợ khách hàng trực tiếp ở Hà Nội và Hồ Chí Minh.',
+  ticket_platform: 'Tạo ticket đến nền tảng là gì?',
+  children_ticket_platform:
+    'Khi bạn bán hàng trên Facebook, Tiktok... bạn sẽ gặp phải các sự cố đến Page. Chúng tôi là đối tác cao cấp với nền tảng, sẽ liên hệ nền tảng để tạo Ticket hỗ trợ. Nhìn chung, bạn chỉ việc kinh doanh, nếu phát sinh vấn đề chúng tôi xử lý thay bạn. <br/> (Lưu ý: Page là cá nhân sẽ không được hỗ trợ).',
+  payment_methods: 'Có các hình thức thanh toán nào?',
+  children_payment_methods:
+    'Bạn có thể thanh toán bằng thẻ tín dụng, chuyển khoản ngân hàng, ví điện tử.',
   v1: {
     common: {
       zalo: 'Zalo',
@@ -308,6 +345,20 @@ const source: Language = {
         change_phone: 'Đổi số điện thoại',
         pin_code: 'Mã PIN xác thực đã được gửi đến số điện thoại của bạn',
         get_pin_code: 'Bạn chưa nhận được mã?',
+        phone_invalid_format:
+          'Số điện thoại không hợp lệ (chỉ nhập số, 8-15 chữ số)',
+        organization: 'Tổ chức:',
+        connect_facebook_desc: 'Kết nối Trang Facebook',
+        connect_instagram_desc: 'Kết nối Trang Instagram',
+        connect_whatsapp_desc: 'Kết nối Whatsapp Business và Cá nhân.',
+        connect_zalo_desc: 'Kết nối Zalo OA và Zalo cá nhân.',
+        connect_website_desc: 'Kết nối Website',
+        activate_package_success: 'Kích hoạt gói thành công',
+        wallet_not_found: 'Không tìm thấy ví để kích hoạt gói',
+        org_has_package: 'Tổ chức đã có gói dịch vụ',
+        activate_package_error: 'Lỗi khi kích hoạt gói',
+        enterprise_saved:
+          'Gói Enterprise đã được lưu, nhân viên tư vấn sẽ liên hệ sau.',
 
         select_employee: 'Chọn nhân viên',
         select_month: 'Chọn tháng',

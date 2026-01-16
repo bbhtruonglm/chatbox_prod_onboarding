@@ -7,12 +7,7 @@
       class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
     >
       <div class="flex flex-col gap-10">
-        <div
-          :style="{
-            backgroundImage: `url(${commonStore.partner?.logo?.full})`,
-          }"
-          class="h-7 w-full bg-contain bg-no-repeat bg-left flex-shrink-0"
-        />
+        <PartnerLogo />
         <div class="flex flex-col gap-3">
           <h1 class="text-5xl leading-tight font-semibold">
             {{ $t('v1.view.onboarding.quick_started') }}
@@ -46,7 +41,7 @@
               v-if="current_org_info"
               class="mt-2 text-sm text-slate-600 flex items-center gap-2"
             >
-              <span>Tổ chức:</span>
+              <span>{{ $t('v1.view.onboarding.organization') }}</span>
               <div
                 class="flex items-center gap-3 px-3 py-1.5 bg-gray-50 rounded-md border border-gray-200"
               >
@@ -311,7 +306,7 @@ import ConnectPage from '@/views/Dashboard/ConnectPage.vue'
 import { BillingAppOrganization } from '@/utils/api/Billing'
 import { getItem, setItem } from '@/service/helper/localStorage'
 import AlertRechQuota from '@/components/AlertModal/AlertRechQuota.vue'
-
+import PartnerLogo from '@/components/PartnerLogo.vue'
 /** Hàm dịch */
 const { t: $t } = useI18n()
 /** Khai báo common store */
@@ -341,38 +336,38 @@ const $emit = defineEmits<{
   (e: 'next'): void
 }>()
 /** Khai báo các nền tảng */
-const PLAT_FORMS = [
+const PLAT_FORMS = computed(() => [
   {
     name: 'Facebook',
-    desc: 'Kết nối Trang Facebook',
+    desc: $t('v1.view.onboarding.connect_facebook_desc'),
     icon: '/icons/facebook.png',
     connected: false,
   },
   {
     name: 'Instagram',
-    desc: 'Kết nối Trang Instagram',
+    desc: $t('v1.view.onboarding.connect_instagram_desc'),
     icon: '/icons/instagram.png',
     connected: false,
   },
   {
     name: 'Whatsapp',
-    desc: 'Kết nối Whatsapp Business và Cá nhân.',
+    desc: $t('v1.view.onboarding.connect_whatsapp_desc'),
     icon: '/icons/whatsapp.png',
     connected: false,
   },
   {
     name: 'Zalo',
-    desc: 'Kết nối Zalo OA và Zalo cá nhân.',
+    desc: $t('v1.view.onboarding.connect_zalo_desc'),
     icon: '/icons/zalo.png',
     connected: false,
   },
   {
     name: 'Website',
-    desc: 'Kết nối Website',
+    desc: $t('v1.view.onboarding.connect_website_desc'),
     icon: '/icons/website.png',
     connected: false,
   },
-]
+])
 /** Danh sachs platform đã kết nối */
 const CONNECTED_PLATFORMS = ref<String[]>([])
 

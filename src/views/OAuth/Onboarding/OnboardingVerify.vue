@@ -7,12 +7,7 @@
       class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
     >
       <div class="flex flex-col gap-10">
-        <div
-          :style="{
-            backgroundImage: `url(${commonStore.partner?.logo?.full})`,
-          }"
-          class="h-7 w-full bg-contain bg-no-repeat bg-left flex-shrink-0"
-        />
+        <PartnerLogo />
 
         <div class="flex flex-col gap-3">
           <h1 class="text-5xl leading-tight font-semibold flex gap-3">
@@ -74,7 +69,7 @@
               v-if="phone_value && !IS_PHONE_VALID"
               class="text-red-500 text-sm mt-1"
             >
-              Số điện thoại không hợp lệ (chỉ nhập số, 8-15 chữ số)
+              {{ $t('v1.view.onboarding.phone_invalid_format') }}
             </p>
           </div>
 
@@ -257,6 +252,7 @@ import {
   type ComponentPublicInstance,
 } from 'vue'
 
+import PartnerLogo from '@/components/PartnerLogo.vue'
 import ShadcnSelectPopper from '@/components/Select/ShadcnSelectPopper.vue'
 import ShadcnSelectPopper2 from '@/components/Select/ShadcnSelectPopper2.vue'
 /** Hàm dịch */

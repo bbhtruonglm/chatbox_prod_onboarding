@@ -178,29 +178,29 @@ class Main {
       throw $t('Mật khẩu không khớp')
 
     /** Lưu dữ liệu đăng ký email vào storage tập trung */
-    this.SERVICE_REGISTRATION_DATA.saveEmailRegistration(
-      form.value.email,
-      form.value.first_name,
-      form.value.last_name,
-      form.value.password
-    )
-
-    /** đăng ký */
-    // await this.API_OAUTH_BASIC.register(
+    // this.SERVICE_REGISTRATION_DATA.saveEmailRegistration(
     //   form.value.email,
-    //   form.value.password,
-    //   full_name.value,
     //   form.value.first_name,
     //   form.value.last_name,
-    //   this.SERVICE_LOCAL_STORAGE.getItem('ref')
+    //   form.value.password
     // )
 
-    /** Chuyển hướng vào onboarding */
-    this.SERVICE_OAUTH.redirect({
-      path: '/onboarding',
-    })
+    /** đăng ký */
+    await this.API_OAUTH_BASIC.register(
+      form.value.email,
+      form.value.password,
+      full_name.value,
+      form.value.first_name,
+      form.value.last_name,
+      this.SERVICE_LOCAL_STORAGE.getItem('ref')
+    )
 
-    return
+    /** Chuyển hướng vào onboarding */
+    // this.SERVICE_OAUTH.redirect({
+    //   path: '/onboarding',
+    // })
+
+    // return
     // đăng ký thành công thì chuyển về đăng nhập email
     this.SERVICE_OAUTH.redirect({
       path: '/oauth/login-email',

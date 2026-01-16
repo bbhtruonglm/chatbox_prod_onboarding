@@ -169,16 +169,21 @@ class Main {
     await VLD_EMAIL_PASSWORD.validate(form.value)
 
     /**jwt đại diện cho người dùng */
-    const { access_token: JWT } = await this.API_OAUTH_BASIC.login(
+    const LOGIN_RES = await this.API_OAUTH_BASIC.login(
       form.value.email,
       form.value.password
     )
 
     // lưu token vào local storage
-    setItem('access_token', JWT)
+    if (LOGIN_RES.access_token) setItem('access_token', LOGIN_RES.access_token)
 
-    // chuyển hướng vào dashboard
-    this.SERVICE_OAUTH.redirect('/dashboard')
+    // lưu user_id
+    const USER_ID = LOGIN_RES.user_id || LOGIN_RES._id
+    // Nếu có user_id thì lưu vào local storage
+    if (USER_ID) setItem('user_id', USER_ID)
+
+    // kiểm tra và chuyển hướng
+    await this.SERVICE_OAUTH.checkOnboardingAndRedirect()
 
     // trigger message tới nhân viên
     this.TRIGGER_EVENT_REF.sendMessageLoginEmail(form.value.email)

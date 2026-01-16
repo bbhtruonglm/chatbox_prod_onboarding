@@ -1,6 +1,8 @@
-import { useCommonStore } from '@/stores'
+import { useCommonStore, useOrgStore } from '@/stores'
 import { useOAuthStore } from '@/views/OAuth/store'
 import { N4SerivcePublicOauthFacebok } from '@/utils/api/N4Service/Oauth'
+import { BillingAppOrganization } from '@/utils/api/Billing'
+import { read_me_chatbot_user } from '@/service/api/chatbox/n4-service'
 import { error } from '@/utils/decorator/Error'
 import { loadingV2 } from '@/utils/decorator/Loading'
 import { Toast } from '@/utils/helper/Alert/Toast'
@@ -39,14 +41,59 @@ export function composableService() {
     @error()
     async loginFb(access_token: string) {
       /**jwt đại diện cho người dùng */
-      const { access_token: JWT } = await this.API_OAUTH_FB.login(
+      const LOGIN_RES = await this.API_OAUTH_FB.login(
         access_token,
         this.SERVICE_LOCAL_STORAGE.getItem('ref')
       )
+      const { access_token: JWT } = LOGIN_RES
 
       // lưu token vào local storage
       this.SERVICE_LOCAL_STORAGE.setItem('access_token', JWT)
 
+      /** lưu user id */
+      const USER_ID = (LOGIN_RES as any).user_id || ''
+      // nếu có user id thì lưu vào local storage
+      if (USER_ID) this.SERVICE_LOCAL_STORAGE.setItem('user_id', USER_ID)
+
+      // kiểm tra và chuyển hướng
+      await this.checkOnboardingAndRedirect()
+    }
+
+    /**kiểm tra và chuyển hướng */
+    async checkOnboardingAndRedirect() {
+      /** lấy thông tin tổ chức */
+      const ORGS = await new BillingAppOrganization().readOrg()
+      /** store tổ chức */
+      const ORG_STORE = useOrgStore()
+
+      // lưu thông tin tổ chức vào store
+      ORG_STORE.list_org = ORGS
+
+      // nếu có tổ chức thì lấy id của tổ chức đầu tiên
+      if (ORGS?.length) {
+        const orgId = ORGS[0].org_id
+        ORG_STORE.selected_org_id = orgId
+        this.SERVICE_LOCAL_STORAGE.setItem('selected_org_id', orgId)
+      }
+
+      /**đọc thông tin user */
+      const USER_INFO = await new Promise<any>((resolve, reject) => {
+        read_me_chatbot_user((e, r) => {
+          if (e) return reject(e)
+          resolve(r)
+        })
+      })
+
+      // nếu chưa onboarding thì chuyển hướng vào onboarding
+      if (!USER_INFO?.user_info?.is_onboarding) {
+        // chuyển hướng vào onboarding
+        this.redirect('/onboarding')
+        // return
+        return
+      }
+
+      // xóa user_id
+      this.SERVICE_LOCAL_STORAGE.removeItem('user_id')
       // chuyển hướng vào dashboard
       this.redirect('/dashboard')
     }
@@ -55,13 +102,19 @@ export function composableService() {
     @error()
     async loginFbRegister(access_token: string) {
       /**jwt đại diện cho người dùng */
-      const { access_token: JWT } = await this.API_OAUTH_FB.login(
+      const LOGIN_RES = await this.API_OAUTH_FB.login(
         access_token,
         this.SERVICE_LOCAL_STORAGE.getItem('ref')
       )
+      // lấy token
+      const { access_token: JWT } = LOGIN_RES
 
       /** lưu token vào local storage */
       this.SERVICE_LOCAL_STORAGE.setItem('access_token', JWT)
+      /** lấy user id */
+      const USER_ID = (LOGIN_RES as any).user_id || ''
+      // nếu có user id thì lưu vào local storage
+      if (USER_ID) this.SERVICE_LOCAL_STORAGE.setItem('user_id', USER_ID)
 
       /** chuyển hướng vào dashboard */
       this.redirect('/onboarding')
@@ -78,6 +131,15 @@ export function composableService() {
     saveAccessToken(access_token: string) {
       // lưu token vào local storage
       this.SERVICE_LOCAL_STORAGE.setItem('temp_token', access_token)
+    }
+    /**đăng xuất */
+    logout() {
+      // xóa token
+      this.SERVICE_LOCAL_STORAGE.removeItem('access_token')
+      // xóa user_id
+      this.SERVICE_LOCAL_STORAGE.removeItem('user_id')
+      // xóa id tổ chức
+      this.SERVICE_LOCAL_STORAGE.removeItem('selected_org_id')
     }
   }
 

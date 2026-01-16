@@ -304,6 +304,43 @@ const source: Language = {
   'Kết nối với Tiktok': 'Connect with TikTok',
   'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.':
     'Connect with TikTok to chat automatically across multiple Pages with AI, optimize marketing costs with CAPI, and automatically integrate your business applications.',
+  what_is_page: 'What is a Page?',
+  children_what_is_page:
+    'Each sales channel will have its own Sales Pages (Pages). For example: If you sell on Zalo and have 5 personal Zalo accounts, they will be considered as 5 Pages.',
+  monthly_payment: 'Can I pay monthly?',
+  children_monthly_payment: 'Of course, you can choose to pay monthly.',
+  refund_policy: 'Can I get a refund after purchase?',
+  children_refund_policy:
+    "Yes, within 30 days after payment. If you're not satisfied with our product/service, we'll give you a 100% refund.",
+  'see-more':
+    '<a href="/refund" target="_blank" style="color: red; font-weight: 500">See details</a>.',
+  expired_plan: 'What happens when my plan expires?',
+  children_expired_plan:
+    "Within 14 days of your plan's expiration, we will send you a notification. If you do not renew, the system will automatically switch to the Free plan.",
+  data_storage_duration: 'How long is my data stored?',
+  children_data_storage_duration:
+    'For paid plans, data will be stored as long as you are using the service. For free plans, data will be stored for 90 days (if the Page does not generate outgoing messages). After 90 days, the system will automatically delete all data of the Page.',
+  data_storage_inactive:
+    "If I don't use the service, will my data still be stored?",
+  children_data_storage_inactive:
+    'No, our system automatically deletes all data. We comply with our privacy policy. <a href="/privacy.html" target="_blank" style="color: red; font-weight: 500">See policy</a>.',
+  delete_data: 'Can I delete my data proactively?',
+  children_delete_data:
+    "Absolutely. You can go to: Page -> Settings -> Find the 'Permanently Delete Page' button.",
+  'see-guide':
+    '<a href="/privacy" target="_blank" style="color: red; font-weight: 500">See instructions</a>.',
+  self_host_data: 'Can I store data on my own server?',
+  children_self_host_data:
+    'Currently, we do not support this feature. If you need it, please contact us.',
+  direct_support: 'I need direct support',
+  children_direct_support:
+    'Currently, we provide direct support to customers in Hanoi and Ho Chi Minh City.',
+  ticket_platform: 'What is creating a ticket to the platform?',
+  children_ticket_platform:
+    'When you sell on platforms like Facebook or TikTok, you may encounter issues with your Pages. As a premium partner with these platforms, we will contact them to create a support ticket for you. Essentially, you just focus on your business, and if issues arise, we’ll handle them for you. <br/> (Note: Personal Pages are not eligible for support).',
+  payment_methods: 'What payment methods are available?',
+  children_payment_methods:
+    'You can pay via credit card, bank transfer, or e-wallet.',
   v1: {
     common: {
       zalo: 'Zalo',
@@ -507,6 +544,19 @@ const source: Language = {
         change_phone: 'Change Phone Number',
         pin_code: 'A verification PIN code has been sent to your phone number',
         get_pin_code: 'Didn’t receive the code?',
+        phone_invalid_format: 'Invalid phone number (only digits, 8-15 digits)',
+        organization: 'Organization:',
+        connect_facebook_desc: 'Connect Facebook Page',
+        connect_instagram_desc: 'Connect Instagram Page',
+        connect_whatsapp_desc: 'Connect Whatsapp Business and Personal.',
+        connect_zalo_desc: 'Connect Zalo OA and Zalo Personal.',
+        connect_website_desc: 'Connect Website',
+        activate_package_success: 'Package activated successfully',
+        wallet_not_found: 'Wallet not found to activate package',
+        org_has_package: 'Organization already has a service package',
+        activate_package_error: 'Error activating package',
+        enterprise_saved:
+          'Enterprise package saved, our consultant will contact you later.',
 
         select_employee: 'Select Employee',
         select_month: 'Select Month',
@@ -1658,6 +1708,15 @@ const source: Language = {
                 },
               },
               lite: 'Lite',
+              lite_description:
+                'Suitable for individuals, shops, and small businesses just starting out.',
+              pro_description:
+                'Suitable for small and medium businesses ready to expand and grow.',
+              business_description:
+                'Suitable for businesses with a large customer base',
+              enterprise_description:
+                'Suitable for large enterprises and corporations requiring data security and special requirements.',
+              custom: 'Custom',
               upgrade_v2: {
                 title: 'Choose the right plan for your team',
                 choose_team_plan: 'Choose your team plan',

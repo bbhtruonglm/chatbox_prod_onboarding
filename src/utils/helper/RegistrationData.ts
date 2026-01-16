@@ -199,14 +199,13 @@ export class RegistrationDataService implements IRegistrationDataService {
     /** Lấy dữ liệu hiện tại */
     const CURRENT_DATA = this.getRegistrationData()
 
-    /** Nếu không có dữ liệu hiện tại thì không làm gì */
-    if (!CURRENT_DATA) {
-      console.warn('Không có dữ liệu đăng ký để cập nhật onboarding')
-      return
-    }
-
-    /** Merge dữ liệu mới vào dữ liệu cũ */
-    const UPDATED_DATA: IRegistrationData = { ...CURRENT_DATA }
+    /** Nếu không có dữ liệu hiện tại thì tạo mới */
+    const UPDATED_DATA: IRegistrationData = CURRENT_DATA
+      ? { ...CURRENT_DATA }
+      : {
+          registration_type: 'email', // Mặc định
+          registered_at: Date.now(),
+        }
 
     /** Cập nhật industry */
     if (onboarding_data.industry !== undefined)

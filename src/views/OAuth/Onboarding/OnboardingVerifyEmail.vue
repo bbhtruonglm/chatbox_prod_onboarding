@@ -78,12 +78,12 @@
                     :key="'left-' + i"
                     type="text"
                     maxlength="1"
-                    v-model="OTP[i]"
-                    @input="onInputOTP(i, $event)"
-                    @keydown="onKeydownOTP(i, $event)"
-                    @paste="onPasteOTP($event)"
+                    v-model="otp[i]"
+                    @input="OnInputOTP(i, $event)"
+                    @keydown="OnKeydownOTP(i, $event)"
+                    @paste="OnPasteOTP($event)"
                     class="size-12 text-center border text-lg font-semibold"
-                    :ref="el => setInputRef(el as HTMLInputElement | null, i)"
+                    :ref="el => SetInputRef(el as HTMLInputElement | null, i)"
                     :class="[
                       i === 0
                         ? 'rounded-l-md'
@@ -101,12 +101,12 @@
                     :key="'right-' + i"
                     type="text"
                     maxlength="1"
-                    v-model="OTP[i + 2]"
-                    @input="onInputOTP(i + 2, $event)"
-                    @keydown="onKeydownOTP(i + 2, $event)"
-                    @paste="onPasteOTP($event)"
+                    v-model="otp[i + 2]"
+                    @input="OnInputOTP(i + 2, $event)"
+                    @keydown="OnKeydownOTP(i + 2, $event)"
+                    @paste="OnPasteOTP($event)"
                     class="size-12 text-center border text-lg font-semibold"
-                    :ref="el => setInputRef(el as HTMLInputElement | null, i + 2)"
+                    :ref="el => SetInputRef(el as HTMLInputElement | null, i + 2)"
                     :class="[
                       i === 0
                         ? 'rounded-l-md'
@@ -131,7 +131,7 @@
                 </h4>
                 <button
                   v-else
-                  @click="handleResend"
+                  @click="HandleResend"
                   class="text-sm text-blue-600 hover:text-blue-800 underline font-medium"
                 >
                   {{ $t('Gửi lại mã xác thực') }}
@@ -160,7 +160,7 @@
         </button>
 
         <button
-          @click="handleVerifyManual"
+          @click="HandleVerifyManual"
           :disabled="!IS_OTP_COMPLETE || is_verifying"
           :class="[
             'px-8 py-3 rounded-md font-medium',
@@ -207,7 +207,7 @@ const $emit = defineEmits<{
 const inputs = ref<(HTMLInputElement | null)[]>([])
 
 /** Khai báo OTP */
-const OTP = ref<string[]>(Array(4).fill(''))
+const otp = ref<string[]>(Array(4).fill(''))
 
 /** Trạng thái verifying */
 const is_verifying = ref(false)
@@ -224,25 +224,25 @@ let verify_timeout: number | undefined
 /** Check OTP đã đủ 4 số chưa */
 const IS_OTP_COMPLETE = computed(() => {
   /** Lấy OTP string */
-  const OTP_STRING = OTP.value.join('')
+  const OTP_STRING = otp.value.join('')
   /** Trả về check length === 4 và không phải string rỗng */
   return OTP_STRING.length === 4 && OTP_STRING.trim() !== ''
 })
 
 /** Hàm để gán ref */
-const setInputRef = (el: HTMLInputElement | null, index: number) => {
+const SetInputRef = (el: HTMLInputElement | null, index: number) => {
   /** Gán ref vào mảng */
   inputs.value[index] = el
 }
 
 /** Hàm xử lý input OTP */
-const onInputOTP = (index: number, event: Event) => {
+const OnInputOTP = (index: number, event: Event) => {
   /** Lấy value input */
   const INPUT = event.target as HTMLInputElement
   /** Chỉ cho phép số */
   INPUT.value = INPUT.value.replace(/\D/g, '')
   /** Cập nhật OTP */
-  OTP.value[index] = INPUT.value
+  otp.value[index] = INPUT.value
   /** Nếu đã nhập thì focus ô input kế tiếp */
   if (INPUT.value && index < 3) {
     inputs.value[index + 1]?.focus()
@@ -250,9 +250,9 @@ const onInputOTP = (index: number, event: Event) => {
 }
 
 /** Hàm xử lý keydown OTP */
-const onKeydownOTP = (index: number, event: KeyboardEvent) => {
+const OnKeydownOTP = (index: number, event: KeyboardEvent) => {
   /** Nếu ấn backspace và ô hiện tại rỗng thì focus về ô trước */
-  if (event.key === 'Backspace' && !OTP.value[index] && index > 0) {
+  if (event.key === 'Backspace' && !otp.value[index] && index > 0) {
     inputs.value[index - 1]?.focus()
   }
 }
@@ -261,7 +261,7 @@ const onKeydownOTP = (index: number, event: KeyboardEvent) => {
  * Hàm xử lý paste OTP
  * @param event - Clipboard event
  */
-const onPasteOTP = (event: ClipboardEvent) => {
+const OnPasteOTP = (event: ClipboardEvent) => {
   /** Ngăn hành vi mặc định của paste */
   event.preventDefault()
 
@@ -283,7 +283,7 @@ const onPasteOTP = (event: ClipboardEvent) => {
   /** Fill vào các ô OTP */
   for (let i = 0; i < OTP_DIGITS.length; i++) {
     /** Gán giá trị vào ô OTP */
-    OTP.value[i] = OTP_DIGITS[i]
+    otp.value[i] = OTP_DIGITS[i]
   }
 
   /** Focus vào ô cuối cùng đã fill hoặc ô cuối cùng nếu đủ 4 số */
@@ -297,7 +297,7 @@ const onPasteOTP = (event: ClipboardEvent) => {
 }
 
 /** Hàm verify OTP tự động */
-const verifyOTP = () => {
+const VerifyOTP = () => {
   /** Bật trạng thái verifying */
   is_verifying.value = true
   /** Giả lập delay verify */
@@ -305,26 +305,50 @@ const verifyOTP = () => {
     /** Tắt trạng thái verifying */
     is_verifying.value = false
     /** Lấy OTP string */
-    const OTP_STRING = OTP.value.join('')
+    const OTP_STRING = otp.value.join('')
     /** Emit event verify */
     $emit('verify', OTP_STRING)
   }, 1000)
 }
 
 /** Hàm verify thủ công khi click nút */
-const handleVerifyManual = () => {
+const HandleVerifyManual = () => {
   /** Nếu OTP chưa đủ thì return */
   if (!IS_OTP_COMPLETE.value) return
   /** Gọi hàm verify */
-  verifyOTP()
+  VerifyOTP()
+}
+
+/**
+ * Hàm bắt đầu đếm ngược
+ */
+const StartCountdown = () => {
+  /** Clear interval cũ nếu có */
+  if (countdown_interval) clearInterval(countdown_interval)
+
+  /** Bắt đầu interval */
+  countdown_interval = window.setInterval(() => {
+    /** Nếu còn thời gian */
+    if (time_remaining.value > 0) {
+      /** Giảm 1 giây */
+      time_remaining.value--
+    } else {
+      /** Hết giờ -> clear interval */
+      clearInterval(countdown_interval)
+    }
+  }, 1000)
 }
 
 /** Hàm gửi lại mã */
-const handleResend = () => {
+const HandleResend = () => {
   /** Reset OTP */
-  OTP.value = Array(4).fill('')
+  otp.value = Array(4).fill('')
   /** Reset countdown */
   time_remaining.value = 60
+
+  /** Bắt đầu đếm ngược lại */
+  StartCountdown()
+
   /** Focus vào ô đầu tiên */
   nextTick(() => {
     if (inputs.value[0]) {
@@ -337,7 +361,7 @@ const handleResend = () => {
 
 /** Watch OTP thay đổi để tự động verify */
 watch(
-  OTP,
+  otp,
   newOTP => {
     /** Clear timeout cũ nếu có */
     if (verify_timeout) clearTimeout(verify_timeout)
@@ -346,7 +370,7 @@ watch(
     /** Nếu OTP đủ 4 số thì tự động verify sau 1s */
     if (OTP_STRING.length === 4 && OTP_STRING.trim() !== '') {
       verify_timeout = window.setTimeout(() => {
-        verifyOTP()
+        VerifyOTP()
       }, 1000)
     }
   },
@@ -363,15 +387,7 @@ onMounted(() => {
   })
 
   /** Bắt đầu countdown */
-  countdown_interval = window.setInterval(() => {
-    /** Nếu > 0 thì giảm */
-    if (time_remaining.value > 0) {
-      time_remaining.value--
-    } else {
-      /** Clear interval khi hết thời gian */
-      clearInterval(countdown_interval)
-    }
-  }, 1000)
+  StartCountdown()
 })
 
 /** Clear interval khi component unmount */

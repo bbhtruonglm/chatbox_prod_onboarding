@@ -87,13 +87,10 @@ class Main {
       this.SERVICE_OAUTH.loginFb(r)
     })
   }
-  /**nếu có token thì redirect vào dashboard */
+  /**nếu có token thì xóa hết */
   isAlreadyLogin() {
-    // nếu không có token thì return
-    if (!getItem('access_token')) return
-
-    // chuyển hướng vào chat
-    this.SERVICE_OAUTH.redirect('/chat')
+    // xóa hết các thông tin trong local storage
+    this.SERVICE_OAUTH.logout()
   }
   /**đăng nhập bằng email*/
   @error()
