@@ -15,7 +15,9 @@
           {{ $t('v1.view.main.dashboard.widget.popular') }}
         </template>
         <template #item>
-          <div class="grid gap-y-3 gap-x-6 grid-cols-4">
+          <div
+            class="grid gap-y-3 gap-x-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+          >
             <template v-for="widget of widget_list">
               <Item
                 v-if="filterWidget(widget)"
@@ -55,10 +57,9 @@ import type {
 import type { Cb, CbError } from '@/service/interface/function'
 import type { ComponentRef } from '@/service/interface/vue'
 import { nonAccentVn } from '@/service/helper/format'
-import { useI18n } from 'vue-i18n'
-/** Hàm emit loading */
+
 const $emit = defineEmits(['is_loading'])
-/** widget từ store */
+
 const widgetStore = useWidgetStore()
 
 /**phân trang */
@@ -74,38 +75,35 @@ const categories = ref<WidgetCategoryInfo[]>()
 /**giá trị tìm kiếm */
 const search = ref('')
 
-/** hàm dịch */
-const { t: $t } = useI18n()
-
 onMounted(() => getWidget())
 
 /**mở modal cải đặt widget */
 function openInstallWidget(widget: AppInfo) {
-  /** gán giá trị cho widget được chọn */
+  // gán giá trị cho widget được chọn
   widgetStore.selected_widget = widget
 
-  /** mở modal */
+  // mở modal
   widget_info_ref.value.toggleModal()
 }
 /**lấy danh sách widget và danh mục */
 function getWidget() {
   waterfall(
     [
-      /** loading */
+      // * loading
       (cb: CbError) => {
         widgetStore.is_loading = true
 
         cb()
       },
-      /** lấy danh mục */
+      // * lấy danh mục
       (cb: CbError) =>
         get_market_category({}, (e, r) => {
-          /** ghi dữ liệu nếu có */
+          // ghi dữ liệu nếu có
           if (r?.length) categories.value = r
 
           cb()
         }),
-      /** * lấy danh sách từ api v1 */
+      // * lấy danh sách từ api v1
       (cb: CbError) =>
         get_market_widget(
           {
@@ -119,19 +117,19 @@ function getWidget() {
 
             widget_list.value = r
             cb()
-          }
+          },
         ),
     ],
     e => {
       widgetStore.is_loading = false
 
       if (e) return toastError(e)
-    }
+    },
   )
 }
 /**lấy danh sách widget khi thay đổi giá trị tìm kiếm */
 function filterWidget(widget: AppInfo) {
-  /** nếu không có giá trị tìm kiếm thì trả về true */
+  // nếu không có giá trị tìm kiếm thì trả về true
   if (!search.value) return true
 
   /**định dạng tìm kiếm */
@@ -139,7 +137,7 @@ function filterWidget(widget: AppInfo) {
 
   console.log('wwtw')
 
-  /** nếu tên hoặc mô tả chứa giá trị tìm kiếm thì trả về true */
+  // nếu tên hoặc mô tả chứa giá trị tìm kiếm thì trả về true
   return (
     nonAccentVn(widget.name).includes(SEARCH) ||
     nonAccentVn(widget.description).includes(SEARCH)

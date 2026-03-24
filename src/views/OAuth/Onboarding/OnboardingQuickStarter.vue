@@ -7,7 +7,12 @@
       class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
     >
       <div class="flex flex-col gap-10">
-        <PartnerLogo />
+        <div
+          :style="{
+            backgroundImage: `url(${commonStore.partner?.logo?.full})`,
+          }"
+          class="h-7 w-full bg-contain bg-no-repeat bg-left flex-shrink-0"
+        />
         <div class="flex flex-col gap-3">
           <h1 class="text-5xl leading-tight font-semibold">
             {{ $t('v1.view.onboarding.quick_started') }}
@@ -37,35 +42,6 @@
               {{ STEP_TITLE }}
             </h2>
             <p class="font-medium">{{ STEP_DESCRIPTIONS }}</p>
-            <div
-              v-if="current_org_info"
-              class="mt-2 text-sm text-slate-600 flex items-center gap-2"
-            >
-              <span>{{ $t('v1.view.onboarding.organization') }}</span>
-              <div
-                class="flex items-center gap-3 px-3 py-1.5 bg-gray-50 rounded-md border border-gray-200"
-              >
-                <img
-                  v-if="current_org_info.org_info?.org_avatar"
-                  :src="current_org_info.org_info.org_avatar"
-                  class="size-8 rounded-full object-cover shadow-sm flex-shrink-0"
-                />
-                <div
-                  v-else
-                  class="size-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold uppercase flex-shrink-0"
-                >
-                  {{ current_org_info.org_info?.org_name?.charAt(0) || 'O' }}
-                </div>
-                <div class="flex flex-col">
-                  <span class="font-bold text-black text-base leading-tight">{{
-                    current_org_info.org_info.org_name
-                  }}</span>
-                  <span class="text-xs text-gray-500 font-mono leading-tight">{{
-                    current_org_info.org_id || current_org_info._id
-                  }}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         <div class="flex flex-col gap-5">
@@ -80,60 +56,64 @@
               <li
                 v-for="(item, i) in PLAT_FORMS"
                 :key="i"
-                class="flex flex-col px-2 py-4 gap-3"
+                class="flex items-center justify-between px-2 py-4 gap-3"
               >
-                <div class="flex items-center justify-between gap-3">
-                  <!-- Thông tin -->
-                  <div class="flex items-center gap-3">
-                    <ZaloIcon
-                      v-if="item.name === 'Zalo'"
-                      class="size-8"
-                    />
-                    <FacebookIcon
-                      v-else-if="item.name === 'Facebook'"
-                      class="size-8"
-                    />
-                    <InstagramIcon
-                      v-else-if="item.name === 'Instagram'"
-                      class="size-8"
-                    />
-                    <Whatsapp
-                      v-else-if="item.name === 'Whatsapp'"
-                      class="size-8"
-                    />
-                    <img
-                      v-else
-                      src="https://static.retion.ai/chatbox/partner/retion.logo.png"
-                      class="size-8"
-                    />
-                    <div class="flex flex-col">
-                      <span class="font-semibold text-sm">{{ item.name }}</span>
-                      <span class="text-slate-500 text-xs">{{
-                        item.desc
-                      }}</span>
-                    </div>
+                <!-- Thông tin -->
+                <div class="flex items-center gap-3">
+                  <ZaloIcon
+                    v-if="item.name === 'Zalo'"
+                    class="size-8"
+                  />
+                  <Facebook
+                    v-else-if="item.name === 'Facebook'"
+                    class="size-8"
+                  />
+                  <Instagram
+                    v-else-if="item.name === 'Instagram'"
+                    class="size-8"
+                  />
+                  <Whatsapp
+                    v-else-if="item.name === 'Whatsapp'"
+                    class="size-8"
+                  />
+                  <img
+                    v-else
+                    src="https://static.retion.ai/chatbox/partner/retion.logo.png"
+                    class="size-8"
+                  />
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-sm">{{ item.name }}</span>
+                    <span class="text-slate-500 text-xs">{{ item.desc }}</span>
                   </div>
+                </div>
 
-                  <!-- Nút trạng thái -->
-                  <div>
-                    <button
-                      v-if="CONNECTED_PLATFORMS.includes(item?.name)"
-                      class="text-blue-600 border py-2 border-transparent flex items-center gap-1 text-sm font-semibold"
+                <!-- Nút trạng thái -->
+                <div>
+                  <button
+                    v-if="CONNECTED_PLATFORMS.includes(item?.name)"
+                    class="text-blue-600 border py-2 border-transparent flex items-center gap-1 text-sm font-semibold"
+                  >
+                    {{ $t('v1.view.onboarding.connected') }}
+                    <Link2Icon class="size-4" />
+                  </button>
+                  <button
+                    v-else
+                    @click="handleAddPlatforms(item?.name)"
+                    class="px-6 py-2 bg-slate-200 border border-slate-300 font-semibold rounded-md hover:bg-slate-300 flex items-center gap-1 text-sm"
+                  >
+                    <span
+                      v-if="LOADING_PLATFORM !== item?.name"
+                      class="flex gap-1 items-center"
                     >
-                      {{ $t('v1.view.onboarding.connected') }}
-                      <Link2Icon class="size-4" />
-                    </button>
-                    <button
+                      {{ $t('v1.view.onboarding.connect') }}
+                      <ChevronRightIcon class="size-4" />
+                    </span>
+                    <VueSpinnerIos
                       v-else
-                      @click="handleAddPlatforms(item?.name)"
-                      class="px-6 py-2 bg-slate-200 border border-slate-300 font-semibold rounded-md hover:bg-slate-300 flex items-center gap-1 text-sm"
-                    >
-                      <span class="flex gap-1 items-center">
-                        {{ $t('v1.view.onboarding.connect') }}
-                        <ChevronRightIcon class="size-4" />
-                      </span>
-                    </button>
-                  </div>
+                      size="20"
+                      color="blue"
+                    />
+                  </button>
                 </div>
               </li>
             </ul>
@@ -169,59 +149,52 @@
                 </button>
               </div>
 
-              <!-- Email addresses (Ẩn đi do chưa có API) -->
-              <div v-if="false">
-                <div
-                  v-for="(email, index) in emails"
-                  :key="index"
-                  class="flex items-center gap-5"
-                >
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium mb-1">{{
-                      $t('v1.view.onboarding.email_address')
-                    }}</label>
-                    <input
-                      type="email"
-                      v-model="emails[index]"
-                      :placeholder="$t('v1.view.onboarding.enter_email')"
-                      class="w-full border rounded-md px-3 py-2 relative"
-                      :ref="
-                        el => {
-                          if (index === 0)
-                            FIRST_EMAIL_INPUT = el as HTMLInputElement
-                        }
-                      "
-                    />
-                    <p
-                      v-if="emailErrors[index]"
-                      class="text-red-500 text-xs absolute"
-                    >
-                      {{ emailErrors[index] }}
-                    </p>
-                  </div>
-                  <button
-                    @click="sendInvite(email, index)"
-                    class="mt-6 px-4 py-2 w-28 rounded-md text-sm font-medium"
-                    :class="[
-                      /** Check có email và không sai regex */
-                      email[index] && !emailErrors[index]
-                        ? 'bg-blue-600 hover:bg-blue-500 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200',
-                    ]"
+              <!-- Email addresses -->
+              <div
+                v-for="(email, index) in emails"
+                :key="index"
+                class="flex items-center gap-5"
+              >
+                <div class="flex-1">
+                  <label class="block text-sm font-medium mb-1">{{
+                    $t('v1.view.onboarding.email_address')
+                  }}</label>
+                  <input
+                    type="email"
+                    v-model="emails[index]"
+                    :placeholder="$t('v1.view.onboarding.enter_email')"
+                    class="w-full border rounded-md px-3 py-2 relative"
+                    :ref="el => { if (index === 0) FIRST_EMAIL_INPUT = el as HTMLInputElement }"
+                  />
+                  <p
+                    v-if="emailErrors[index]"
+                    class="text-red-500 text-xs absolute"
                   >
-                    {{ $t('v1.view.onboarding.send_invite') }}
-                  </button>
+                    {{ emailErrors[index] }}
+                  </p>
                 </div>
-
-                <!-- Add more email field -->
                 <button
-                  @click="addEmailField"
-                  class="flex items-center gap-2 text-sm text-gray-700 hover:text-black"
+                  @click="sendInvite(email, index)"
+                  class="mt-6 px-4 py-2 w-28 rounded-md text-sm font-medium"
+                  :class="[
+                    /** Check có email và không sai regex */
+                    email[index] && !emailErrors[index]
+                      ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200',
+                  ]"
                 >
-                  <PlusCircleIcon class="size-5" />
-                  {{ $t('v1.view.onboarding.invite_email') }}
+                  {{ $t('v1.view.onboarding.send_invite') }}
                 </button>
               </div>
+
+              <!-- Add more email field -->
+              <button
+                @click="addEmailField"
+                class="flex items-center gap-2 text-sm text-gray-700 hover:text-black"
+              >
+                <PlusCircleIcon class="size-5" />
+                {{ $t('v1.view.onboarding.invite_email') }}
+              </button>
             </div>
           </div>
         </div>
@@ -267,11 +240,6 @@
       </div>
     </main>
   </div>
-  <ConnectPage
-    ref="connect_page_ref"
-    @done="onConnectDone"
-  />
-  <AlertRechQuota ref="alert_reach_quota_page_ref" />
 </template>
 
 <script setup lang="ts">
@@ -290,33 +258,19 @@ import {
 
 import { copyToClipboard } from '@/service/helper/copyWithAlert'
 
-import FacebookIcon from '@/components/Icons/Facebook.vue'
-import InstagramIcon from '@/components/Icons/Instagram.vue'
+import Facebook from '@/components/Icons/Facebook.vue'
+import Instagram from '@/components/Icons/Instagram.vue'
 import Whatsapp from '@/components/Icons/Whatsapp.vue'
 import ZaloIcon from '@/components/Icons/Zalo.vue'
 import { PlusCircleIcon } from '@heroicons/vue/24/outline'
-import { ChevronRightIcon } from '@heroicons/vue/16/solid'
+import { ChevronRightIcon, LinkIcon } from '@heroicons/vue/16/solid'
+import { VueSpinnerIos } from 'vue3-spinners'
 import { CheckIcon } from '@heroicons/vue/24/solid'
 import { Link2Icon } from 'lucide-vue-next'
-import { N4SerivceAppPage } from '@/utils/api/N4Service/Page'
-import { ToastSingleton } from '@/utils/helper/Alert/Toast'
-import { useChatbotUserStore, useOrgStore, useConnectPageStore } from '@/stores'
-import { useRoute, useRouter } from 'vue-router'
-import ConnectPage from '@/views/Dashboard/ConnectPage.vue'
-import { BillingAppOrganization } from '@/utils/api/Billing'
-import { getItem, setItem } from '@/service/helper/localStorage'
-import AlertRechQuota from '@/components/AlertModal/AlertRechQuota.vue'
-import PartnerLogo from '@/components/PartnerLogo.vue'
 /** Hàm dịch */
 const { t: $t } = useI18n()
 /** Khai báo common store */
 const commonStore = useCommonStore()
-const chatbotUserStore = useChatbotUserStore()
-const orgStore = useOrgStore()
-const connectPageStore = useConnectPageStore()
-const $toast = ToastSingleton.getInst()
-const $route = useRoute()
-const $router = useRouter()
 
 /** Định nghĩa props */
 const props = defineProps<{
@@ -336,193 +290,57 @@ const $emit = defineEmits<{
   (e: 'next'): void
 }>()
 /** Khai báo các nền tảng */
-const PLAT_FORMS = computed(() => [
+const PLAT_FORMS = [
   {
     name: 'Facebook',
-    desc: $t('v1.view.onboarding.connect_facebook_desc'),
+    desc: 'Kết nối Trang Facebook',
     icon: '/icons/facebook.png',
     connected: false,
   },
   {
     name: 'Instagram',
-    desc: $t('v1.view.onboarding.connect_instagram_desc'),
+    desc: 'Kết nối Trang Instagram',
     icon: '/icons/instagram.png',
     connected: false,
   },
   {
     name: 'Whatsapp',
-    desc: $t('v1.view.onboarding.connect_whatsapp_desc'),
+    desc: 'Kết nối Whatsapp Business và Cá nhân.',
     icon: '/icons/whatsapp.png',
     connected: false,
   },
   {
     name: 'Zalo',
-    desc: $t('v1.view.onboarding.connect_zalo_desc'),
+    desc: 'Kết nối Zalo OA và Zalo cá nhân.',
     icon: '/icons/zalo.png',
     connected: false,
   },
   {
     name: 'Website',
-    desc: $t('v1.view.onboarding.connect_website_desc'),
+    desc: 'Kết nối Website',
     icon: '/icons/website.png',
     connected: false,
   },
-])
+]
 /** Danh sachs platform đã kết nối */
 const CONNECTED_PLATFORMS = ref<String[]>([])
 
 /** ref cho input đầu tiên */
 const FIRST_EMAIL_INPUT = ref<HTMLInputElement | null>(null)
 
-/** ref modal connect page */
-const connect_page_ref = ref<InstanceType<typeof ConnectPage>>()
-
-/** ref của modal thông báo hết quota */
-const alert_reach_quota_page_ref = ref<InstanceType<typeof AlertRechQuota>>()
-
-/** Số page hiện tại */
-const PAGE_COUNT = ref(0)
-/** Số page tối đa */
-const QUOTA_PAGE = ref(0) // 0 means default/loading, ideally should be higher or handled as loading
-
-/** Thông tin organization */
-const current_org_info = ref<any>(null)
-
-console.log('current_org_info.value', current_org_info.value)
-
-/** Platform hiện tại đang kết nối */
-const current_connecting_platform = ref('')
-
+/** Trạng thái loading */
+const LOADING_PLATFORM = ref<string | null>(null)
 /** Hàm thêm platform */
 const handleAddPlatforms = (platform: string) => {
-  /** Check quota */
-  if (PAGE_COUNT.value >= QUOTA_PAGE.value) {
-    alert_reach_quota_page_ref.value?.toggleModal()
-    return
-  }
-
-  /** Lưu platform đang kết nối */
-  current_connecting_platform.value = platform
-
-  let key = ''
-  switch (platform) {
-    case 'Facebook':
-      key = 'FB_MESS'
-      break
-    case 'Instagram':
-      key = 'FB_INSTAGRAM'
-      break
-    case 'Zalo':
-      key = 'ZALO_PERSONAL'
-      break
-    case 'Website':
-      key = 'WEBSITE'
-      break
-  }
-
-  /** Mở modal connect page */
-  if (key && connect_page_ref.value) {
-    connect_page_ref.value.toggleModal(key, true)
-  }
-}
-
-/** Callback khi connect done từ modal */
-const onConnectDone = () => {
-  const platform = current_connecting_platform.value
-  if (platform && !CONNECTED_PLATFORMS.value.includes(platform)) {
+  /** Bật loading */
+  LOADING_PLATFORM.value = platform
+  setTimeout(() => {
+    /** cập nhật danh sách platform đã kết nối */
     CONNECTED_PLATFORMS.value.push(platform)
-    /** Tăng số lượng page */
-    PAGE_COUNT.value++
-  }
+    /** Tắt loading */
+    LOADING_PLATFORM.value = null
+  }, 1000)
 }
-/** Hàm xử lý callback sau khi oauth zalo */
-const afterOauthZalo = async () => {
-  try {
-    /** Lấy query */
-    let { code, oa_id, state } = $route.query
-    if (!code || !oa_id || !state) return
-
-    commonStore.is_loading_full_screen = true
-
-    /** Xoá query để không bị chạy 2 lần */
-    $router.replace({ path: $route.path, query: {} })
-
-    /** Gọi api để khởi tạo trang */
-    await new N4SerivceAppPage().syncZaloOaPage({
-      oa_id: String(oa_id),
-      code: String(code),
-      code_verifier: String(state),
-      staff_name: chatbotUserStore.chatbot_user?.full_name,
-    })
-
-    CONNECTED_PLATFORMS.value.push('Zalo')
-    $toast.success($t('Kết nối Zalo OA thành công'))
-  } catch (e: any) {
-    $toast.error(e)
-  } finally {
-    commonStore.is_loading_full_screen = false
-  }
-}
-
-/** On mounted check callback */
-onMounted(async () => {
-  /** Xử lý callback Zalo trước */
-  await afterOauthZalo()
-
-  /** Lấy thông tin tổ chức để check quota */
-  try {
-    /** Lấy danh sách các tổ chức từ API */
-    const ALL_ORGS = await new BillingAppOrganization().readOrg()
-
-    console.log('ALL_ORGS', ALL_ORGS)
-    console.log('chatbotUserStore.chatbot_user', chatbotUserStore.chatbot_user)
-    /** Lấy user id (ưu tiên local storage vì mới login/register xong) */
-    const USER_ID = getItem('user_id') || chatbotUserStore.chatbot_user?.user_id
-
-    /** Filter chỉ lấy Org mà user là Owner */
-    const OWNER_ORGS = USER_ID
-      ? ALL_ORGS.filter((o: any) => o.org_owner_id === USER_ID)
-      : ALL_ORGS
-
-    /** Cập nhật danh sách tổ chức vào store */
-    orgStore.list_org = ALL_ORGS as any
-    /** Logic xử lý chọn tổ chức */
-    let selected_id = getItem('selected_org_id')
-    let selected_org = null
-
-    /** Tìm tổ chức theo ID đã lưu */
-    if (selected_id) {
-      selected_org = OWNER_ORGS.find(
-        (o: any) => (o.org_id || o._id) === selected_id
-      )
-    }
-
-    /** Nếu không tìm thấy (hoặc chưa có), mặc định lấy tổ chức đầu tiên */
-    if (!selected_org && OWNER_ORGS.length > 0) {
-      console.log('Fallback to first owner org')
-      selected_org = OWNER_ORGS[0]
-      selected_id = selected_org.org_id
-      /** Lưu vào storage */
-      setItem('selected_org_id', selected_id)
-    }
-
-    /** Cập nhật store nếu có org hợp lệ */
-    if (selected_org && selected_id) {
-      // Set selected org
-      orgStore.selected_org_id = selected_id
-      // Set selected org info
-      orgStore.selected_org_info = selected_org
-      // Set current org info
-      current_org_info.value = selected_org
-      // Set page count
-      PAGE_COUNT.value = selected_org.org_package?.org_current_page || 0
-      // Set quota page
-      QUOTA_PAGE.value = selected_org.org_package?.org_quota_page || 0
-    }
-  } catch (e) {
-    console.error(e)
-  }
-})
 /** Trạng thái  */
 const IS_VALID_BTN_NEXT = computed(() => {
   /** Đang ở step 1 */
@@ -607,9 +425,8 @@ onBeforeUnmount(() => {
 })
 
 /** INVITE LINK */
-const INVITE_LINKS = import.meta.env.VITE_REGISTER_URL
+const INVITE_LINKS = 'https://retion.ai/invite?code=123123'
 
-/** Trạng thái copied */
 const IS_COPIED = ref<Boolean>(false)
 /** Email */
 const emails = ref(['', '']) // mặc định 2 ô như ảnh

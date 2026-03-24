@@ -47,31 +47,144 @@
               <div
                 class="overflow-hidden flex flex-col flex-grow min-h-0 h-full overflow-y-auto gap-5 p-5 pt-12 border-b"
               >
-                <TransitionGroup
+                <!-- <div class="bg-red-500 w-full">
+                  <div class="w-full relative h-full py-10">
+                    <PricingCard
+                      v-for="(pkg, index) in PACKAGES"
+                      :key="pkg.title"
+                      v-bind="pkg"
+                      :selected="SELECTED_INDEX === pkg.title"
+                      :onSelect="() => handleSelect(pkg.title)"
+                      :active_tab="ACTIVE_INDEX"
+                      class="absolute py-10"
+                      ref="el => boxRefs[index] = el"
+                    />
+                  </div>
+                </div> -->
+                <!-- <TransitionGroup
                   name="expand"
                   tag="div"
-                  class="flex gap-6 relative w-full"
-                >
+                  :class="[
+                    'gap-6',
+                    ACTIVE_INDEX === 0
+                      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+                      : 'grid grid-cols-4'
+                  ]"
+                  >
                   <PricingCard
                     v-for="(pkg, index) in FILTERED_PACKAGES"
                     :key="pkg.title"
                     v-bind="pkg"
                     :selected="SELECTED_INDEX === pkg.title"
                     :onSelect="() => handleSelect(pkg.title)"
-                    @submit="submitPackage"
                     :active_tab="ACTIVE_INDEX"
                     :class="[
-                      'transition-all duration-500',
-                      pkg.title === 'Enterprise'
-                        ? ACTIVE_INDEX === 0
-                          ? 'order-last ml-auto flex-none w-1/4'
-                          : 'order-last ml-auto flex-none w-3/4'
-                        : 'flex-1 min-w-0',
+                      // 'transition-all duration-500 ease-in-out',
+                      '',
+                      ACTIVE_INDEX === 0
+                        ? '' // All plans
+                        : index === 0
+                        ? 'col-span-1'
+                        : pkg.title === 'Enterprise'
+                        ? 'col-span-3'
+                        : ''
                     ]"
                   />
-                </TransitionGroup>
+              </TransitionGroup> -->
+             <!-- <TransitionGroup
+  name="expand"
+  tag="div"
+  class="flex gap-6 transition-all duration-500"
+>
+  <PricingCard
+    v-for="(pkg, index) in FILTERED_PACKAGES"
+    :key="pkg.title"
+    v-bind="pkg"
+    :selected="SELECTED_INDEX === pkg.title"
+    :onSelect="() => handleSelect(pkg.title)"
+    :active_tab="ACTIVE_INDEX"
+    :class="[
+      'transition-all duration-500',
+      ACTIVE_INDEX === 0
+        ? 'flex-1 basis-1/4' // 4 đều nhau
+        : pkg.title === 'Enterprise'
+        ? 'flex-[3] basis-3/4' // D mở rộng
+        : 'flex-1 basis-1/4'
+    ]"
+  />
+</TransitionGroup> -->
 
-                <div class="flex flex-col gap-5">
+<!-- <TransitionGroup
+  name="expand"
+  tag="div"
+  class="flex gap-6 relative"
+>
+  <PricingCard
+    v-for="(pkg, index) in FILTERED_PACKAGES"
+    :key="pkg.title"
+    v-bind="pkg"
+    :selected="SELECTED_INDEX === pkg.title"
+    :onSelect="() => handleSelect(pkg.title)"
+    :active_tab="ACTIVE_INDEX"
+    :class="[
+      'transition-all duration-500',
+      ACTIVE_INDEX === 0
+        ? 'flex-1 basis-1/4'
+        : pkg.title === 'Enterprise'
+        ? 'flex-[3] basis-3/4'
+        : 'flex-1 basis-1/4'
+    ]"
+  />
+</TransitionGroup> -->
+<!-- <TransitionGroup
+  name="expand"
+  tag="div"
+  class="flex gap-6 relative"
+>
+  <PricingCard
+    v-for="(pkg, index) in FILTERED_PACKAGES"
+    :key="pkg.title"
+    v-bind="pkg"
+    :selected="SELECTED_INDEX === pkg.title"
+    :onSelect="() => handleSelect(pkg.title)"
+    :active_tab="ACTIVE_INDEX"
+    :class="[
+      'transition-all duration-500',
+      pkg.title === 'Enterprise'
+        ? ACTIVE_INDEX === 0
+          ? 'flex-1 basis-1/4 order-4'              // Tab1: width nhỏ, luôn đứng cuối
+          : 'flex-[3] basis-3/4 order-4 ml-auto'    // Tab2: width lớn, vẫn cuối, giữ mép phải
+        : 'flex-1 basis-1/4'
+    ]"
+  />
+</TransitionGroup> -->
+
+<TransitionGroup
+  name="expand"
+  tag="div"
+  class="flex gap-6 relative w-full"
+>
+  <PricingCard
+    v-for="(pkg, index) in FILTERED_PACKAGES"
+    :key="pkg.title"
+    v-bind="pkg"
+    :selected="SELECTED_INDEX === pkg.title"
+    :onSelect="() => handleSelect(pkg.title)"
+    :active_tab="ACTIVE_INDEX"
+    :class="[
+      'transition-all duration-500',
+      pkg.title === 'Enterprise'
+        ? (ACTIVE_INDEX === 0
+            ? 'order-last ml-auto flex-none w-1/4'
+            : 'order-last ml-auto flex-none w-3/4')
+        : 'flex-1 min-w-0'
+    ]"
+  />
+</TransitionGroup>
+
+
+
+                  <div class="flex flex-col gap-5">
                   <h2
                     class="text-3xl font-medium text-center pt-5 flex justify-center gap-2.5 items-center"
                     @click="toggleAll"
@@ -197,29 +310,14 @@
                           "
                           @click="handleSelect(plan.name)"
                         >
-                          <!-- Kiểm tra nếu giá trị là true thì hiển thị icon check -->
-                          <template
-                            v-if="getFeatureValue(feature, plan.key) === true"
-                          >
+                          <template v-if="(feature.values as Record<string, any>)[plan.key] === true">
                             <span class="text-slate-800 text-center">
                               <CheckIcon class="size-5" />
                             </span>
                           </template>
-                          <!-- Kiểm tra nếu giá trị là false thì hiển thị dấu gạch ngang -->
-                          <template
-                            v-else-if="
-                              getFeatureValue(feature, plan.key) === false
-                            "
-                          >
-                            <span class="text-gray-400">-</span>
+                          <template v-else-if="(feature.values as Record<string, any>)[plan.key]">
+                            {{ (feature.values as Record<string, any>)[plan.key]  }}
                           </template>
-                          <!-- Kiểm tra nếu giá trị tồn tại (string/number) thì hiển thị giá trị đó -->
-                          <template
-                            v-else-if="getFeatureValue(feature, plan.key)"
-                          >
-                            {{ getFeatureValue(feature, plan.key) }}
-                          </template>
-                          <!-- Nếu không có giá trị (null/undefined) thì hiển thị dấu gạch ngang -->
                           <template v-else>
                             <span class="text-gray-400">-</span>
                           </template>
@@ -325,13 +423,7 @@ const COMMON_STORE = useCommonStore()
 /** Lấy giá trị org */
 const orgStore = useOrgStore()
 /** Hàm dịch */
-const { t: $t, locale } = useI18n()
-
-import { RegistrationDataService } from '@/utils/helper/RegistrationData'
-import { container } from 'tsyringe'
-
-/** Service quản lý dữ liệu đăng ký */
-const REGISTRATION_SERVICE = container.resolve(RegistrationDataService)
+const { t: $t } = useI18n()
 
 const props = defineProps<{
   selected_preference: string | null
@@ -348,30 +440,6 @@ const $emit = defineEmits<{
 }>()
 /** Hàm submit */
 const submitPackage = () => {
-  /** Mã package */
-  let package_code = ''
-  /** Switch case chọn gói */
-  switch (SELECTED_INDEX.value) {
-    case 'Lite':
-      package_code = 'TRIAL_LITE'
-      break
-    case 'Pro':
-      package_code = 'TRIAL'
-      break
-    case 'Business':
-      package_code = 'TRIAL_BUSINESS'
-      break
-    default:
-      package_code = SELECTED_INDEX.value
-  }
-
-  /** Update package selected */
-  REGISTRATION_SERVICE.updateOnboardingData({
-    package_info: {
-      package_selected: package_code,
-    },
-  })
-
   $emit('submit')
 }
 /** Filter list package
@@ -381,10 +449,10 @@ const submitPackage = () => {
 const FILTERED_PACKAGES = computed(() => {
   if (ACTIVE_INDEX.value === 0) {
     /** Tab 0 = All plans */
-    return PACKAGES.value
+    return PACKAGES
   } else {
     /** Tab 1 = Business & Enterprise */
-    return PACKAGES.value.filter(pkg =>
+    return PACKAGES.filter(pkg =>
       ['Business', 'Enterprise'].includes(pkg.title)
     )
   }
@@ -393,18 +461,14 @@ const FILTERED_PACKAGES = computed(() => {
 const SELECTED_INDEX = ref('Lite')
 /** Hàm thay đổi index */
 function handleSelect(index: string) {
-  console.log('handleSelect', index)
-  const selected = index.trim()
-
-  /** Nếu Lite hoặc Pro thì chuyển sang tab 0 */
-  if (['Lite', 'Pro'].includes(selected)) {
-    ACTIVE_INDEX.value = 0
-  } else if (['Business', 'Enterprise'].includes(selected)) {
-    /** Nếu Business hoặc Enterprise thì chuyển sang tab 1 */
+  /** Nếu enterpise thì chuyển sang tab 1 */
+  if (index === 'Enterprise') {
+    // ACTIVE_INDEX.value = 1
+    setTab2()
     ACTIVE_INDEX.value = 1
   }
   /**Chọn gói */
-  SELECTED_INDEX.value = selected
+  SELECTED_INDEX.value = index
 }
 /** Khai báo các tab đăng ký */
 // const TABS = ref(['All plans', 'Business & Enterprise'])
@@ -415,297 +479,136 @@ const ACTIVE_INDEX = ref(0)
 const LOCALE = Cookies.get('locale') || 'en'
 
 /** Mock các gói */
-const PACKAGES = computed(() => [
+const PACKAGES = [
   {
     title: 'Lite',
-    price: locale.value === 'en' ? '$8' : currency(199000) + 'đ',
-    is_sale_off: '',
-    original_price: locale.value === 'en' ? '$8' : currency(199000) + 'đ',
-    code: 'LITE',
-    discount_percent: '',
-    discount: '',
-    note: $t('v1.view.main.dashboard.org.pay.note'),
-    subtitle: $t('v1.view.main.dashboard.org.pay.lite_description'),
+    price: LOCALE === 'en' ? '$8' : currency(199000) + 'đ',
+    is_sale_off: $t('v1.view.onboarding.is_sale_off'),
+    original_price: LOCALE === 'en' ? '$10' : currency(270000) + 'đ',
+    code: 'BBH',
+    discount_percent: '40%',
+    discount: $t('v1.view.onboarding.discount'),
+    subtitle: $t('v1.view.onboarding.lite_subtitle'),
     ctaText: $t('v1.view.onboarding.use_trial_7_day'),
-    ctaOnClick: () => handleClick('Lite'),
+    ctaOnClick: () => handleClick('Free'),
     description: $t('v1.view.onboarding.lite_description'),
     style: {},
     sections: [
       {
-        heading: $t('v1.view.onboarding.package_info'), // 'Thông tin gói'
+        heading: 'LIMITS',
         items: [
-          {
-            text: '3 ' + $t('v1.view.main.dashboard.org.pay.page'),
-            enabled: true,
-          },
-          {
-            text: '3 ' + $t('v1.view.main.dashboard.org.pay.member'),
-            enabled: true,
-          },
-          {
-            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.fau'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.client'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.chat_feature') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.all'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.company_name') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.none'),
-            enabled: false,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.api_integrate') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.none'),
-            enabled: false,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.domain_logo') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.none'),
-            enabled: false,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.support') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.standard'),
-            enabled: true,
-          },
+          { text: '1,000 Active contacts & deals', enabled: true },
+          { text: '1 Custom dashboard', enabled: true },
+          { text: '5 Columns per board max', enabled: true },
+          { text: 'Custom automation', enabled: false },
+          { text: 'Guest', enabled: false },
         ],
       },
       {
-        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
+        heading: 'ADVANCES',
         items: [
-          {
-            text: '1.000.000 ' + $t('v1.view.main.dashboard.org.pay.text'),
-            enabled: true,
-          },
-          {
-            text: $t('v1.view.main.dashboard.org.pay.ai_image'),
-            enabled: false,
-          },
-          {
-            text: $t('v1.view.main.dashboard.org.pay.ai_sound'),
-            enabled: false,
-          },
+          { text: 'Centralized comms hub', enabled: true },
+          { text: 'iOS & Android apps', enabled: true },
+          { text: 'Send mass emails', enabled: false },
+          { text: 'Email sequences', enabled: false },
+          { text: 'Quotes & invoices', enabled: false },
         ],
       },
     ],
-    aiFeatures: [],
+    aiFeatures: [
+      { text: 'AI Automation', enabled: false },
+      { text: 'AI Writing', enabled: false },
+      { text: 'AI Research', enabled: false },
+    ],
   },
   {
     title: 'Pro',
-    price: locale.value === 'en' ? '$20' : currency(480000) + 'đ',
-    is_sale_off: '',
-    original_price: '',
-    code: 'PRO',
-    discount_percent: '',
-    discount: '',
-    subtitle: $t('v1.view.main.dashboard.org.pay.pro_description'),
+    price: LOCALE === 'en' ? '$18' : currency(480000) + 'đ',
+    is_sale_off: $t('v1.view.onboarding.is_sale_off'),
+    original_price: LOCALE === 'en' ? '$20' : currency(540000) + 'đ',
+    code: 'BBH',
+    discount_percent: '40%',
+    discount: $t('v1.view.onboarding.discount'),
+    subtitle: $t('v1.view.onboarding.pro_subtitle'),
     ctaText: $t('v1.view.onboarding.use_trial_7_day'),
-    ctaOnClick: () => handleClick('Pro'),
+    ctaOnClick: () => handleClick('Lite'),
     is_popular: true,
     style: {},
     description: $t('v1.view.onboarding.pro_description'),
     sections: [
       {
-        heading: $t('v1.view.onboarding.package_info'),
+        heading: 'LIMITS',
         items: [
-          {
-            text: '5 ' + $t('v1.view.main.dashboard.org.pay.page'),
-            enabled: true,
-          },
-          {
-            text: '10 ' + $t('v1.view.main.dashboard.org.pay.member'),
-            enabled: true,
-          },
-          {
-            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.fau'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.client'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.chat_feature') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.all'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.company_name') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.api_integrate') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.domain_logo') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.none'),
-            enabled: false,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.support') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.prioritize'),
-            enabled: true,
-          },
+          { text: '1,000 Active contacts & deals', enabled: true },
+          { text: '1 Custom dashboard', enabled: true },
+          { text: '5 Columns per board max', enabled: true },
+          { text: 'Custom automation', enabled: false },
+          { text: 'Guest', enabled: false },
         ],
       },
       {
-        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
+        heading: 'ADVANCES',
         items: [
-          {
-            text: '1.000.000 ' + $t('v1.view.main.dashboard.org.pay.text'),
-            enabled: true,
-          },
-          {
-            text: '1.000 ' + $t('v1.view.main.dashboard.org.pay.image'),
-            enabled: true,
-          },
-          {
-            text: '1.000 ' + $t('v1.view.main.dashboard.org.pay.minute'),
-            enabled: true,
-          },
+          { text: 'Centralized comms hub', enabled: true },
+          { text: 'iOS & Android apps', enabled: true },
+          { text: 'Send mass emails', enabled: false },
+          { text: 'Email sequences', enabled: false },
+          { text: 'Quotes & invoices', enabled: false },
         ],
       },
     ],
-    aiFeatures: [],
+    aiFeatures: [
+      { text: 'AI Automation', enabled: true },
+      { text: 'AI Writing', enabled: true },
+      { text: 'AI Research', enabled: false },
+    ],
   },
   {
     title: 'Business',
-    price: locale.value === 'en' ? '$110' : currency(2600000) + 'đ',
-    is_sale_off: '',
-    original_price: '',
-    code: 'BUSINESS',
-    discount_percent: '',
-    discount: '',
-    subtitle: $t('v1.view.main.dashboard.org.pay.business_description'),
+    price: LOCALE === 'en' ? '$90' : currency(2200000) + 'đ',
+    is_sale_off: $t('v1.view.onboarding.is_sale_off'),
+    original_price: LOCALE === 'en' ? '$99' : currency(2600000) + 'đ',
+    code: 'BBH',
+    discount_percent: '40%',
+    discount: $t('v1.view.onboarding.discount'),
+    subtitle: $t('v1.view.onboarding.business_subtitle'),
     ctaText: $t('v1.view.onboarding.use_trial_7_day'),
-    ctaOnClick: () => handleClick('Business'),
+    ctaOnClick: () => handleClick('Pro'),
     style: {},
     description: $t('v1.view.onboarding.business_description'),
     sections: [
       {
-        heading: $t('v1.view.onboarding.package_info'),
+        heading: 'LIMITS',
         items: [
-          {
-            text: '40 ' + $t('v1.view.main.dashboard.org.pay.page'),
-            enabled: true,
-          },
-          {
-            text: '40 ' + $t('v1.view.main.dashboard.org.pay.member'),
-            enabled: true,
-          },
-          {
-            text: '50.000 ' + $t('v1.view.main.dashboard.org.pay.fau'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.client'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.chat_feature') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.all'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.company_name') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.api_integrate') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.domain_logo') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.support') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.high'),
-            enabled: true,
-          },
+          { text: '1,000 Active contacts & deals', enabled: true },
+          { text: '1 Custom dashboard', enabled: true },
+          { text: '5 Columns per board max', enabled: true },
+          { text: 'Custom automation', enabled: false },
+          { text: 'Guest', enabled: false },
         ],
       },
       {
-        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
+        heading: 'ADVANCES',
         items: [
-          {
-            text: '10.000.000 ' + $t('v1.view.main.dashboard.org.pay.text'),
-            enabled: true,
-          },
-          {
-            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.image'),
-            enabled: true,
-          },
-          {
-            text: '10.000 ' + $t('v1.view.main.dashboard.org.pay.minute'),
-            enabled: true,
-          },
+          { text: 'Centralized comms hub', enabled: true },
+          { text: 'iOS & Android apps', enabled: true },
+          { text: 'Send mass emails', enabled: false },
+          { text: 'Email sequences', enabled: false },
+          { text: 'Quotes & invoices', enabled: false },
         ],
       },
     ],
-    aiFeatures: [],
+    aiFeatures: [
+      { text: 'AI Automation', enabled: true },
+      { text: 'AI Writing', enabled: true },
+      { text: 'AI Research', enabled: true },
+    ],
   },
   {
     title: 'Enterprise',
-    price: '',
-    is_sale_off: '',
-    original_price: '',
-    code: 'ENTERPRISE',
-    discount_percent: '',
-    discount: '',
-    subtitle: $t('v1.view.main.dashboard.org.pay.enterprise_description'),
+    price: '$0',
+
+    subtitle: $t('v1.view.onboarding.enterprise_subtitle'),
     ctaText: $t('v1.view.onboarding.free_consultation'),
     ctaOnClick: () => handleClick('Enterprise'),
     is_popular: true,
@@ -713,120 +616,48 @@ const PACKAGES = computed(() => [
     description: $t('v1.view.onboarding.enterprise_description'),
     sections: [
       {
-        heading: $t('v1.view.onboarding.package_info'),
+        heading: 'LIMITS',
         items: [
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.page'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.member'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.fau'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.client'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.chat_feature') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.all'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.company_name') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.api_integrate') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.domain_logo') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.yes'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.support') +
-              ': ' +
-              $t('v1.view.main.dashboard.org.pay.high'),
-            enabled: true,
-          },
+          { text: '1,000 Active contacts & deals', enabled: true },
+          { text: '1 Custom dashboard', enabled: true },
+          { text: '5 Columns per board max', enabled: true },
+          { text: 'Custom automation', enabled: false },
+          { text: 'Guest', enabled: false },
         ],
       },
       {
-        heading: $t('v1.view.main.dashboard.org.pay.ai_feature'),
+        heading: 'ADVANCES',
         items: [
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.text'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.image'),
-            enabled: true,
-          },
-          {
-            text:
-              $t('v1.view.main.dashboard.org.pay.unlimited') +
-              ' ' +
-              $t('v1.view.main.dashboard.org.pay.minute'),
-            enabled: true,
-          },
+          { text: 'Centralized comms hub', enabled: true },
+          { text: 'iOS & Android apps', enabled: true },
+          { text: 'Send mass emails', enabled: false },
+          { text: 'Email sequences', enabled: false },
+          { text: 'Quotes & invoices', enabled: false },
         ],
       },
     ],
-    aiFeatures: [],
+    aiFeatures: [
+      { text: 'AI Automation', enabled: true },
+      { text: 'AI Writing', enabled: true },
+      { text: 'AI Research', enabled: true },
+    ],
   },
-])
+]
 
 /** Hàm chuyển đổi tab */
 function handleTabChange(index: number) {
-  /** Nếu click vào tab hiện tại thì không làm gì */
-  if (ACTIVE_INDEX.value === index) return
+  /**Gán tab đã chọn */
 
-  /** Set active index bằng index được chọn */
-  ACTIVE_INDEX.value = index
+  ACTIVE_INDEX.value = ACTIVE_INDEX.value === 0 ? 1 : 0
 
   /** Mở tab business thì tự độgn chọn gói Enterprise */
   if (index === 1) {
     // setTab2()
-    handleSelect('Enterprise')
+    SELECTED_INDEX.value = 'Enterprise'
     /** Nếu chuyển lại all plans thì auto chọn gói Lite */
   } else {
     // setTab1()
-    handleSelect('Pro')
+    SELECTED_INDEX.value = 'Pro'
   }
 }
 // Gap = 1.5rem = 24px
@@ -835,14 +666,90 @@ const boxRefs = ref<Array<HTMLElement | null>>([])
 
 const containerWidth = 100 // tính % cho responsive
 
+function setTab1() {
+  // const width = (containerWidth - 3 * (GAP / 16)) / 4 // 4 phần tử, GAP tính rem → % approx
+  // PACKAGES[0].style = {
+  //   top: '0%',
+  //   left: '0%',
+  //   width: `${width}%`,
+  //   height: '100%',
+  //   opacity: 1,
+  //   transform: 'translateX(0)',
+  // }
+  // PACKAGES[1].style = {
+  //   top: '0%',
+  //   left: `${width + GAP / 16}%`,
+  //   width: `${width}%`,
+  //   height: '100%',
+  //   opacity: 1,
+  //   transform: 'translateX(0)',
+  // }
+  // PACKAGES[2].style = {
+  //   top: '0%',
+  //   left: `${2 * (width + GAP / 16)}%`,
+  //   width: `${width}%`,
+  //   height: '100%',
+  //   opacity: 1,
+  //   transform: 'translateX(0)',
+  // }
+  // PACKAGES[3].style = {
+  //   top: '0%',
+  //   left: `${3 * (width + GAP / 16)}%`,
+  //   width: `${width}%`,
+  //   height: '100%',
+  //   opacity: 1,
+  //   transform: 'translateX(0)',
+  // }
+}
+
+function setTab2() {
+  // C = 1/4, D = 3/4, gap giữa C-D = GAP
+  // const widthC = (containerWidth - GAP / 16) * 0.25
+  // const widthD = (containerWidth - GAP / 16) * 0.75
+  // PACKAGES[0].style = {
+  //   top: '0%',
+  //   left: `-${widthC}%`,
+  //   width: `${widthC}%`,
+  //   height: '50%',
+  //   opacity: 0,
+  //   transform: 'translateX(-100%)',
+  // }
+  // PACKAGES[1].style = {
+  //   top: '0%',
+  //   left: `-${widthC}%`,
+  //   width: `${widthC}%`,
+  //   height: '50%',
+  //   opacity: 0,
+  //   transform: 'translateX(-100%)',
+  // }
+  // PACKAGES[2].style = {
+  //   top: '0%',
+  //   left: '0%',
+  //   width: `${widthC}%`,
+  //   height: '50%',
+  //   opacity: 1,
+  //   transform: 'translateX(0)',
+  // }
+  // PACKAGES[3].style = {
+  //   top: '0%',
+  //   left: `${widthC + GAP / 16}%`,
+  //   width: `${widthD}%`,
+  //   height: '50%',
+  //   opacity: 1,
+  //   transform: 'translateX(0)',
+  // }
+}
 /** selected rơ */
 const SELECTED_ROW = ref<{ sectionIndex: number; rowIndex: number } | null>(
   null
 )
+/** hàm selected row */
+function handleRowSelect(payload: { sectionIndex: number; rowIndex: number }) {
+  SELECTED_ROW.value = payload
+}
 
 /** Dữ liệu mock data compare plans và features */
-/** Dữ liệu mock data compare plans và features */
-const COMPARE_DATA = computed(() => ({
+const COMPARE_DATA = {
   title: $t('v1.view.onboarding.plans_and_feature'),
   plans: [
     { key: 'lite', name: 'Lite' },
@@ -852,130 +759,100 @@ const COMPARE_DATA = computed(() => ({
   ],
   sections: [
     {
-      title: $t('v1.view.onboarding.package_info'),
+      title: 'Essentials',
       features: [
         {
-          name: $t('v1.view.main.dashboard.org.pay.page'),
+          name: 'Active contacts & deals (limit)',
           values: {
-            lite: '3',
-            pro: '5',
-            business: '40',
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+            lite: '1,000',
+            pro: '10,000',
+            business: '10,000',
+            enterprise: 'Unlimited',
           },
         },
         {
-          name: $t('v1.view.main.dashboard.org.pay.member'),
-          values: {
-            lite: '3',
-            pro: '10',
-            business: '40',
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
-          },
+          name: 'Feature A',
+          values: { lite: true, pro: true, business: true, enterprise: true },
         },
         {
-          name: $t('v1.view.main.dashboard.org.pay.fau'),
-          values: {
-            lite: '10.000',
-            pro: '10.000',
-            business: '50.000',
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
-          },
-        },
-        {
-          name: $t('v1.view.main.dashboard.org.pay.client'),
-          values: {
-            lite: $t('v1.view.main.dashboard.org.pay.unlimited'),
-            pro: $t('v1.view.main.dashboard.org.pay.unlimited'),
-            business: $t('v1.view.main.dashboard.org.pay.unlimited'),
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
-          },
+          name: 'Feature B',
+          values: { lite: false, pro: false, business: true, enterprise: true },
         },
       ],
     },
     {
-      title: $t('v1.view.main.dashboard.org.pay.ai_feature'),
+      title: 'Essentials',
       features: [
         {
-          name: $t('v1.view.main.dashboard.org.pay.ai_text'),
+          name: 'Active contacts & deals (limit)',
           values: {
-            lite: '1.000.000',
-            pro: '1.000.000',
-            business: '10.000.000',
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
+            lite: '1,000',
+            pro: '10,000',
+            business: '10,000',
+            enterprise: 'Unlimited',
           },
         },
         {
-          name: $t('v1.view.main.dashboard.org.pay.ai_image'),
-          values: {
-            lite: false,
-            pro: '1.000',
-            business: '10.000',
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
-          },
+          name: 'Feature A',
+          values: { lite: true, pro: true, business: true, enterprise: true },
         },
         {
-          name: $t('v1.view.main.dashboard.org.pay.ai_sound'),
-          values: {
-            lite: false,
-            pro: '1.000',
-            business: '10.000',
-            enterprise: $t('v1.view.main.dashboard.org.pay.unlimited'),
-          },
+          name: 'Feature B',
+          values: { lite: false, pro: false, business: true, enterprise: true },
         },
       ],
     },
     {
-      title: $t('v1.view.main.dashboard.org.pay.custom'),
+      title: 'Essentials',
       features: [
         {
-          name: $t('v1.view.main.dashboard.org.pay.chat_feature'),
+          name: 'Active contacts & deals (limit)',
           values: {
-            lite: $t('v1.view.main.dashboard.org.pay.all'),
-            pro: $t('v1.view.main.dashboard.org.pay.all'),
-            business: $t('v1.view.main.dashboard.org.pay.all'),
-            enterprise: $t('v1.view.main.dashboard.org.pay.all'),
+            lite: '1,000',
+            pro: '10,000',
+            business: '10,000',
+            enterprise: 'Unlimited',
           },
         },
         {
-          name: $t('v1.view.main.dashboard.org.pay.company_name'),
+          name: 'Feature A',
+          values: { lite: true, pro: true, business: true, enterprise: true },
+        },
+        {
+          name: 'Feature B',
+          values: { lite: false, pro: false, business: true, enterprise: true },
+        },
+      ],
+    },
+    {
+      title: 'Retion AI',
+      features: [
+        {
+          name: 'AI credits (monthly)',
           values: {
-            lite: false,
-            pro: true,
-            business: true,
-            enterprise: true,
+            lite: '1,000',
+            pro: '10,000',
+            business: '10,000',
+            enterprise: 'Unlimited',
           },
         },
         {
-          name: $t('v1.view.main.dashboard.org.pay.api_integrate'),
-          values: {
-            lite: false,
-            pro: true,
-            business: true,
-            enterprise: true,
-          },
+          name: 'AI assistant',
+          values: { lite: true, pro: true, business: true, enterprise: true },
         },
+      ],
+    },
+    {
+      title: 'Automation',
+      features: [
         {
-          name: $t('v1.view.main.dashboard.org.pay.domain_logo'),
-          values: {
-            lite: false,
-            pro: false,
-            business: true,
-            enterprise: true,
-          },
-        },
-        {
-          name: $t('v1.view.main.dashboard.org.pay.support'),
-          values: {
-            lite: $t('v1.view.main.dashboard.org.pay.standard'),
-            pro: $t('v1.view.main.dashboard.org.pay.prioritize'),
-            business: $t('v1.view.main.dashboard.org.pay.high'),
-            enterprise: $t('v1.view.main.dashboard.org.pay.high'),
-          },
+          name: 'Workflow automations',
+          values: { lite: false, pro: true, business: true, enterprise: true },
         },
       ],
     },
   ],
-}))
+}
 
 /**ẩn hiện modal */
 const IS_OPEN = ref(false)
@@ -1055,9 +932,7 @@ const toggleAll = () => {
   open_all.value = !open_all.value
 }
 /** tạo call  */
-const GRID_COLS = computed(
-  () => `416px repeat(${COMPARE_DATA.value.plans.length}, minmax(120px,1fr))`
-)
+const GRID_COLS = `416px repeat(${COMPARE_DATA.plans.length}, minmax(120px,1fr))`
 
 /** helper: kiểm tra row đang được chọn (theo section) */
 function isRowSelected(sectionIdx: number, rowIdx: number) {
@@ -1077,29 +952,27 @@ function onRowClick(sectionIdx: number, rowIdx: number) {
   const DATA = { sectionIndex: sectionIdx, rowIndex: rowIdx }
 }
 
-/**
- * Lấy giá trị feature theo plan key
- * @param {Feature} feature - Feature object
- * @param {string} key - Plan key
+/** click plan header
+ * @param planKey
  */
-const getFeatureValue = (feature: Feature, key: string) => {
-  return feature.values?.[key]
+function onPlanClick(planKey: string) {
+  /** hàm emit plan select */
 }
+// Initialize Tab1
+setTab1()
 
 defineExpose({ toggleModal })
 </script>
 <style scoped lang="scss">
-/** Style cho item */
 .item {
-  /** Áp dụng các class utility */
-  @apply bg-gray-100 p-2 rounded-lg flex flex-col justify-between gap-8;
+  @apply bg-slate-100 p-2 rounded-lg flex flex-col justify-between gap-8;
 }
 .btn {
   @apply py-2 px-4 rounded-md hover:brightness-90 text-sm font-semibold;
 }
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: all 0.45s cubic-bezier(.2,.9,.3,1);
 }
 
 /* enter: từ ngoài trái */
@@ -1128,6 +1001,8 @@ defineExpose({ toggleModal })
 
 /* reorder mượt */
 .expand-move {
-  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: transform 0.45s cubic-bezier(.2,.9,.3,1);
 }
+
+
 </style>

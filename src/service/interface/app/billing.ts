@@ -166,7 +166,7 @@ export interface OwnerShipInfo {
   /**id của tổ chức */
   org_id?: string
   /**id của trang của tổ chức */
-  page_id?: string | undefined
+  page_id?: string
 }
 
 /**kết quả của API lấy dữ liệu tổ chức của trang */

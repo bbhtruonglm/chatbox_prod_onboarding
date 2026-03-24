@@ -55,6 +55,8 @@ const pageManagerStore = usePageManagerStore()
 /**danh sách page của từng tổ chức */
 const active_pages_of_orgs = ref<Record<string, PageData[]>>({})
 
+console.log(active_pages_of_orgs.value, 'active_pages_of_orgs')
+
 /** mảng các reference tới các component của từng tổ chức */
 const org_refs = ref<InstanceType<typeof Org>[]>([])
 
@@ -109,6 +111,9 @@ class Main {
   /** có hiện ui của tổ chức hay không */
   isVisibleOrg(org_id?: string) {
     /** nếu là chọn tất cả thì hiện */
+    // console.log(orgStore.is_selected_all_org, ' hahah')
+
+    // console.log(orgStore.list_org, 'lisst orge')
     if (orgStore.is_selected_all_org) return true
     // chọn 1 tố tổ chức thì chỉ hiện tổ chức đã chọn
     return org_id === orgStore.selected_org_id

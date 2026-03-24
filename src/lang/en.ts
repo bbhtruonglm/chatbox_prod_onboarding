@@ -304,43 +304,33 @@ const source: Language = {
   'Kết nối với Tiktok': 'Connect with TikTok',
   'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.':
     'Connect with TikTok to chat automatically across multiple Pages with AI, optimize marketing costs with CAPI, and automatically integrate your business applications.',
-  what_is_page: 'What is a Page?',
-  children_what_is_page:
-    'Each sales channel will have its own Sales Pages (Pages). For example: If you sell on Zalo and have 5 personal Zalo accounts, they will be considered as 5 Pages.',
-  monthly_payment: 'Can I pay monthly?',
-  children_monthly_payment: 'Of course, you can choose to pay monthly.',
-  refund_policy: 'Can I get a refund after purchase?',
-  children_refund_policy:
-    "Yes, within 30 days after payment. If you're not satisfied with our product/service, we'll give you a 100% refund.",
-  'see-more':
-    '<a href="/refund" target="_blank" style="color: red; font-weight: 500">See details</a>.',
-  expired_plan: 'What happens when my plan expires?',
-  children_expired_plan:
-    "Within 14 days of your plan's expiration, we will send you a notification. If you do not renew, the system will automatically switch to the Free plan.",
-  data_storage_duration: 'How long is my data stored?',
-  children_data_storage_duration:
-    'For paid plans, data will be stored as long as you are using the service. For free plans, data will be stored for 90 days (if the Page does not generate outgoing messages). After 90 days, the system will automatically delete all data of the Page.',
-  data_storage_inactive:
-    "If I don't use the service, will my data still be stored?",
-  children_data_storage_inactive:
-    'No, our system automatically deletes all data. We comply with our privacy policy. <a href="/privacy.html" target="_blank" style="color: red; font-weight: 500">See policy</a>.',
-  delete_data: 'Can I delete my data proactively?',
-  children_delete_data:
-    "Absolutely. You can go to: Page -> Settings -> Find the 'Permanently Delete Page' button.",
-  'see-guide':
-    '<a href="/privacy" target="_blank" style="color: red; font-weight: 500">See instructions</a>.',
-  self_host_data: 'Can I store data on my own server?',
-  children_self_host_data:
-    'Currently, we do not support this feature. If you need it, please contact us.',
-  direct_support: 'I need direct support',
-  children_direct_support:
-    'Currently, we provide direct support to customers in Hanoi and Ho Chi Minh City.',
-  ticket_platform: 'What is creating a ticket to the platform?',
-  children_ticket_platform:
-    'When you sell on platforms like Facebook or TikTok, you may encounter issues with your Pages. As a premium partner with these platforms, we will contact them to create a support ticket for you. Essentially, you just focus on your business, and if issues arise, we’ll handle them for you. <br/> (Note: Personal Pages are not eligible for support).',
-  payment_methods: 'What payment methods are available?',
-  children_payment_methods:
-    'You can pay via credit card, bank transfer, or e-wallet.',
+  'Thông báo gói VIP': 'VIP Package Notification',
+  'Một số tổ chức của bạn sắp hoặc đã hết hạn gói':
+    'Some of your organizations have expired or are about to expire',
+  'Đã hết hạn:': 'Expired:',
+  'Đã hết hạn': 'Expired',
+  'hết hạn': 'expired',
+  'Sắp hết hạn:': 'About to expire:',
+  'Sắp hết hạn': 'About to expire',
+  còn: 'remaining',
+  'Còn _ ngày': 'Remaining {duration} days',
+
+  ngày: 'day',
+  'Bỏ qua': 'Skip',
+  'Gia hạn ngay': 'Renew now',
+  '...và còn': '...and {duration} more',
+  'tổ chức khác': 'other organization',
+  'Thông báo quan trọng': 'Important notification',
+  'Xem các gói': 'View packages',
+  'Không hiện lại bảng này ': 'Do not show again',
+  'Gói của một số Tổ chức sắp hết hạn. Bạn nên gia hạn để tiếp tục sử dụng đầy đủ tính năng và không gián đoạn dịch vụ':
+    'Some packages of organizations are about to expire. You should renew to continue using all features and avoid service interruption',
+  'Đổi gói': 'Change package',
+  'Ngày hết hạn': 'Expiry date',
+  'Gói hiện tại': 'Current package',
+  'File vượt quá dung lượng cho phép': 'File size exceeds the allowed limit',
+  'Vui lòng chuyển sang tài khoản TikTok Business': 'Please switch to TikTok Business account',
+
   v1: {
     common: {
       zalo: 'Zalo',
@@ -544,19 +534,6 @@ const source: Language = {
         change_phone: 'Change Phone Number',
         pin_code: 'A verification PIN code has been sent to your phone number',
         get_pin_code: 'Didn’t receive the code?',
-        phone_invalid_format: 'Invalid phone number (only digits, 8-15 digits)',
-        organization: 'Organization:',
-        connect_facebook_desc: 'Connect Facebook Page',
-        connect_instagram_desc: 'Connect Instagram Page',
-        connect_whatsapp_desc: 'Connect Whatsapp Business and Personal.',
-        connect_zalo_desc: 'Connect Zalo OA and Zalo Personal.',
-        connect_website_desc: 'Connect Website',
-        activate_package_success: 'Package activated successfully',
-        wallet_not_found: 'Wallet not found to activate package',
-        org_has_package: 'Organization already has a service package',
-        activate_package_error: 'Error activating package',
-        enterprise_saved:
-          'Enterprise package saved, our consultant will contact you later.',
 
         select_employee: 'Select Employee',
         select_month: 'Select Month',
@@ -605,37 +582,6 @@ const source: Language = {
         free_consultation: 'Free consultation',
         discount: 'discount',
         plans_and_feature: 'Compare plans and features',
-        package_info: 'Package Info',
-        enterprise_form: {
-          title: 'Let’s talk about what Retion can do for you',
-          subtitle:
-            'Our team is here to answer any questions or tailor a solution for you.',
-          expect: {
-            title: 'What you can expect',
-            item_1: 'Learn more about our advanced features',
-            item_2: 'Connect with an expert to discuss your specific needs',
-            item_3: 'Discuss pricing and choose the right plan',
-            item_4: 'No commitment required',
-          },
-          trusted_by:
-            'TRUSTED BY MORE THAN <span class="font-bold">{count}</span> COMPANIES FROM 10+ COUNTRIES',
-          form: {
-            title: 'Talk with a consultant',
-            desc: "We'll call you or email you at {email} to arrange a time to chat.",
-            first_name: 'First name',
-            last_name: 'Last name',
-            phone: 'Phone number',
-            company_size: 'Company size',
-            help_you: 'How can our team help you?',
-            submit: 'Submit',
-            placeholder: {
-              first_name: 'Enter your first name',
-              last_name: 'Enter your last name',
-              phone: 'Enter your phone number',
-              help: 'Enter how can our team help you',
-            },
-          },
-        },
         select_platform_to_connect: 'Select platform to connect:',
         copy_clipboard: 'Copy link',
         copied: 'Copied',
@@ -955,6 +901,8 @@ const source: Language = {
               findding_uid: 'Searching for UID',
             },
             error: {
+              page_deleted:
+                'Some pages may have been deleted from your organization, please go back to the page selection screen and select again',
               get_page_info: 'Page data not found',
               get_org_info: 'Organization data not found',
               org_quota_staff:
@@ -1214,11 +1162,6 @@ const source: Language = {
               create_folder: 'Create Folder',
               edit_name: 'Rename',
               folder_new_name: 'New Folder',
-              select_album_from_other_page: 'Select album from another page',
-              album_desc:
-                'Each folder displays up to 80 photos, even if there may actually be more.',
-              album_desc_2: 'Use Search to find photos beyond the 81st one.',
-              search: 'Search',
             },
           },
           user: {
@@ -1502,8 +1445,6 @@ const source: Language = {
               domain_logo: 'Domain and logo',
               support: 'Support',
               client: 'Customer count',
-              page: 'Page',
-              member: 'Member',
               fau: 'Activation scenario',
               new_client: 'New customer count',
               ai_text: 'AI text',
@@ -1708,15 +1649,6 @@ const source: Language = {
                 },
               },
               lite: 'Lite',
-              lite_description:
-                'Suitable for individuals, shops, and small businesses just starting out.',
-              pro_description:
-                'Suitable for small and medium businesses ready to expand and grow.',
-              business_description:
-                'Suitable for businesses with a large customer base',
-              enterprise_description:
-                'Suitable for large enterprises and corporations requiring data security and special requirements.',
-              custom: 'Custom',
               upgrade_v2: {
                 title: 'Choose the right plan for your team',
                 choose_team_plan: 'Choose your team plan',

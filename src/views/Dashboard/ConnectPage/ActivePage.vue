@@ -124,11 +124,8 @@ import {
   useOrgStore,
   useChatbotUserStore,
 } from '@/stores'
-import { filter, keyBy, map, mapValues, size, values } from 'lodash'
-import {
-  update_page,
-  read_me_chatbot_user,
-} from '@/service/api/chatbox/n4-service'
+import { filter, keyBy, map, mapValues, size } from 'lodash'
+import { update_page } from '@/service/api/chatbox/n4-service'
 import { eachOfLimit } from 'async'
 import { KEY_TOGGLE_MODAL_FUNCT } from '@/views/Dashboard/ConnectPage/symbol'
 import { nonAccentVn } from '@/service/helper/format'
@@ -205,7 +202,6 @@ watch(
 
 /**kiểm tra xem user có phải là admin trang không */
 function isPageAdmin(page: PageData): boolean {
-  /** Kiểm tra xem user có phải là admin trang không. Giá trị boolean */
   return Page.isCurrentStaffIsPageAdmin(page)
 }
 /**hiển thị các page theo tìm kiếm */
@@ -400,32 +396,18 @@ async function getListPAGEPage() {
 
     /**toàn bộ các trang của người dùng */
     list_current_page.value = await new N4SerivceAppPage().getListPage({
-      is_disable_filter: true,
+      is_disable_filter: true
     })
-
-    /** Nếu không có thông tin user -> call api lấy thông tin user */
-    if (!chatbotUserStore.chatbot_user) {
-      /**Tạo Promise để call api lấy thông tin user */
-      await new Promise(resolve => {
-        /**call api lấy thông tin user */
-        read_me_chatbot_user((e, r) => {
-          /**Nếu có thông tin user -> gán vào store */
-          if (r) chatbotUserStore.chatbot_user = r
-          /**Khoá Promise */
-          resolve(true)
-        })
-      })
-    }
 
     /**danh sách các trang không phải trong tổ chức của tôi */
     let list_not_my_org_page: PageData[] = []
 
-    /**Lặp qua toàn bộ danh sách page của người dùng */
+    // lặp qua toàn bộ danh sách page của người dùng
     map(list_current_page.value?.page_list, page => {
-      /**Nếu không có id trang thì thôi */
+      // nếu không có id trang thì thôi
       if (!page?.page?.fb_page_id) return
 
-      /**Lấy thông tin nhân viên hiện tại của trang */
+      // lấy thông tin nhân viên hiện tại của trang
       page.current_staff =
         page?.staff_list?.[
           chatbotUserStore.chatbot_user?.user_id ||
@@ -433,25 +415,18 @@ async function getListPAGEPage() {
             ''
         ]
 
-      /**Nếu không tìm thấy thì tìm trong list (logic cho onboarding) */
-      if (!page.current_staff) {
-        page.current_staff = values(page?.staff_list || {}).find(
-          staff => staff?.user_id === chatbotUserStore.chatbot_user?.user_id
-        )
-      }
+      // thêm trang chưa kích hoạt vào danh sách
 
-      /**Thêm trang chưa kích hoạt vào danh sách */
-      if (!page?.page?.is_active) list_my_org_page.value.push(page)
-
-      /**Trang thuộc tổ chức của tôi */
+      // trang thuộc tổ chức của tôi
       if (map_my_os.value?.[page?.page?.fb_page_id]) {
-        /** chỉ lấy trang chưa kích hoạt hiển thị */
+        // chỉ lấy trang chưa kích hoạt hiển thị
         if (!page?.page?.is_active) list_my_org_page.value.push(page)
-      } else list_not_my_org_page.push(page)
-      /**Trang không thuộc tổ chức của tôi */
+      }
+      // trang không thuộc tổ chức của tôi
+      else list_not_my_org_page.push(page)
     })
 
-    /**Lấy dữ liệu tổ chức khác */
+    // lấy dữ liệu tổ chức khác
     map_another_org_page.value = await read_link_org(
       list_not_my_org_page?.map(page => page?.page?.fb_page_id || '')
     )
@@ -459,38 +434,39 @@ async function getListPAGEPage() {
     /**các trang tự do không có tổ chức */
     let temp_list_free_page: PageData[] = []
 
-    /**Lặp qua các trang ngoài tổ chức đang chọn */
+    // lặp qua các trang ngoài tổ chức đang chọn
     list_not_my_org_page.map(page => {
-      /**Nếu trang không thuộc tổ chức nào */
+      // nếu trang không thuộc tổ chức nào
       if (
         !map_another_org_page.value?.map_page_org?.[
           page?.page?.fb_page_id || ''
         ]
       )
-        temp_list_free_page.push(page)
-      /**Nếu trang thuộc tổ chức khác */ else
-        list_another_org_page.value.push(page)
+      temp_list_free_page.push(page)
+        // list_free_page.value.push(page)
+      // nếu trang thuộc tổ chức khác
+      else list_another_org_page.value.push(page)
     })
 
-    /**Sắp xếp lại trang tự do, đảo chiều trang mới tạo lên đầu */
+    // sắp xếp lại trang tự do, đảo chiều trang mới tạo lên đầu
     list_free_page.value = temp_list_free_page.reverse()
   } catch (e) {
-    /**Thông báo lỗi */
-    toastError(e)
+    // thông báo lỗi
+    ToastSingleton.getInst().error(e)
   } finally {
-    /**Ẩn loading */
+    // ẩn loading
     connectPageStore.is_loading = false
   }
 }
 /**toggle trang */
 function selectPage(page: PageData) {
-  /**Nếu không phải là admin thì bỏ qua */
+  // nếu không phải là admin thì bỏ qua
   if (!isPageAdmin(page)) return
 
   /**id của trang */
   const PAGE_ID = page?.page?.fb_page_id || ''
 
-  /**Thêm hoặc bỏ trang khỏi danh sách trang đang chọn */
+  // thêm hoặc bỏ trang khỏi danh sách trang đang chọn
   list_selected_page_id.value[PAGE_ID] = !list_selected_page_id.value[PAGE_ID]
 }
 /**đếm số trang đang chọn */
@@ -501,7 +477,7 @@ function countPageSelect() {
     value => value
   )
 
-  /**Trả về số lượng id trang đang chọn */
+  // trả về số lượng id trang đang chọn
   return size(LIST_SELECT_PAGE_ID)
 }
 </script>

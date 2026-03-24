@@ -16,18 +16,11 @@ export interface ILocalStorage {
    * @param prefix tiền tố của key
    */
   setItem<T = any>(key: string, value: T, prefix?: string): void
-  /**
-   * xóa item khỏi local
-   * @param key key của item
-   * @param prefix tiền tố của key
-   */
-  removeItem(key: string, prefix?: string): void
 }
 
 /**quản lý local của trang */
 @singleton()
 export class LocalStorage implements ILocalStorage {
-  /** lấy item từ local */
   getItem<T = any>(
     key: string,
     default_value?: T,
@@ -46,14 +39,8 @@ export class LocalStorage implements ILocalStorage {
       // nếu có lỗi thì thôi
     }
   }
-  /** lưu item vào local */
   setItem(key: string, value: any, prefix: string = $env.local_storage.prefix) {
     // lưu dữ liệu vào local
     localStorage.setItem(`${prefix}${key}`, JSON.stringify(value))
-  }
-  /** xóa item khỏi local */
-  removeItem(key: string, prefix: string = $env.local_storage.prefix) {
-    // xóa dữ liệu khỏi local
-    localStorage.removeItem(`${prefix}${key}`)
   }
 }

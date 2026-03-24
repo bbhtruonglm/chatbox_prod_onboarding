@@ -2,28 +2,7 @@
   <!-- <div class="h-screen bg-gradient-primary py-10 px-6 font-sans"> -->
   <div class="h-screen bg-gradient-primary py-10 px-6 font-sans">
     <div
-      v-if="is_loading_check"
-      class="flex mx-auto overflow-hidden gap-2.5 flex-grow h-full min-h-0 animate-pulse"
-    >
-      <aside
-        class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
-      >
-        <div class="flex flex-col gap-10">
-          <div class="h-7 w-32 bg-slate-200 rounded"></div>
-          <div class="flex flex-col gap-3">
-            <div class="h-12 w-full bg-slate-200 rounded"></div>
-            <div class="h-4 w-2/3 bg-slate-200 rounded"></div>
-          </div>
-        </div>
-      </aside>
-      <main
-        class="flex w-full flex-grow min-h-0 h-full gap-3 px-3 py-5 rounded-xl bg-white flex-col justify-between"
-      >
-        <div class="h-full w-full bg-slate-200 rounded"></div>
-      </main>
-    </div>
-    <div
-      v-else-if="flow_step === 1"
+      v-if="flow_step === 1"
       class="flex mx-auto overflow-hidden gap-2.5 flex-grow h-full min-h-0"
     >
       <!-- Left panel -->
@@ -31,7 +10,14 @@
         class="w-96 p-5 gap-10 bg-white flex flex-col justify-between flex-grow min-h-0 h-full rounded-xl"
       >
         <div class="flex flex-col gap-10">
-          <PartnerLogo />
+          <div class="flex flex-col gap-10">
+            <div
+              :style="{
+                backgroundImage: `url(${commonStore.partner?.logo?.full})`,
+              }"
+              class="h-7 w-full bg-contain bg-no-repeat bg-left flex-shrink-0"
+            />
+          </div>
           <div class="flex flex-col gap-3">
             <h1 class="text-5xl leading-tight font-semibold">
               {{ $t('v1.view.onboarding.personal_experience') }}
@@ -123,7 +109,6 @@
                   type="text"
                   :placeholder="$t('v1.view.onboarding.enter_company_name')"
                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
-                  @keyup.enter="IS_STEP_VALID && nextStep()"
                 />
               </div>
 
@@ -281,24 +266,16 @@
                 </a>
               </p>
               <button
-                :disabled="!IS_STEP_VALID || is_submitting"
+                :disabled="!IS_STEP_VALID"
                 :class="[
-                  'px-10 py-3 rounded-md font-medium focus:outline-none flex-shrink-0 flex items-center justify-center gap-2',
-                  IS_STEP_VALID && !is_submitting
+                  'px-10 py-3 rounded-md font-medium focus:outline-none flex-shrink-0',
+                  IS_STEP_VALID
                     ? 'bg-blue-600 text-white'
-                    : 'bg-blue-100 text-blue-600 disabled:opacity-70 disabled:cursor-not-allowed',
+                    : 'bg-blue-100 text-blue-600',
                 ]"
                 @click="submitForm"
               >
-                <div
-                  v-if="is_submitting"
-                  class="animate-spin rounded-full h-5 w-5 border-b-2 border-current"
-                ></div>
-                {{
-                  is_submitting
-                    ? $t('v1.common.loading')
-                    : $t('v1.view.onboarding.create_account')
-                }}
+                {{ $t('v1.view.onboarding.create_account') }}
               </button>
             </template>
 
@@ -375,115 +352,30 @@
       v-else-if="flow_step === 6"
       @complete="completeCreatingAccount"
     />
-
-    <OnboardingVerifyEmail
-      v-else-if="flow_step === 7"
-      :email="email"
-      @verify="verifyEmail"
-      @resend="ResendEmailVerification"
-      @back="backToOnboarding"
-    />
-
-    <Modal ref="relogin_modal_ref">
-      <template #header>
-        {{ $t('Cập nhật quyền truy cập') }}
-      </template>
-      <template #body>
-        <div class="p-5 flex flex-col items-center gap-4 bg-white rounded-b-md">
-          <p>
-            {{
-              $t(
-                'Phiên đăng nhập Facebook đã hết hạn. Vui lòng kết nối lại để tiếp tục.'
-              )
-            }}
-          </p>
-          <Facebook @access_token="onReLoginSuccess" />
-        </div>
-      </template>
-    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useCommonStore } from '@/stores'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
-import { container } from 'tsyringe'
-import {
-  RegistrationDataService,
-  type IRegistrationDataService,
-} from '@/utils/helper/RegistrationData'
-import {
-  N4SerivcePublicOauthBasic,
-  N4SerivcePublicOauthFacebok,
-} from '@/utils/api/N4Service/Oauth'
-import { Toast } from '@/utils/helper/Alert/Toast'
-import type { IAlert } from '@/utils/helper/Alert/type'
-import { setItem, getItem } from '@/service/helper/localStorage'
-import { BillingAppOrganization } from '@/utils/api/Billing'
-import { N4SerivceAppUser } from '@/utils/api/N4Service/User'
-import { purchase_package, read_wallet } from '@/service/api/chatbox/billing'
-import { useOrgStore } from '@/stores'
-
-import Modal from '@/components/Modal.vue'
-import Facebook from '@/components/OAuth/Facebook.vue'
 import OnboardingLoading from './OnboardingLoading.vue'
 import OnboardingVerify from './OnboardingVerify.vue'
-import OnboardingVerifyEmail from './OnboardingVerifyEmail.vue'
+
 import UpgradeModalV2 from '@/views/OAuth/Onboarding/UpgradeModalV2.vue'
 import OnboardingCreatingAccount from './OnboardingCreatingAccount.vue'
 import OnboardingQuickStarter from './OnboardingQuickStarter.vue'
-import PartnerLogo from '@/components/PartnerLogo.vue'
-
 /** Hàm dịch ngôn ngữ */
 const { t: $t } = useI18n()
 /** Common store */
 const commonStore = useCommonStore()
-const orgStore = useOrgStore()
-/** Service quản lý dữ liệu đăng ký */
-const REGISTRATION_SERVICE: IRegistrationDataService = container.resolve(
-  RegistrationDataService
-)
-/** Service thông báo */
-const SERVICE_TOAST: IAlert = container.resolve(Toast)
+/** 1: 5 bước cơ bản, 2: loading, 3: verify */
+const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6>(1)
 
-const router = useRouter()
-
-/** API OAuth Basic */
-const API_OAUTH_BASIC = new N4SerivcePublicOauthBasic()
-/** API OAuth Facebook */
-const API_OAUTH_FB = new N4SerivcePublicOauthFacebok()
-
-/** 1: 5 bước cơ bản, 2: loading, 3: verify phone, 4: upgrade, 5: quick start, 6: creating, 7: verify email */
-const flow_step = ref<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
-
-/** email để verify */
-const email = ref('')
+/** email để verify ở flow 3 */
+const email = ref('user@example.com')
 /** Số điện thoại */
 const phone = ref('')
-
-/** loading check user */
-const is_loading_check = ref(true)
-
-/** Khởi tạo: Load dữ liệu registration */
-onMounted(async () => {
-  /** Lấy dữ liệu đăng ký */
-  /** Kiểm tra thông tin user_id và selected_org_id */
-  const USER_ID = getItem('user_id')
-  /** Lấy thông tin org_id */
-  const ORG_ID = getItem('selected_org_id')
-
-  /** Nếu không có thông tin thì back về màn login */
-  if (!USER_ID || !ORG_ID) {
-    // back về màn login
-    window.location.href = '/oauth/login'
-    return
-  }
-
-  /** có data mới tắt loading */
-  is_loading_check.value = false
-})
 
 /** Hàm verify phone */
 const verifyPhone = () => {
@@ -521,8 +413,9 @@ const skipForNow = () => {
   }
 }
 
-/** Hàm submit package (Chọn gói cho tổ chức) */
+/** Hàm verify phone */
 const submitPackage = () => {
+  console.log('submitPackage')
   /** Chuyển sang step 5 quick step */
   flow_step.value = 5
 }
@@ -533,92 +426,19 @@ const resendVerification = () => {
 }
 /** Hàm trợ lại trang login */
 const backToLogin = () => {
-  router.push('/oauth/login')
+  console.log('Quay lại trang login')
 }
 /** Hàm hoàn thành loading */
 const completeLoading = () => {
-  /** Lấy dữ liệu đăng ký */
-  const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
-
-  /** Nếu đăng ký bằng email thì chuyển sang màn verify email */
-  if (REGISTRATION_DATA?.registration_type === 'email') {
-    flow_step.value = 7
-  } else {
-    /** Ngược lại chuyển sang màn verify phone (Facebook) */
-    flow_step.value = 3
-  }
+  /** Chuyển sang màn verify */
+  flow_step.value = 3
 }
 /** Hàm hoàn thành loading */
-const completeCreatingAccount = async () => {
-  /** Chạy các hàm bổ sung */
-  await RunAdditionalSetup()
-
-  /** Đánh dấu hoàn tất onboarding */
-  setItem('is_onboarding', 'done')
-  /** Xóa user_id */
-  localStorage.removeItem('user_id')
-  /** Xóa dữ liệu đăng ký */
-  REGISTRATION_SERVICE.clearRegistrationData()
-  /** Chuyển sang màn dashboard hoặc trang chủ */
-  window.location.href = '/'
-}
-
-/** Hàm xác thực email */
-const verifyEmail = async (otp: string) => {
-  try {
-    /** Gọi API xác thực email */
-    await API_OAUTH_BASIC.verifyEmail(email.value, otp)
-
-    /** Tự động đăng nhập sau khi verify */
-    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
-    /** Nếu đăng ký bằng email và có mật khẩu */
-    if (REGISTRATION_DATA?.password) {
-      /** Gọi API đăng nhập */
-      const LOGIN_RES = await API_OAUTH_BASIC.login(
-        email.value,
-        REGISTRATION_DATA.password
-      )
-      /** Nếu đăng nhập thành công */
-      if (LOGIN_RES.access_token)
-        setItem('access_token', LOGIN_RES.access_token)
-      if (LOGIN_RES.user_id) setItem('user_id', LOGIN_RES.user_id)
-    }
-    /** Thông báo xác thực thành công */
-    SERVICE_TOAST.success($t('Xác thực email thành công'))
-
-    /** Xác thực thành công, chuyển sang màn verify phone */
-    flow_step.value = 3
-  } catch (error: any) {
-    console.error('Lỗi khi xác thực email:', error)
-    /** Thông báo lỗi */
-    SERVICE_TOAST.error(error.message || $t('Mã xác thực không đúng'))
-  }
-}
-
-/** Hàm gửi lại mã xác thực email */
-const ResendEmailVerification = async () => {
-  try {
-    // Gọi API gửi lại mã xác thực tới email
-    await API_OAUTH_BASIC.resendVerifyEmail(email.value)
-    // Thông báo thành công
-    SERVICE_TOAST.success($t('Đã gửi lại mã xác thực'))
-  } catch (error: any) {
-    // Log lỗi ra console
-    console.error('Lỗi khi gửi lại mã:', error)
-    // Thông báo lỗi
-    SERVICE_TOAST.error(error.message || $t('Không thể gửi lại mã'))
-  }
-}
-
-/** Hàm quay lại onboarding */
-const backToOnboarding = () => {
-  /** Quay lại flow_step 1 */
-  flow_step.value = 1
+const completeCreatingAccount = () => {
+  /** Chuyển sang màn đăng nhập */
 }
 /**Bước hiện tại */
 const current_step = ref(0)
-/** Trạng thái submit form */
-const is_submitting = ref(false)
 /** Tổng số bước */
 const total_steps = 5
 
@@ -740,201 +560,12 @@ const handlePreference = (option: string) => {
   SELECTED_PREFERENCES.value = option
   nextStep()
 }
-
 /** Hàm submit form tạo tài khoản */
-const submitForm = async () => {
-  /** Nếu k valid hoặc đang submit thì return luôn */
-  if (!IS_STEP_VALID.value || is_submitting.value) return
-
-  try {
-    // Set is_submitting true
-    is_submitting.value = true
-
-    /** Lưu dữ liệu onboarding vào storage thông qua service để các bước sau có thể lấy được */
-    REGISTRATION_SERVICE.updateOnboardingData({
-      industry: SELECTED_INDUSTRY.value ?? undefined,
-      role: SELECTED_ROLE.value ?? undefined,
-      company_name: COMPANY_DETAILS.value.name,
-      preferences: SELECTED_PREFERENCES.value ?? undefined,
-      company_details: {
-        website: COMPANY_DETAILS.value.website,
-        facebook: COMPANY_DETAILS.value.facebook,
-        instagram: COMPANY_DETAILS.value.instagram,
-        tiktok: COMPANY_DETAILS.value.tiktok,
-        zalo: COMPANY_DETAILS.value.zalo,
-      },
-    })
-
-    /** Chuyển sang màn xác thực SĐT (Step 3) */
-    flow_step.value = 3
-  } catch (error: any) {
-    console.error('Lỗi khi submit form:', error)
-    // thông báo lỗi
-    SERVICE_TOAST.error($t('Có lỗi xảy ra'))
-  } finally {
-    is_submitting.value = false
-  }
-}
-
-/** --------------- RE-LOGIN FACEBOOK ---------------- */
-const relogin_modal_ref = ref<InstanceType<typeof Modal>>()
-/** Token từ Facebook */
-const facebook_access_token = ref('')
-
-/** Hàm khi re-login thành công */
-async function onReLoginSuccess(token: string) {
-  /** Lưu token */
-  facebook_access_token.value = token
-  /** Close modal */
-  relogin_modal_ref.value?.toggleModal()
-  /** Submit form */
-  await submitForm()
-}
-
-/** Hàm chạy các setup bổ sung */
-const RunAdditionalSetup = async () => {
-  // Log thông tin bắt đầu
-  console.log('Running additional setup functions...')
-  try {
-    /** Lấy ID user từ storage */
-    const USER_ID = getItem('user_id')
-    /** Lấy ID tổ chức từ storage */
-    let ORG_ID = getItem('selected_org_id')
-
-    /** Nếu không có ORG_ID (do logic xóa ở bước trước), ta cần tìm lại */
-    if (!ORG_ID && USER_ID) {
-      try {
-        /** Khởi tạo service org */
-        const BILLING_ORG = new BillingAppOrganization()
-        /** Lấy danh sách org */
-        const ORGS = await BILLING_ORG.readOrg()
-        /** Tìm tổ chức của user */
-        const FOUND_ORG = ORGS.find((org: any) => org.org_owner_id === USER_ID)
-        /** Nếu tìm thấy */
-        if (FOUND_ORG) {
-          ORG_ID = (FOUND_ORG as any).org_id || (FOUND_ORG as any)._id
-          // Lưu lại để dùng sau này
-          setItem('selected_org_id', ORG_ID)
-        }
-      } catch (e) {
-        console.error('Lỗi khi fetch org fallback:', e)
-      }
-    }
-
-    /** Lấy số điện thoại từ biến reactive */
-    const ORG_PHONE = phone.value
-    /** Lấy dữ liệu đăng ký từ service */
-    const REGISTRATION_DATA = REGISTRATION_SERVICE.getRegistrationData()
-
-    // Nếu thiếu thông tin bắt buộc thì dừng hàm
-    if (!USER_ID || !ORG_ID || !REGISTRATION_DATA) return
-
-    /** Helper format link: thêm https và prefix nếu cần */
-    const FORMAT_LINK = (prefix: string, value?: string) => {
-      // Nếu giá trị rỗng thì trả về undefined
-      if (!value?.trim()) return undefined
-      // Nếu đã có http(s) thì giữ nguyên, ngược lại thêm prefix
-      return value.startsWith('http') ? value : `https://${prefix}${value}`
-    }
-
-    /** Trích xuất chi tiết công ty */
-    const { company_details: COMPANY_DETAILS } = REGISTRATION_DATA
-    /** Khởi tạo service user */
-    const SERVICE_USER = new N4SerivceAppUser()
-
-    // Gọi API cập nhật thông tin user chatbot
-    await SERVICE_USER.updateChatbotUserInfo({
-      /** ID người dùng */
-      custom_id: USER_ID,
-      /** ID tổ chức */
-      org_id: ORG_ID,
-      /** Số điện thoại tổ chức */
-      org_phone: ORG_PHONE,
-      /** Ngành nghề */
-      industry: REGISTRATION_DATA.industry,
-      /** Vai trò user */
-      role: REGISTRATION_DATA.role,
-      /** Tên công ty */
-      company_name: REGISTRATION_DATA.company_name,
-      /** Quy mô/Ưu tiên */
-      preferences: REGISTRATION_DATA.preferences,
-      /** Website (format chuẩn) */
-      website: FORMAT_LINK('', COMPANY_DETAILS?.website),
-      /** Facebook (thêm domain facebook) */
-      facebook_link: FORMAT_LINK('facebook.com/', COMPANY_DETAILS?.facebook),
-      /** Instagram (thêm domain instagram) */
-      instagram_link: FORMAT_LINK('instagram.com/', COMPANY_DETAILS?.instagram),
-      /** Tiktok (thêm domain tiktok) */
-      tiktok_link: FORMAT_LINK('tiktok.com/', COMPANY_DETAILS?.tiktok),
-      /** Zalo (thêm domain zalo) */
-      zalo_link: FORMAT_LINK('zalo.me/', COMPANY_DETAILS?.zalo),
-      /** Đánh dấu hoàn tất onboarding */
-      is_onboarding: 'done',
-    })
-
-    // Log thông báo cập nhật thành công
-    console.log('Cập nhật thông tin chatbot user thành công')
-
-    /** Trích xuất gói đã chọn */
-    const { package_selected: PACKAGE_SELECTED } = REGISTRATION_DATA
-
-    // Kiểm tra nếu có chọn gói và không phải Enterprise
-    if (PACKAGE_SELECTED && PACKAGE_SELECTED !== 'Enterprise') {
-      try {
-        // Log gói đang kích hoạt
-        console.log('Đang kích hoạt gói dùng thử:', PACKAGE_SELECTED)
-
-        // Lấy thông tin tổ chức hiện tại để check gói
-        const BILLING_ORG = new BillingAppOrganization()
-        const ORGS = await BILLING_ORG.readOrg()
-        const CURRENT_ORG = ORGS.find(
-          (o: any) => (o.org_id || o._id) === ORG_ID
-        )
-
-        // Check xem có phải gói FREE không
-        const ORG_PACKAGE = (CURRENT_ORG as any)?.org_package
-        const IS_FREE = !ORG_PACKAGE || ORG_PACKAGE.org_package_type === 'FREE'
-
-        if (IS_FREE) {
-          /** Lấy thông tin ví của tổ chức */
-          const WALLET = await read_wallet(ORG_ID)
-
-          // Nếu ví tồn tại
-          if (WALLET?.wallet_id) {
-            // Gọi API mua gói (trial)
-            await purchase_package(
-              ORG_ID,
-              WALLET.wallet_id,
-              PACKAGE_SELECTED as any,
-              1
-            )
-            // Thông báo thành công
-            SERVICE_TOAST.success(
-              $t('v1.view.onboarding.activate_package_success')
-            )
-          } else {
-            // Cảnh báo nếu không thấy ví
-            SERVICE_TOAST.error($t('v1.view.onboarding.wallet_not_found'))
-          }
-        } else {
-          // Nếu đã có gói thì thông báo
-          SERVICE_TOAST.success($t('v1.view.onboarding.org_has_package'))
-        }
-      } catch (error: any) {
-        // Log lỗi nếu kích hoạt thất bại
-        console.error('Lỗi khi kích hoạt gói:', error)
-        SERVICE_TOAST.error(
-          error.message || $t('v1.view.onboarding.activate_package_error')
-        )
-      }
-    } else if (PACKAGE_SELECTED === 'Enterprise') {
-      // Trường hợp gói Enterprise
-      SERVICE_TOAST.success($t('v1.view.onboarding.enterprise_saved'))
-    }
-  } catch (error) {
-    // Log lỗi chung
-    console.error('Lỗi khi chạy setup bổ sung:', error)
-  }
+const submitForm = () => {
+  /** Nếu k valid thì return luôn */
+  if (!IS_STEP_VALID) return
+  /** Chuyển sang step 2 */
+  flow_step.value = 2
 }
 
 /** Step 1 */

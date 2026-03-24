@@ -14,8 +14,18 @@ export class N4SerivceAppUser extends N4Serivce {
     return this.post('read_another_chatbot_user', { user_id })
   }
 
-  /** Cập nhật thông tin chatbot user */
-  public async updateChatbotUserInfo(payload: any): Promise<any> {
-    return this.post('update_chatbot_user_info', payload)
+  /** tải ảnh nhân sự lên */
+  public async uploadUserAvatar(file: File): Promise<string> {
+    /** dữ liệu form data */
+    const FORM_DATA = new FormData()
+    // thêm file vào form data
+    FORM_DATA.append('file', file)
+    // gọi api
+    return this.upload('upload_user_avatar', {}, FORM_DATA)
+  }
+
+  /** lưu dữ liệu nhân sự */
+  public async updateUserInfo(data:{avatar: string}): Promise<void> {
+    return this.post('update_chatbot_user_info', data)
   }
 }

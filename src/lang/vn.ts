@@ -103,43 +103,33 @@ const source: Language = {
   'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.':
     'Kết nối với Tiktok để chat nhiều Trang tự động với AI, tối ưu chi phí Marketing với CAPI, tự động tích hợp các ứng dụng của Doanh nghiệp.',
   'add _ member': 'Thêm {count} thành viên',
-  what_is_page: 'Trang là gì?',
-  children_what_is_page:
-    'Mỗi kênh bán hàng sẽ có các Trang bán hàng (Page) của bạn. Ví dụ: Bạn bán hàng trên Zalo, bạn có 5 tài khoản Zalo cá nhân thì được coi là 5 Page.',
-  monthly_payment: 'Tôi muốn thanh toán hàng tháng được không?',
-  children_monthly_payment:
-    'Tất nhiên, bạn có thể thanh toán định kỳ hàng tháng.',
-  refund_policy: 'Sau khi mua tôi có được hoàn tiền không?',
-  children_refund_policy:
-    'Có, trong 30 ngày đầu tiên sau khi thanh toán. Nếu bạn không hài lòng với sản phẩm/dịch vụ của chúng tôi, chúng tôi sẽ hoàn tiền 100% cho bạn.',
-  'see-more':
-    '<a href="/refund" target="_blank" style="color: red; font-weight: 500">Xem chi tiết</a>.',
-  expired_plan: 'Nếu gói của tôi hết hạn thì điều gì xảy ra?',
-  children_expired_plan:
-    'Trong vòng 14 ngày kể từ gói hết hạn, chúng tôi sẽ gửi thông báo cho bạn. Nếu bạn không gia hạn thì hệ thống sẽ tự động chuyển về gói Miễn phí.',
-  data_storage_duration: 'Dữ liệu của tôi lưu trong bao lâu?',
-  children_data_storage_duration:
-    'Với gói trả phí sẽ lưu trữ khi bạn sử dụng. Với gói miễn phí sẽ lưu trữ trong 90 ngày (nếu Page không phát sinh tin nhắn gửi đi), sau 90 ngày hệ thống tự động xoá toàn bộ dữ liệu của Page.',
-  data_storage_inactive: 'Tôi không sử dụng thì dữ liệu tôi có lưu trữ không?',
-  children_data_storage_inactive:
-    'Không, hệ thống chúng tôi tự động xoá toàn bộ dữ liệu. Và tuân thủ chính sách bảo mật. <a href="/privacy.html" target="_blank" style="color: red; font-weight: 500">Xem chính sách</a>.',
-  delete_data: 'Tôi có thể chủ động xoá dữ liệu được không?',
-  children_delete_data:
-    'Chắc chắn rồi, bạn truy cập: Page -> Thiết lập -> Tìm đến nút "Xoá vĩnh viễn Page".',
-  'see-guide':
-    '<a href="/privacy" target="_blank" style="color: red; font-weight: 500">Xem hướng dẫn</a>.',
-  self_host_data: 'Tôi muốn lưu trữ dữ liệu tại máy chủ của tôi được không?',
-  children_self_host_data:
-    'Hiện tại chúng tôi chưa hỗ trợ tính năng này. Nếu bạn có nhu cầu vui lòng liên hệ với chúng tôi.',
-  direct_support: 'Tôi cần hỗ trợ trực tiếp',
-  children_direct_support:
-    'Hiện tại chúng tôi hỗ trợ khách hàng trực tiếp ở Hà Nội và Hồ Chí Minh.',
-  ticket_platform: 'Tạo ticket đến nền tảng là gì?',
-  children_ticket_platform:
-    'Khi bạn bán hàng trên Facebook, Tiktok... bạn sẽ gặp phải các sự cố đến Page. Chúng tôi là đối tác cao cấp với nền tảng, sẽ liên hệ nền tảng để tạo Ticket hỗ trợ. Nhìn chung, bạn chỉ việc kinh doanh, nếu phát sinh vấn đề chúng tôi xử lý thay bạn. <br/> (Lưu ý: Page là cá nhân sẽ không được hỗ trợ).',
-  payment_methods: 'Có các hình thức thanh toán nào?',
-  children_payment_methods:
-    'Bạn có thể thanh toán bằng thẻ tín dụng, chuyển khoản ngân hàng, ví điện tử.',
+
+  'Thông báo gói VIP': 'Thông báo gói VIP',
+  'Một số tổ chức của bạn sắp hoặc đã hết hạn gói':
+    'Một số tổ chức của bạn sắp hoặc đã hết hạn gói',
+  'Đã hết hạn:': 'Đã hết hạn:',
+  'hết hạn': 'hết hạn',
+  'Sắp hết hạn:': 'Sắp hết hạn:',
+  còn: 'còn',
+  'Còn _ ngày': 'Còn {duration} ngày',
+
+  ngày: 'ngày',
+  'Bỏ qua': 'Bỏ qua',
+  'Gia hạn ngay': 'Gia hạn ngay',
+  '...và còn': '...và còn',
+  'tổ chức khác': 'tổ chức khác',
+
+  'Thông báo quan trọng': 'Thông báo quan trọng',
+  'Xem các gói': 'Xem các gói',
+  'Gói của một số Tổ chức sắp hết hạn. Bạn nên gia hạn để tiếp tục sử dụng đầy đủ tính năng và không gián đoạn dịch vụ':
+    'Gói của một số Tổ chức sắp hết hạn. Bạn nên gia hạn để tiếp tục sử dụng đầy đủ tính năng và không gián đoạn dịch vụ',
+  'Đổi gói': 'Đổi gói',
+  'Ngày hết hạn': 'Ngày hết hạn',
+  'Gói hiện tại': 'Gói hiện tại',
+  'Không hiện lại bảng này': 'Không hiện lại bảng này',
+  'File vượt quá dung lượng cho phép': 'File vượt quá dung lượng cho phép',
+  'Vui lòng chuyển sang tài khoản TikTok Business': 'Vui lòng chuyển sang tài khoản TikTok Business',
+
   v1: {
     common: {
       zalo: 'Zalo',
@@ -327,8 +317,8 @@ const source: Language = {
         enter_zalo: 'username_company',
         create_account: 'Tạo tài khoản',
         step_5_description:
-          'Dữ liệu của bạn sẽ được lưu trữ tại Singapore. Bằng cách tạo tài khoản, bạn đồng ý với ',
-        step_5_description_2: 'Điều khoản dịch vụ khách hàng của Retion',
+          'Your data will be hosted in the Singapore. By creating an account you are agreeing to the ',
+        step_5_description_2: 'Retion Customer Terms of Service',
         verify_account: 'Bảo mật tài khoản',
         verify_account_description:
           'Chúng tôi cần xác thực tài khoản để hỗ trợ, bảo hành và bảo mật tài khoản của bạn.',
@@ -345,20 +335,6 @@ const source: Language = {
         change_phone: 'Đổi số điện thoại',
         pin_code: 'Mã PIN xác thực đã được gửi đến số điện thoại của bạn',
         get_pin_code: 'Bạn chưa nhận được mã?',
-        phone_invalid_format:
-          'Số điện thoại không hợp lệ (chỉ nhập số, 8-15 chữ số)',
-        organization: 'Tổ chức:',
-        connect_facebook_desc: 'Kết nối Trang Facebook',
-        connect_instagram_desc: 'Kết nối Trang Instagram',
-        connect_whatsapp_desc: 'Kết nối Whatsapp Business và Cá nhân.',
-        connect_zalo_desc: 'Kết nối Zalo OA và Zalo cá nhân.',
-        connect_website_desc: 'Kết nối Website',
-        activate_package_success: 'Kích hoạt gói thành công',
-        wallet_not_found: 'Không tìm thấy ví để kích hoạt gói',
-        org_has_package: 'Tổ chức đã có gói dịch vụ',
-        activate_package_error: 'Lỗi khi kích hoạt gói',
-        enterprise_saved:
-          'Gói Enterprise đã được lưu, nhân viên tư vấn sẽ liên hệ sau.',
 
         select_employee: 'Chọn nhân viên',
         select_month: 'Chọn tháng',
@@ -404,37 +380,6 @@ const source: Language = {
         free_consultation: 'Tư vấn miễn phí',
         discount: 'giảm giá',
         plans_and_feature: 'So sánh các gói dịch vụ và tính năng',
-        package_info: 'Thông tin gói',
-        enterprise_form: {
-          title: 'Hãy trao đổi về những gì Retion có thể làm cho bạn',
-          subtitle:
-            'Đội ngũ của chúng tôi sẵn sàng giải đáp mọi thắc mắc hoặc tùy chỉnh giải pháp cho bạn.',
-          expect: {
-            title: 'Những gì bạn có thể mong đợi',
-            item_1: 'Tìm hiểu thêm về các tính năng nâng cao',
-            item_2: 'Kết nối với chuyên gia để thảo luận nhu cầu cụ thể',
-            item_3: 'Thảo luận về giá và chọn gói phù hợp',
-            item_4: 'Không yêu cầu cam kết',
-          },
-          trusted_by:
-            'ĐƯỢC TIN DÙNG BỞI HƠN <span class="font-bold">{count}</span> DOANH NGHIỆP TỪ 10+ QUỐC GIA',
-          form: {
-            title: 'Trò chuyện với tư vấn viên',
-            desc: 'Chúng tôi sẽ gọi hoặc gửi email cho bạn tại {email} để sắp xếp thời gian trò chuyện.',
-            first_name: 'Tên',
-            last_name: 'Họ',
-            phone: 'Số điện thoại',
-            company_size: 'Quy mô công ty',
-            help_you: 'Đội ngũ chúng tôi có thể giúp gì cho bạn?',
-            submit: 'Gửi thông tin',
-            placeholder: {
-              first_name: 'Nhập tên của bạn',
-              last_name: 'Nhập họ của bạn',
-              phone: 'Nhập số điện thoại',
-              help: 'Nhập nội dung bạn cần hỗ trợ',
-            },
-          },
-        },
         select_platform_to_connect: 'Chọn nền tảng cần Kết nối:',
         copy_clipboard: 'Copy link',
         copied: 'Copied',
@@ -752,6 +697,8 @@ const source: Language = {
               findding_uid: 'Đang tìm kiếm UID',
             },
             error: {
+              page_deleted:
+                'Một số page có thể đã bị xóa khỏi Tổ chức của bạn, vui lòng quay lại màn chọn trang và lựa chọn lại',
               get_page_info: 'Không tìm thấy dữ liệu trang',
               get_org_info: 'Không tìm thấy dữ liệu tổ chức',
               org_quota_staff:
@@ -1289,14 +1236,12 @@ const source: Language = {
               staff_amount: 'Số lượng nhân sự',
               bot: 'Chatbot',
               chat_feature: 'Các tính năng chat',
-              ai_feature: 'Tính năng AI',
+              ai_feature: 'Các tính năng AI',
               company_name: 'Tên doanh nghiệp',
               api_integrate: 'Tích hợp API',
               domain_logo: 'Tên miền và logo',
               support: 'Hỗ trợ',
               client: 'Số khách hàng',
-              page: 'Trang',
-              member: 'Thành viên',
               fau: 'Kịch bản kích hoạt',
               new_client: 'Số khách hàng mới',
               ai_text: 'AI văn bản',
@@ -1507,16 +1452,6 @@ const source: Language = {
                 waiting_payment: 'Đang chờ thành toán',
               },
               lite: 'Lite',
-              lite_description:
-                'Phù hợp với cá nhân, cửa hàng, hộ kinh doanh mới bắt đầu.',
-              pro_description:
-                'Phù hợp với doanh nghiệp vừa và nhỏ đang sẵn sàng mở rộng và tăng trưởng.',
-              business_description:
-                'Phù hợp với Doanh nghiệp có lượng lớn khách hàng',
-              enterprise_description:
-                'Phù hợp với Doanh nghiệp lớn, Tập đoàn cần bảo mật dữ liệu. Đáp ứng các yêu cầu đặc biệt.',
-              custom: 'Tùy chỉnh',
-
               upgrade_v2: {
                 title: 'Choose the right plan for your team',
                 choose_team_plan: 'Choose your team plan',
