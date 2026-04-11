@@ -1,11 +1,11 @@
 <template>
-  <div class="relative">
+  <div class="relative pt-[1px]">
     <img
       class="absolute top-2 left-3 w-5 h-5"
       src="@/assets/icons/search.svg"
     />
     <input
-      v-model="model"
+      v-model.trim="model"
       :placeholder="placeholder"
       class="w-full rounded-full py-2 pl-10 pr-3 text-sm focus:outline-orange-500"
     />

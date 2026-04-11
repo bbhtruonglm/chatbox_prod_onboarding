@@ -22,7 +22,7 @@
           :src="
             pageStore.map_orgs?.map_org_info?.[org_id]?.org_info?.org_avatar
           "
-          class="w-5 h-5 rounded-oval"
+          class="w-5 h-5 rounded-oval object-cover"
         />
         <BriefCaseIcon
           v-else
@@ -60,7 +60,7 @@ import {
   useSelectPageStore,
 } from '@/stores'
 import { usePageManager } from '@/views/Dashboard/composables/usePageManager'
-import { filter, pickBy, size } from 'lodash'
+import { pickBy, size } from 'lodash'
 import { computed, onMounted, watch } from 'vue'
 
 import CardItem from '@/components/Main/Dashboard/CardItem.vue'
@@ -124,13 +124,8 @@ class Main {
 
   /** đếm số page của tổ chức hiện tại với nền tảng đang được lọc */
   countPage(): number {
-    // console.log('active_page_list', pageStore.active_page_list)
-    /** các page của tổ chức hiện tại */
-    const PAGE_OF_THIS_ORG = filter(pageStore.active_page_list, page =>
-      this.isInCurrentOrg(page)
-    )
-
-    return size(PAGE_OF_THIS_ORG)
+    /** Dùng danh sách đã lọc sẵn của org để tránh quét lại toàn bộ page list */
+    return size(filter_page_list.value)
   }
 
   /**trang có thuộc tổ chức hiện tại không */
