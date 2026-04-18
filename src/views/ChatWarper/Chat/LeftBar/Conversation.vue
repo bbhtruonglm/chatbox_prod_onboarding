@@ -182,17 +182,50 @@ class Main {
     /** ghi đè 1 số lọc tin nhắn */
     const OVERWRITE_FILTER: FilterConversation = {}
 
-    /** chỉ cho hiện hội thoại của nhân viên và nếu không phải là chế độ xem bài viết */
+    /**kết quả phân ca */
+    const SHIFT_FILTER = SPECIAL_PAGE_CONFIG.shift_filter
+
+    /** chỉ cho hiện hội thoại của nhân viên và không phải chế độ xem bài viết */
     if (
       SPECIAL_PAGE_CONFIG.is_only_visible_client_of_staff &&
       conversationStore.option_filter_page_data.conversation_type !== 'POST'
     ) {
-      /** tạo ra filter nhân viên */
-      OVERWRITE_FILTER.staff_id = []
+      /**
+       * nếu user đã chọn filter staff trên UI → dùng luôn list đó
+       * nếu không → tạo list từ nhân viên hiện tại
+       */
+      const EXISTING_STAFF_FILTER =
+        conversationStore.option_filter_page_data.staff_id
 
-      /** thêm id mới */
-      if (chatbotUserStore.chatbot_user?.user_id) {
-        OVERWRITE_FILTER.staff_id?.push(chatbotUserStore.chatbot_user?.user_id)
+      if (EXISTING_STAFF_FILTER?.length) {
+        // dùng danh sách staff từ filter UI
+        OVERWRITE_FILTER.staff_id = [...EXISTING_STAFF_FILTER]
+      } else {
+        /** tạo ra filter nhân viên từ nhân viên hiện tại */
+        OVERWRITE_FILTER.staff_id = []
+
+        /** thêm id mới của nhân viên hiện tại */
+        if (chatbotUserStore.chatbot_user?.user_id)
+          OVERWRITE_FILTER.staff_id.push(chatbotUserStore.chatbot_user.user_id)
+
+        /** thêm id cũ, tránh lỗi hội thoại cũ chỉ có fb_staff_id */
+        if (chatbotUserStore.chatbot_user?.fb_staff_id)
+          OVERWRITE_FILTER.staff_id.push(chatbotUserStore.chatbot_user.fb_staff_id)
+      }
+
+      /**
+       * nếu phân ca đang kích hoạt và nhân viên hiện tại đang trong ca
+       * → push thêm nhân viên KHÔNG thuộc cùng ca vào danh sách
+       */
+      if (SHIFT_FILTER?.is_shift_active && SHIFT_FILTER?.is_current_staff_in_shift) {
+        // push từng staff_id còn lại (loại trừ trùng lắp)
+        for (const STAFF_ID of SHIFT_FILTER.allowed_staff_ids) {
+          // bỏ qua nếu đã có trong danh sách
+          if (OVERWRITE_FILTER.staff_id.includes(STAFF_ID)) continue
+
+          // thêm nhân viên không cùng ca vào filter
+          OVERWRITE_FILTER.staff_id.push(STAFF_ID)
+        }
       }
     }
 
@@ -221,22 +254,34 @@ class Main {
   private isPermissionViewConversation(
     conversation?: ConversationInfo,
   ): boolean {
-    /** id của nhân sự hiện tại */
-    const CURRENT_STAFF_ID =
-      chatbotUserStore.chatbot_user?.user_id ||
-      conversationStore.select_conversation?.fb_staff_id
+    /** cấu hình trang đặc biệt, đã xử lý bypass admin bên trong */
+    const SPECIAL_PAGE_CONFIG = this.SERVICE_CALC_SPECIAL_PAGE_CONFIGS.exec()
 
-    /** trạng thái của tài khoản hiện tại có phải là admin hay ko? */
-    const IS_ADMIN = conversationStore.isCurrentStaffAdmin()
+    /**kết quả phân ca */
+    const SHIFT_FILTER = SPECIAL_PAGE_CONFIG.shift_filter
 
-    // nếu bật chỉ hiện hội thoại với nhân viên được assign và
-    // id hiện tại không phải của nhân sự đó và
-    // không phải admin thì không có quyền xem
-    return !(
-      orgStore.selected_org_info?.org_config
-        ?.org_is_only_visible_client_of_staff &&
-      conversation?.fb_staff_id !== CURRENT_STAFF_ID &&
-      !IS_ADMIN
+    // nếu phân ca đang kích hoạt và nhân viên hiện tại đang trong ca
+    if (SHIFT_FILTER?.is_shift_active && SHIFT_FILTER?.is_current_staff_in_shift) {
+      /** id nhân viên được assign cho hội thoại */
+      const CONV_STAFF_ID = conversation?.user_id || conversation?.fb_staff_id
+
+      // nếu hội thoại thuộc nhân viên khác cùng ca → không cho xem
+      if (CONV_STAFF_ID && SHIFT_FILTER.same_shift_other_staff_ids.includes(CONV_STAFF_ID))
+        return false
+    }
+
+    // nếu không bật chế độ chỉ hiện hội thoại theo nhân viên thì cho xem
+    if (!SPECIAL_PAGE_CONFIG.is_only_visible_client_of_staff) return true
+
+    /** id mới của nhân viên hiện tại */
+    const CURRENT_USER_ID = chatbotUserStore.chatbot_user?.user_id
+    /** id cũ của nhân viên hiện tại */
+    const CURRENT_FB_STAFF_ID = chatbotUserStore.chatbot_user?.fb_staff_id
+
+    // kiểm tra hội thoại có thuộc nhân viên hiện tại không (dùng cả id mới và cũ)
+    return (
+      conversation?.user_id === CURRENT_USER_ID ||
+      conversation?.fb_staff_id === CURRENT_FB_STAFF_ID
     )
   }
 
@@ -328,18 +373,46 @@ class Main {
 
     /** chỉ cho hiện hội thoại của nhân viên */
     if (SPECIAL_PAGE_CONFIG.is_only_visible_client_of_staff) {
-      /** tạo ra filter nhân viên */
-      OVERWRITE_FILTER.staff_id = []
+      /**
+       * nếu user đã chọn filter staff trên UI → dùng luôn list đó
+       * nếu không → tạo list từ nhân viên hiện tại
+       */
+      const EXISTING_STAFF_FILTER =
+        conversationStore.option_filter_page_data.staff_id
 
-      /** thêm id mới */
-      if (chatbotUserStore.chatbot_user?.user_id)
-        OVERWRITE_FILTER.staff_id?.push(chatbotUserStore.chatbot_user?.user_id)
+      if (EXISTING_STAFF_FILTER?.length) {
+        // dùng danh sách staff từ filter UI
+        OVERWRITE_FILTER.staff_id = [...EXISTING_STAFF_FILTER]
+      } else {
+        /** tạo ra filter nhân viên từ nhân viên hiện tại */
+        OVERWRITE_FILTER.staff_id = []
 
-      /** thêm id cũ, tránh lỗi */
-      if (chatbotUserStore.chatbot_user?.fb_staff_id)
-        OVERWRITE_FILTER.staff_id?.push(
-          chatbotUserStore.chatbot_user?.fb_staff_id,
-        )
+        /** thêm id mới */
+        if (chatbotUserStore.chatbot_user?.user_id)
+          OVERWRITE_FILTER.staff_id.push(chatbotUserStore.chatbot_user.user_id)
+
+        /** thêm id cũ, tránh lỗi */
+        if (chatbotUserStore.chatbot_user?.fb_staff_id)
+          OVERWRITE_FILTER.staff_id.push(chatbotUserStore.chatbot_user.fb_staff_id)
+      }
+
+      /**kết quả phân ca */
+      const SHIFT_FILTER = SPECIAL_PAGE_CONFIG.shift_filter
+
+      /**
+       * nếu phân ca đang kích hoạt và nhân viên hiện tại đang trong ca
+       * → push thêm nhân viên KHÔNG thuộc cùng ca vào danh sách
+       */
+      if (SHIFT_FILTER?.is_shift_active && SHIFT_FILTER?.is_current_staff_in_shift) {
+        // push từng staff_id còn lại (loại trừ trùng lắp)
+        for (const STAFF_ID of SHIFT_FILTER.allowed_staff_ids) {
+          // bỏ qua nếu đã có trong danh sách
+          if (OVERWRITE_FILTER.staff_id.includes(STAFF_ID)) continue
+
+          // thêm nhân viên không cùng ca vào filter
+          OVERWRITE_FILTER.staff_id.push(STAFF_ID)
+        }
+      }
     }
 
     /**lấy dữ liệu hội thoại */
@@ -413,6 +486,24 @@ class Main {
       )
     )
       return
+
+    /**kết quả phân ca */
+    const SHIFT_FILTER = SPECIAL_PAGE_CONFIG?.shift_filter
+
+    /** lọc hội thoại theo ca: bỏ qua hội thoại của nhân viên khác cùng ca */
+    if (
+      conversationStore.option_filter_page_data?.conversation_type !== 'POST' &&
+      SHIFT_FILTER?.is_shift_active &&
+      SHIFT_FILTER?.is_current_staff_in_shift &&
+      SHIFT_FILTER?.same_shift_other_staff_ids?.length
+    ) {
+      /** id nhân viên được assign cho hội thoại từ socket */
+      const CONV_STAFF_ID = conversation?.user_id || conversation?.fb_staff_id
+
+      // nếu hội thoại thuộc nhân viên khác cùng ca → bỏ qua
+      if (CONV_STAFF_ID && SHIFT_FILTER.same_shift_other_staff_ids.includes(CONV_STAFF_ID))
+        return
+    }
 
     /** bỏ qua record của page chat cho page */
     if (conversation.fb_page_id === conversation.fb_client_id) return

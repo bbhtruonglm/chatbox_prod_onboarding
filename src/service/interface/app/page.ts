@@ -730,6 +730,47 @@ export interface IPageAiAgent {
 export interface IPageWebsiteConfig
   extends IPageWebsiteGeneralConfig,
     IPageWebsiteLeadFormConfig {}
+
+/**thiết lập 1 ca làm việc */
+export interface IShiftSlotConfig {
+  /**thời gian bắt đầu ca, dạng "HH:MM" */
+  start_time?: string
+  /**thời gian kết thúc ca, dạng "HH:MM" */
+  end_time?: string
+  /**danh sách id nhân viên trong ca */
+  staff_ids?: string[]
+  /**id duy nhất của ca */
+  _id?: string
+}
+/**thiết lập các ca trong 1 ngày */
+export interface IShiftDayConfig {
+  /**danh sách các ca làm việc trong ngày */
+  shifts?: IShiftSlotConfig[]
+}
+/**
+ * cấu hình gán nhân viên theo ca làm việc
+ * - days chứa 7 ngày trong tuần (monday → sunday)
+ * - mỗi ngày có mảng shifts chứa các ca
+ */
+export interface AssignStaffsByShift {
+  /**trạng thái kích hoạt phân ca */
+  is_active?: boolean
+  /**dữ liệu các ca theo ngày trong tuần */
+  days?: {
+    monday?: IShiftDayConfig
+    tuesday?: IShiftDayConfig
+    wednesday?: IShiftDayConfig
+    thursday?: IShiftDayConfig
+    friday?: IShiftDayConfig
+    saturday?: IShiftDayConfig
+    sunday?: IShiftDayConfig
+  }
+}
+/**thiết lập phân ca làm việc của trang */
+export interface IPageShiftConfig {
+  /**cấu hình gán nhân viên theo ca làm việc */
+  assign_staffs_by_shift?: AssignStaffsByShift
+}
 /**dữ liệu của 1 trang */
 export interface IPage
   extends IPageInfo,
@@ -743,6 +784,7 @@ export interface IPage
     IPagePlatformConfig,
     IPageDeprecatedConfig,
     IPageCopySetting,
+    IPageShiftConfig,
     IPageAiAgent {}
 
 export interface PageData {
